@@ -1,7 +1,9 @@
 # template-repository  
 
-This repository serves as a standardized template for all future GitHub projects within the organization.  
 
+A unified Go library for managing the Linux platform. It provides a single set of primitives that handle cross-distribution differences automatically.
+
+![Go CI](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml/badge.svg)
 [![LICENSE](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
 ----
@@ -17,14 +19,21 @@ This project template includes the following components:
 |Code of Conduct| Ensures a welcoming and inclusive environment for all contributors.|  
 |README|Structured documentation template for clear project onboarding.|  
 
+This library offers a high-level API for common Linux administration tasks, including:
+
+- `dnfapt`: A package for managing software packages on RHEL and Debian systems.
+- `oservice`: A package for starting, stopping, and checking the status of OS services.
 
 
 ---
 
-# Getting Started  
+## Installation
 
-## Create a Repository from This Template  
-To use this template, follow GitHub’s official guide:  [Creating a repository from a template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)  
+To use this library in your project, run:
+
+```bash
+go get [github.com/abtransitionit/golinux](https://github.com/abtransitionit/golinux)
+```
 
 ---
 
