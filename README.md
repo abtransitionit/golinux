@@ -3,7 +3,7 @@
 
 A unified Go library for managing the Linux platform. It provides a single set of primitives that handle cross-distribution differences automatically.
 
-![Go CI](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml/badge.svg)
+[![Go CI](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml/badge.svg)](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml)
 [![LICENSE](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
 ----
