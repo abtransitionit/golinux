@@ -1,4 +1,4 @@
-# template-repository  
+# Golinux
 
 
 A unified Go library for managing the Linux platform. It provides a single set of primitives that handle cross-distribution differences automatically.
