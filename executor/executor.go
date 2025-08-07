@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/abtransitionit/gocore/errorx"
-	"github.com/pkg/errors"
 )
 
 // Name: RunCliSsh
@@ -30,7 +29,8 @@ func RunCliSsh(vmName, cli string) (string, error) {
 	// step: check the VM is reachable
 	isSshReachable, err := IsVmSshReachable(vmName)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to check VM SSH reachability")
+		return "", errorx.WithStack(fmt.Errorf("failed to check VM SSH reachability: %w", err))
+
 	}
 	if !isSshReachable {
 		return "", fmt.Errorf("vm '%s' is not SSH reachable", vmName)
@@ -41,14 +41,14 @@ func RunCliSsh(vmName, cli string) (string, error) {
 
 	// step: Now that the VM is reachable, define the full SSH command to run - echo the encoded string, decode it, and execute it.
 	// command := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s \"echo '%s' | base64 --decode | sh\"", vmName, cliEncoded)
-	command := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5 %s "echo '%s' | base64 --decode | sh"`, vm, cliEncoded)
+	command := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5 %s "echo '%s' | base64 --decode | sh"`, vmName, cliEncoded)
 
 	// step: Run the command
 	output, err := RunCliLocal(command)
 
 	// manage error
 	if err != nil {
-		return output, errors.Wrap(err, fmt.Sprintf("failed to run remote command on '%s'", vmName))
+		return output, errorx.WithStack(fmt.Errorf("failed to run remote command on '%s': %w", vmName, err))
 	}
 
 	// success
