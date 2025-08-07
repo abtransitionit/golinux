@@ -1,0 +1,29 @@
+package dnfapt
+
+import (
+	"fmt"
+	"runtime"
+
+	"github.com/abtransitionit/gocore/errorx"
+	"github.com/abtransitionit/gocore/logx"
+)
+
+// Install will install a package on a Linux system, handling
+// differences between distributions.
+func InstallRepo(repoName string) error {
+	logx.Init()
+	logx.Info("Attempting to install package repository: %s", repoName)
+
+	os := runtime.GOOS
+	if os != "linux" {
+		// Use the errorx package from gocore to return a professional error
+		return errorx.WithStack(fmt.Errorf("this function only supports Linux, but found: %s", os))
+	}
+
+	// This is where your logic for dnf vs. apt would go
+	// We'll just print a message for now to show the concept.
+	fmt.Printf("Using a single primitive to install %s on a Linux system.\n", repoName)
+
+	logx.Info("Successfully installed package repository: %s", repoName)
+	return nil
+}

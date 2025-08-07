@@ -54,4 +54,17 @@ Track version updates and changes:
 - **📄 Full Changelog**: See [CHANGELOG.md](CHANGELOG.md) for detailed version history.  
 
 ---
+  
+
+# Howtos
+## get code from repo
+**purpose**
+How to use code from another `go` project that is also in active development.
+```shell
+# in golinux/go.mod (need code form gocore)
+require github.com/abtransitionit/gocore v0.0.0
+replace github.com/abtransitionit/gocore => ../gocore
+```
+- then `go mod tidy`
+
 
