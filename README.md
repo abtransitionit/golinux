@@ -1,12 +1,15 @@
 # Golinux
 
 
-A unified Go library for managing the Linux platform. It provides a single set of primitives that handle cross-distribution differences automatically.
+
+A unified Go library containing foundational, reusable functions, for managing any Linux platform. It provides a single set of primitives that handle cross-distribution differences automatically
+
+----
 
 [![Go CI](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml/badge.svg)](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml)
 [![LICENSE](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
-----
+---
 
 
 # Features  
@@ -19,11 +22,12 @@ This project template includes the following components:
 |Code of Conduct| Ensures a welcoming and inclusive environment for all contributors.|  
 |README|Structured documentation template for clear project onboarding.|  
 
-This library offers a high-level API for common Linux administration tasks, including:
+This library offers a high-level API for common Linux administration tasks, uning the same universal primitive** including:
 
 - `dnfapt`: A package for managing software packages on RHEL and Debian systems.
 - `oservice`: A package for starting, stopping, and checking the status of OS services.
-
+- `runCliLocal()`: A primitive to play any complex linux CLI on the local VM
+- `runCliSsh()`: A primitive to play any complex linux CLI on a remote VM
 
 ---
 
@@ -54,7 +58,7 @@ Track version updates and changes:
 - **📄 Full Changelog**: See [CHANGELOG.md](CHANGELOG.md) for detailed version history.  
 
 ---
-  
+
 
 # Howtos
 ## get code from repo
