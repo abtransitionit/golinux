@@ -8,8 +8,8 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-// Install will install a package on a Linux system, handling
-// differences between distributions.
+// Name: InstallRepo
+// Description: install a dnfapt repository on a Linux distro
 func Install(packageName string) error {
 	logx.Init()
 	logx.Info("Attempting to install package: %s", packageName)

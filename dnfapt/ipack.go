@@ -8,11 +8,11 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-// Install will install a package on a Linux system, handling
-// differences between distributions.
+// Name: InstallPackage
+// Description: install a dnfapt package on a Linux distro
 func InstallPackage(packageName string) error {
 	logx.Init()
-	logx.Info("Attempting to install repository: %s", packageName)
+	logx.Info("Attempting to install d dnfapt package: %s", packageName)
 
 	os := runtime.GOOS
 	if os != "linux" {
@@ -20,9 +20,10 @@ func InstallPackage(packageName string) error {
 		return errorx.WithStack(fmt.Errorf("this function only supports Linux, but found: %s", os))
 	}
 
-	// logic for dnf/apt
+	// logic
 	fmt.Printf("Using a single primitive to install %s on a Linux system.\n", packageName)
 
-	logx.Info("Successfully installed package: %s", packageName)
+	// success
+	logx.Info("Successfully installed dnfapt package: %s", packageName)
 	return nil
 }

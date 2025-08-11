@@ -8,7 +8,6 @@ import (
 
 // Name: IsSSHConfigured
 // Description: Checks if a given VM alias is configured in the user's SSH configuration files.
-// Purpose: validate that a VM alias exists before attempting an SSH connection.
 // Inputs:
 // - vm: string: The VM alias (e.g., "o1u").
 // Return:
@@ -42,7 +41,7 @@ func IsVmSshConfigured(vmName string) (bool, error) {
 }
 
 // Name: IsVmSshReachable
-// Description: Checks if a VM is currently reachable via SSH.
+// Description: Checks if a given VM alias is reachable via SSH.
 // Purpose: This function attempts to establish a non-interactive SSH connection to a VM.
 // A successful connection indicates the VM is online and the SSH daemon is running.
 // A failure indicates the VM is either not running, or there is a network issue

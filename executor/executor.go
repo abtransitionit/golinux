@@ -11,9 +11,7 @@ import (
 )
 
 // Name: RunCliSsh
-// Description: Executes a command on a remote VM via SSH.
-// Purpose: This function is the remote equivalent of RunLocal. It first performs a
-// reachability check, then executes a command on the remote host, capturing the output.
+// Purpose: Executes a command on a remote VM via SSH. It first performs a SSH reachability check, then executes a command on the remote host, capturing the output.
 // Inputs:
 // - vmName:  string: The alias of the VM to connect to (e.g., "o1u").
 // - command: string: The command string to be executed on the remote VM.
@@ -21,6 +19,8 @@ import (
 // - string: The standard output and standard error from the remote command.
 // - error: An error if the VM is not reachable, or if the SSH command fails.
 // Notes:
+// - The reachability check is performed using the IsVmSshReachable function.
+// - This function is the remote equivalent of RunLocal. .
 // - The `-o BatchMode=yes` flag prevents interactive prompts and long waits.
 // - The `-o ConnectTimeout=5` flag sets a 5-second timeout, so the function never hang indefinitely. Without this, if the remote VM is powered off or unreachable, the SSH command could hang for several minutes before timing out
 // - The remote command is Base64 encoded to avoid issues with complex quotes and special characters.

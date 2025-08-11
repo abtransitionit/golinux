@@ -10,9 +10,9 @@ import (
 
 // Install will install a package on a Linux system, handling
 // differences between distributions.
-func InstallRepo(repoName string) error {
+func CreateRepo(repoName string) error {
 	logx.Init()
-	logx.Info("Attempting to install package repository: %s", repoName)
+	logx.Info("Attempting to create package repository: %s", repoName)
 
 	os := runtime.GOOS
 	if os != "linux" {
@@ -24,6 +24,6 @@ func InstallRepo(repoName string) error {
 	// We'll just print a message for now to show the concept.
 	fmt.Printf("Using a single primitive to install %s on a Linux system.\n", repoName)
 
-	logx.Info("Successfully installed package repository: %s", repoName)
+	logx.Info("Successfully installed dnfapt package repository: %s", repoName)
 	return nil
 }
