@@ -6,7 +6,8 @@ A unified Go library containing foundational, reusable functions, for managing a
 
 ----
 
-[![Go CI](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml/badge.svg)](https://github.com/abtransitionit/golinux/actions/workflows/ci.yaml)
+[![Dev CI](https://github.com/abtransitionit/golinux/actions/workflows/ci-dev.yaml/badge.svg?branch=dev)](https://github.com/abtransitionit/golinux/actions/workflows/ci-dev.yaml)
+[![Main CI](https://github.com/abtransitionit/golinux/actions/workflows/ci-main.yaml/badge.svg?branch=main)](https://github.com/abtransitionit/golinux/actions/workflows/ci-main.yaml)
 [![LICENSE](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://choosealicense.com/licenses/apache-2.0/)
 
 ---
