@@ -4,7 +4,7 @@ module github.com/abtransitionit/golinux
 go 1.24.2
 
 // prod mode
-require github.com/abtransitionit/gocore v1.0.0
+require github.com/abtransitionit/gocore v0.0.1
 
 require (
 	go.uber.org/multierr v1.10.0 // indirect
