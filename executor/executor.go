@@ -11,14 +11,21 @@ import (
 )
 
 // Name: RunCliSsh
-// Purpose: Executes a command on a remote VM via SSH. It first performs a SSH reachability check, then executes a command on the remote host, capturing the output.
+//
+// Description: Executes a command on a remote VM via SSH. It first performs a SSH reachability check, then executes a command on the remote host, capturing the output.
+//
 // Inputs:
+//
 // - vmName:  string: The alias of the VM to connect to (e.g., "o1u").
 // - command: string: The command string to be executed on the remote VM.
+//
 // Return:
+//
 // - string: The standard output and standard error from the remote command.
 // - error: An error if the VM is not reachable, or if the SSH command fails.
+//
 // Notes:
+//
 // - The reachability check is performed using the IsVmSshReachable function.
 // - This function is the remote equivalent of RunLocal. .
 // - The `-o BatchMode=yes` flag prevents interactive prompts and long waits.
@@ -29,26 +36,27 @@ func RunCliSsh(vmName, cli string) (string, error) {
 	// step: check the VM is reachable
 	isSshReachable, err := IsVmSshReachable(vmName)
 	if err != nil {
-		return "", errorx.WithStack(fmt.Errorf("failed to check VM SSH reachability: %w", err))
-
+		// handle generic error explicitly: unexpected failure
+		return "", errorx.Wrap(err, "failed to check VM SSH reachability")
 	}
 	if !isSshReachable {
-		return "", fmt.Errorf("vm '%s' is not SSH reachable", vmName)
+		// handle specific error explicitly: expected outcome
+		return "", errorx.New("vm '%s' is not SSH reachable", vmName)
 	}
 
 	// step: Base64 encode the input to handle complex quoting and special characters.
 	cliEncoded := base64.StdEncoding.EncodeToString([]byte(cli))
 
-	// step: Now that the VM is reachable, define the full SSH command to run - echo the encoded string, decode it, and execute it.
-	// command := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s \"echo '%s' | base64 --decode | sh\"", vmName, cliEncoded)
+	// step: Now that the VM is reachable, define the full SSH command to run.
 	command := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5 %s "echo '%s' | base64 --decode | sh"`, vmName, cliEncoded)
 
-	// step: Run the command
+	// step: Run the command.
 	output, err := RunCliLocal(command)
 
 	// manage error
 	if err != nil {
-		return output, errorx.WithStack(fmt.Errorf("failed to run remote command on '%s': %w", vmName, err))
+		// handle generic error explicitly: unexpected failure
+		return output, errorx.Wrap(err, "failed to run remote command on '%s'", vmName)
 	}
 
 	// success
@@ -57,24 +65,21 @@ func RunCliSsh(vmName, cli string) (string, error) {
 
 // Name: RunCLILocal
 // Description: Executes a local command or complex CLI pipeline.
-// Purpose: Provides a portable and safe way to execute local commands. It captures
-// both standard output and standard error, returning them as a single string.
-// This function is the local counterpart to RunSSH.
 // Inputs:
 // - command: string: The complete command string to be executed (e.g., "ls -la" or "ssh -G myhost | grep hostname").
 // Return:
-// - string: The combined standard output and standard error from the command, with leading/trailing whitespace removed.
+//
+// - string: The combined standard output and standard error from the command.
 // - error: An error if the command fails to run or exits with a non-zero status.
-// ...
+//
 // Notes:
+//
 // - Uses `sh -c` to ensure complex commands with pipes and redirects execute correctly.
 // - Captures both standard output and standard error.
 // - Trims leading/trailing whitespace from the final output.
 func RunCliLocal(command string) (string, error) {
-	// cmd := exec.Command("bash", "-c", command)
 	cmd := exec.Command("sh", "-c", command)
 
-	// config: capture both standard output and standard error into a single buffer.
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
@@ -85,7 +90,8 @@ func RunCliLocal(command string) (string, error) {
 
 	// manage error
 	if err != nil {
-		return output, errorx.WithStack(fmt.Errorf("command failed: %w, output: %s", err, out.String()))
+		// handle generic error explicitly: unexpected failure
+		return output, errorx.Wrap(err, "command failed: %s", output)
 	}
 
 	// success
