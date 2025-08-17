@@ -3,15 +3,14 @@ package distro
 import (
 	"fmt"
 	"runtime"
-
-	"github.com/abtransitionit/gocore/errorx"
 )
 
 // Name: CheckOsIsLinux
 // Description: ensures the current operating system is Linux.
 func CheckOsIsLinux() error {
 	if runtime.GOOS != "linux" {
-		return errorx.WithStack(fmt.Errorf("this library only supports Linux, but found: %s", runtime.GOOS))
+		// return errorx.WithStack(fmt.Errorf("this library only supports Linux, but found: %s", runtime.GOOS))
+		return fmt.Errorf("this library only supports Linux, but found: %s", runtime.GOOS)
 	}
 	return nil
 }

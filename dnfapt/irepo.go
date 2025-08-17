@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/abtransitionit/gocore/errorx"
 	"github.com/abtransitionit/gocore/logx"
 )
 
@@ -17,7 +16,8 @@ func Install(packageName string) error {
 	os := runtime.GOOS
 	if os != "linux" {
 		// Use the errorx package from gocore to return a professional error
-		return errorx.WithStack(fmt.Errorf("this function only supports Linux, but found: %s", os))
+		// return errorx.WithStack(fmt.Errorf("this function only supports Linux, but found: %s", os))
+		return fmt.Errorf("this function only supports Linux, but found: %s", os)
 	}
 
 	// logic for dnf/apt
