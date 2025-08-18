@@ -33,7 +33,7 @@ import (
 
 func TouchAsSudo(filePath string) (bool, error) {
 	// Step 1: Check if the user has administrative privileges.
-	canSudo, err := user.CanBeSudo()
+	canSudo, err := user.CanBeSudoAndIsNotRoot()
 	if err != nil {
 		// handle generic error explicitly: unexpected failure
 		return false, errorx.Wrap(err, "failed to check for sudo privileges")
@@ -76,7 +76,7 @@ func DeleteAsSudo(filePath string) (bool, error) {
 	}
 
 	// Step 2: Check if the user has administrative privileges.
-	canSudo, err := user.CanBeSudo()
+	canSudo, err := user.CanBeSudoAndIsNotRoot()
 	if err != nil {
 		// handle generic error explicitly: unexpected failure
 		return false, errorx.Wrap(err, "failed to check for sudo privileges")

@@ -1,0 +1,85 @@
+package user
+
+import (
+	"os"
+	"os/user"
+	"testing"
+)
+
+func TestCanBeSudo(t *testing.T) {
+	// Test setup: Determine the expected result based on the current user.
+	isRoot := os.Geteuid() == 0
+	expectedResult := isRoot // true if the current user is root (UID 0), false otherwise.
+
+	// Run the function under test.
+	obtainedResult, err := CanBeSudo() // ture if the current user is sudo
+
+	// Assertion for expected error state.
+	// We do not expect an error from CanBeSudo(), so we fail if one occurs.
+	if err != nil {
+		t.Fatalf("unexpected error when checking for sudo privileges: %v", err)
+	}
+
+	// Compare obtained vs. expected result.
+	if obtainedResult != expectedResult {
+		currentUser, err := user.Current()
+		if err != nil {
+			t.Fatalf("failed to get current user info: %v", err)
+		}
+
+		// Fail the test and provide a detailed error message.
+		if expectedResult {
+			t.Errorf("Test Failed: Expected obtainedResult to be true for root user %s, but got false.", currentUser.Username)
+		} else {
+			t.Errorf("Test Failed: Expected obtainedResult to be false for non-root user %s, but got true.", currentUser.Username)
+		}
+	} else {
+		// Log a successful test for clarity.
+		if expectedResult {
+			t.Logf("✅ Test Passed: User is root, and obtainedResult correctly returned true.")
+		} else {
+			t.Logf("✅ Test Passed: User is not root, and obtainedResult correctly returned false.")
+		}
+	}
+}
+
+func TestCanBeSudo(t *testing.T) {
+	// A simple unit test for CanBeSudo.
+	// Since we cannot change the user's privileges during a test run,
+	// .
+
+	// Test setup: Determine the expected result based on the current user.
+	isRoot := os.Geteuid() == 0
+	expectedResult := isRoot // true for root, false for non-root
+
+	// Run the function under test.
+	obtainedResult, err := CanBeSudo()
+
+	// Assertion: we do not expect an error here
+	if err != nil {
+		t.Fatalf("unexpected error when checking for sudo privileges: %v", err)
+	}
+
+	// Compare obtained vs. expected result.
+	if obtainedResult != expectedResult {
+		currentUser, err := user.Current()
+		if err != nil {
+			// we do not expect an error here
+			t.Fatalf("failed to get current user info: %v", err)
+		}
+
+		// Fail the test and provide a detailed error message.
+		if expectedResult {
+			t.Errorf("Test Failed: Expected obtainedResult to be true for root user %s, but got false.", currentUser.Username)
+		} else {
+			t.Errorf("Test Failed: Expected obtainedResult to be false for non-root user %s, but got true.", currentUser.Username)
+		}
+	} else {
+		// Log a successful test for clarity.
+		if expectedResult {
+			t.Logf("✅ Test Passed: User is root, and obtainedResult correctly returned true.")
+		} else {
+			t.Logf("✅ Test Passed: User is not root, and obtainedResult correctly returned false.")
+		}
+	}
+}

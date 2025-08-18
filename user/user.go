@@ -1,79 +1,108 @@
 package user
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 	"strings"
-
-	"github.com/abtransitionit/gocore/errorx"
-	gc_props "github.com/abtransitionit/gocore/properties"
 )
 
-// Name: CanBeSudo
+// Name: CanBeSudoAndIsNotRoot
 //
-// Description:
-//
-// Checks if the current user has administrative privileges by verifying group membership
-// based on the operating system type.
+// Description: Checks if the current user can be sudo AND is not root
 //
 // Returns:
 //
-//   - bool:  Returns `true` if the user can use `sudo` (Linux) or `admin` (Darwin), false otherwise.
-//   - error: Returns an error if the user or group information cannot be retrieved.
-func CanBeSudo() (bool, error) {
-	// Step 1: Quick check if already running as root ⚡️
+//   - bool: `true` only if the user can use `sudo` AND is not root, `false` otherwise.
+//   - error: if the user or group information cannot be retrieved.
+//
+// Notes:
+//
+// - On Darwin (macOS), this function will give an incorrect result. Use CanBeSudoAndIsNotRootExtend instead.
+func CanBeSudoAndIsNotRoot() (bool, error) {
+	// Step 1: Quick check if user is root
 	if os.Geteuid() == 0 {
-		return true, nil
+		return false, nil
 	}
 
 	// Step 2: Get the current user
 	usr, err := user.Current()
 	if err != nil {
-		return false, errorx.Wrap(err, "cannot determine current user")
+		// handle generic error explicitly: unexpected failure
+		return false, fmt.Errorf("cannot determine current user: %w", err)
 	}
 
-	// Step 3: Get the OS type to determine which group to check.
-	osType, err := gc_props.GetPropertyLocal("ostype")
-	if err != nil {
-		return false, errorx.Wrap(err, "failed to determine os type")
-	}
-
-	// Step 4: Check for the appropriate administrative groups based on the OS.
-	var adminGroupsToCheck []string
-	switch osType {
-	case "linux":
-		adminGroupsToCheck = []string{"sudo", "wheel"}
-	case "darwin":
-		adminGroupsToCheck = []string{"admin", "wheel"}
-	default:
-		// handle specific error explicitly: expected outcome : If the OS is not Linux or Darwin we do not managed
-		return false, errorx.New("not yet supported os type: %s", osType)
-	}
-
-	// Get the user's group IDs to check against our list of administrative groups.
+	// Step 3: Get the current user's group IDs
 	groupIDs, err := usr.GroupIds()
 	if err != nil {
-		// handle generic error explicitly: unexpected failure
-		return false, errorx.Wrap(err, "cannot get user groups")
+		return false, fmt.Errorf("cannot get user groups: %w", err)
 	}
 
-	// Iterate through each of the user's group IDs.
+	// Step 4: Check if the user is a member of the 'sudo' or 'wheel' group
 	for _, gid := range groupIDs {
-		// Look up the group name for each ID.
 		group, err := user.LookupGroupId(gid)
 		if err != nil {
 			// A failure to look up a group can be an expected occurrence on some systems. We can safely skip it.
 			continue
 		}
-		// Compare the looked-up group name with the list of administrative groups for the current OS.
-		for _, adminGroup := range adminGroupsToCheck {
-			// If the group name matches, the user has admin privileges. We use EqualFold for a case-insensitive comparison.
-			if strings.EqualFold(group.Name, adminGroup) {
-				// Found a match, so the user has admin privileges.
-				return true, nil
-			}
+		// Compare the looked-up group name directly.
+		switch strings.EqualFold(group.Name, "sudo") || strings.EqualFold(group.Name, "wheel") {
+		case true:
+			// The user is a member of the 'sudo' or 'wheel' group
+			return true, nil
 		}
 	}
-	// If we've iterated through all the groups and found no match, the user does not have admin privileges.
+
+	// If we've iterated through all the groups and found no match does not belongs to the 'sudo' or 'wheel' group,
+	return false, nil
+}
+
+// Name: CanBeSudoAndIsNotRootExtend
+//
+// Description: Checks if the current user can be sudo AND is not root
+//
+// Returns:
+//
+//   - bool: `true` only if the user can use `sudo` AND is not root, `false` otherwise.
+//   - error: if the user or group information cannot be retrieved.
+//
+// Notes:
+//
+// - works on Linux and Darwin (macOS - admin group)
+func CanBeSudoAndIsNotRootExtend() (bool, error) {
+	// Step 1: Quick check if user is root
+	if os.Geteuid() == 0 {
+		return false, nil
+	}
+
+	// Step 2: Get the current user
+	usr, err := user.Current()
+	if err != nil {
+		// handle generic error explicitly: unexpected failure
+		return false, fmt.Errorf("cannot determine current user: %w", err)
+	}
+
+	// Step 3: Get the current user's group IDs
+	groupIDs, err := usr.GroupIds()
+	if err != nil {
+		return false, fmt.Errorf("cannot get user groups: %w", err)
+	}
+
+	// Step 4: Check if the user is a member of the 'sudo' or 'wheel' group
+	for _, gid := range groupIDs {
+		group, err := user.LookupGroupId(gid)
+		if err != nil {
+			// A failure to look up a group can be an expected occurrence on some systems. We can safely skip it.
+			continue
+		}
+		// Compare the looked-up group name directly.
+		switch strings.EqualFold(group.Name, "sudo") || strings.EqualFold(group.Name, "wheel") || strings.EqualFold(group.Name, "admin") {
+		case true:
+			// The user is a member of the 'sudo' or 'wheel' group
+			return true, nil
+		}
+	}
+
+	// If we've iterated through all the groups and found no match does not belongs to the 'sudo' or 'wheel' group,
 	return false, nil
 }
