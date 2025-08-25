@@ -1,3 +1,4 @@
+// file: golinux/properties/core.go
 package properties
 
 import (
