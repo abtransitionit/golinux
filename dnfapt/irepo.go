@@ -11,7 +11,7 @@ import (
 // Description: install a dnfapt repository on a Linux distro
 func Install(packageName string) error {
 	logx.Init()
-	logx.Info("Attempting to install package: %s", packageName)
+	logx.Infof("Attempting to install package: %s", packageName)
 
 	os := runtime.GOOS
 	if os != "linux" {
@@ -23,6 +23,6 @@ func Install(packageName string) error {
 	// logic for dnf/apt
 	fmt.Printf("Using a single primitive to install %s on a Linux system.\n", packageName)
 
-	logx.Info("Successfully installed package: %s", packageName)
+	logx.Infof("Successfully installed package: %s", packageName)
 	return nil
 }
