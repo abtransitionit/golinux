@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/abtransitionit/gocore/errorx"
-	"github.com/abtransitionit/golinux/executor"
+	"github.com/abtransitionit/gocore/run"
 	"github.com/abtransitionit/golinux/user"
 )
 
@@ -45,7 +45,7 @@ func TouchAsSudo(filePath string) (bool, error) {
 
 	// Step 2: Attempt to create the file
 	command := fmt.Sprintf("sudo touch %s", filePath)
-	_, err = executor.RunCliLocal(command)
+	_, err = run.RunCliLocal(command)
 	if err != nil {
 		// handle generic error explicitly: unexpected failure (e.g., file path is invalid, permissions issues, etc.).
 		return false, errorx.Wrap(err, "failed to create file at %s as sudo", filePath)
@@ -88,7 +88,7 @@ func DeleteAsSudo(filePath string) (bool, error) {
 
 	// Step 3: Attempt to delete the file using `sudo rm`.
 	command := fmt.Sprintf("sudo rm -f %s", filePath)
-	_, err = executor.RunCliLocal(command)
+	_, err = run.RunCliLocal(command)
 	if err != nil {
 		// handle generic error explicitly: unexpected failure (e.g., file path is invalid, permissions issues, etc.).
 		return false, errorx.Wrap(err, "failed to delete file at %s as sudo", filePath)
