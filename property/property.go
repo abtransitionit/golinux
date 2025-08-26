@@ -1,5 +1,5 @@
 // file: golinux/properties/properties.go
-package properties
+package property
 
 import (
 	"os/exec"
@@ -18,6 +18,14 @@ var linuxProperties = map[string]PropertyHandler{
 	"osdistro": getOsDistro,
 	"osfamily": getOsFamily,
 }
+
+// // Cross-platform property
+// val, err := gocore.GetPropertyLocal("ostype")
+
+// // Linux-only property (called only on Linux)
+// if runtime.GOOS == "linux" {
+//     val, err := golinux.GetPropertyLocal("uuid")
+// }
 
 // GetLinuxPropertyMap exposes the map of Linux-specific properties to external callers.
 func GetLinuxPropertyMap() map[string]PropertyHandler {

@@ -18,6 +18,7 @@ import (
 //
 // Notes:
 //
+// - works on Linux ONLY
 // - On Darwin (macOS), this function will give an incorrect result. Use CanBeSudoAndIsNotRootExtend instead.
 func CanBeSudoAndIsNotRoot() (bool, error) {
 	// Step 1: Quick check if user is root
