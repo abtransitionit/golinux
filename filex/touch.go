@@ -11,12 +11,7 @@ import (
 
 // Name: TouchAsSudo
 //
-// Description:
-//
-// Touch a file using `sudo`.
-// Creates a file at the given path by executing the `touch` command with `sudo` privileges.
-// This function first verifies if the current user has `sudo` permissions without requiring
-// a password and then proceeds with the file creation. It is a Linux-specific operation.
+// Description: Touch a file using `sudo` .
 //
 // Parameters:
 //
