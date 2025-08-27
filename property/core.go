@@ -10,6 +10,13 @@ import (
 	"github.com/abtransitionit/gocore/run"
 )
 
+func FetchProperty(vmName, property string) (string, error) {
+	if vmName != "" {
+		return GetPropertyRemote(vmName, property)
+	}
+	return GetPropertyLocal(property)
+}
+
 // Name: GetPropertyLocal
 //
 // Description: retrieves a property from the Linux-specific set.
@@ -45,10 +52,10 @@ func GetPropertyLinuxLocal(property string, params ...string) (string, error) {
 
 func GetPropertyRemote(vmName string, property string) (string, error) {
 	// Build the CLI command to run remotely
-	command := fmt.Sprintf("goluc prop %s --vm %s", property, vmName)
+	command := fmt.Sprintf("goluc prop %s", property)
 
-	// Use existing RunCliSsh function
-	output, err := run.RunOnVm(vmName, command)
+	// get preperty on remote
+	output, err := run.RunCliSsh(vmName, command)
 	if err != nil {
 		return "", fmt.Errorf("failed to get remote property '%s' from '%s': %w", property, vmName, err)
 	}
