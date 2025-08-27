@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/abtransitionit/gocore/properties"
+	"github.com/abtransitionit/gocore/run"
 )
 
 // Name: GetPropertyLocal
@@ -26,7 +27,7 @@ func GetPropertyLocal(property string, params ...string) (string, error) {
 	}
 
 	// 3️⃣ Unknown property
-	return "", fmt.Errorf("❌ unknown property requested: %s", property)
+	return "", fmt.Errorf("unknown property requested: %s", property)
 }
 
 func GetPropertyLinuxLocal(property string, params ...string) (string, error) {
@@ -42,15 +43,15 @@ func GetPropertyLinuxLocal(property string, params ...string) (string, error) {
 	return strings.TrimSpace(output), nil
 }
 
-// func GetPropertyRemote(vmName string, property string) (string, error) {
-// 	// Build the CLI command to run remotely
-// 	cliCommand := fmt.Sprintf("/usr/local/bin/goluc %s", property)
+func GetPropertyRemote(vmName string, property string) (string, error) {
+	// Build the CLI command to run remotely
+	command := fmt.Sprintf("goluc prop %s --vm %s", property, vmName)
 
-// 	// Use existing RunCliSsh function
-// 	output, err := RunCliSsh(vmName, cliCommand)
-// 	if err != nil {
-// 		return "", fmt.Errorf("❌ failed to get remote property '%s' from '%s': %w", property, vmName, err)
-// 	}
+	// Use existing RunCliSsh function
+	output, err := run.RunOnVm(vmName, command)
+	if err != nil {
+		return "", fmt.Errorf("failed to get remote property '%s' from '%s': %w", property, vmName, err)
+	}
 
-// 	return output, nil
-// }
+	return strings.TrimSpace(output), nil
+}

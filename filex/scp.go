@@ -69,7 +69,7 @@ func ScpAsSudo(l logx.Logger, source, destination string) (bool, error) {
 		return false, errorx.Wrap(err, "failed to run scp command with sudo")
 	}
 
-	l.Debug("sudo SCP transfer completed successfully.")
+	l.Debugf("sudo SCP transfer completed successfully on %s", vmName)
 
 	// success
 	return true, nil
