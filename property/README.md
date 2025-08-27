@@ -3,7 +3,7 @@
 * **Purpose:** Provides **Linux-specific system properties** that are not meaningful or available on other OSes.
 * **Main functions:**
 
-  * `GetPropertyLocal(property string, params ...string)`: fetches a property from the **Linux-specific set** (`linuxProperties` map).
+  * `GetProperty(property string, params ...string)`: fetches a property from the **Linux-specific set** (`linuxProperties` map).
   * `linuxProperties` map contains handlers for properties like:
 
 

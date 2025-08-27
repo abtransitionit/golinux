@@ -1,4 +1,4 @@
-// file: golinux/properties/properties.go
+// file: golinux/property/property.go
 package property
 
 import (
@@ -8,9 +8,6 @@ import (
 	"github.com/abtransitionit/gocore/errorx"
 	"github.com/shirou/gopsutil/v3/host"
 )
-
-// PropertyHandler is a function that retrieves a system property.
-type PropertyHandler func(...string) (string, error)
 
 var linuxProperties = map[string]PropertyHandler{
 	"uuid":     getUuid,   // code change from original

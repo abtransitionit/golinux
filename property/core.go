@@ -1,4 +1,4 @@
-// file: golinux/properties/core.go
+// file: golinux/property/core.go
 package property
 
 import (
@@ -6,59 +6,43 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/abtransitionit/gocore/properties"
+	coreproperty "github.com/abtransitionit/gocore/property"
 	"github.com/abtransitionit/gocore/run"
 )
 
-func FetchProperty(vmName, property string) (string, error) {
-	if vmName != "" {
-		return GetPropertyRemote(vmName, property)
-	}
-	return GetPropertyLocal(property)
-}
-
-// Name: GetPropertyLocal
+// Name: PropertyHandler
 //
-// Description: retrieves a property from the Linux-specific set.
-func GetPropertyLocal(property string, params ...string) (string, error) {
-	// 1️⃣ Try cross-platform properties first
-	if val, err := properties.GetPropertyLocal(property, params...); err == nil {
+// Description: retrieves a system property.
+type PropertyHandler func(...string) (string, error)
+
+// GetProperty handles local (cross-platform or Linux) and remote properties.
+func GetProperty(vmName, property string, params ...string) (string, error) {
+	// Remote property
+	if vmName != "" {
+		cmd := fmt.Sprintf("goluc property %s", property)
+		output, err := run.RunCliSsh(vmName, cmd)
+		if err != nil {
+			return "", fmt.Errorf("failed to get remote property '%s' from '%s': %w", property, vmName, err)
+		}
+		return strings.TrimSpace(output), nil
+	}
+
+	// Local property: try cross-platform first
+	if val, err := coreproperty.GetProperty(property, params...); err == nil {
 		return val, nil
 	}
 
-	// 2️⃣ If Linux, try Linux-specific properties
+	// Local property: try linux-platform then
 	if runtime.GOOS == "linux" {
-		if val, err := GetPropertyLinuxLocal(property, params...); err == nil {
-			return val, nil
+		if handler, ok := linuxProperties[property]; ok {
+			val, err := handler(params...)
+			if err != nil {
+				return "", fmt.Errorf("error getting %s: %w", property, err)
+			}
+			return strings.TrimSpace(val), nil
 		}
 	}
 
-	// 3️⃣ Unknown property
+	// Local property: unknown property
 	return "", fmt.Errorf("unknown property requested: %s", property)
-}
-
-func GetPropertyLinuxLocal(property string, params ...string) (string, error) {
-	fnPropertyHandler, ok := linuxProperties[property]
-	if !ok {
-		return "", fmt.Errorf("❌ unknown property requested: %s", property)
-	}
-
-	output, err := fnPropertyHandler(params...)
-	if err != nil {
-		return "", fmt.Errorf("❌ error getting %s: %w", property, err)
-	}
-	return strings.TrimSpace(output), nil
-}
-
-func GetPropertyRemote(vmName string, property string) (string, error) {
-	// Build the CLI command to run remotely
-	command := fmt.Sprintf("goluc prop %s", property)
-
-	// get preperty on remote
-	output, err := run.RunCliSsh(vmName, command)
-	if err != nil {
-		return "", fmt.Errorf("failed to get remote property '%s' from '%s': %w", property, vmName, err)
-	}
-
-	return strings.TrimSpace(output), nil
 }
