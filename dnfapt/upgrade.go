@@ -17,7 +17,7 @@ import (
 //
 // Returns:
 // - the CLI
-func InstallPackage(osFamily string, packageName string) (string, error) {
+func UpgradeOs(osFamily string) (string, error) {
 
 	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
 		return "", fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
@@ -27,13 +27,15 @@ func InstallPackage(osFamily string, packageName string) (string, error) {
 	switch osFamily {
 	case "debian":
 		cmds = []string{
-			fmt.Sprintf("DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install -qq -y %s > /dev/null", packageName),
-			"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' update -qq -y > /dev/null",
+			"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' update -qq -y",
+			"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade -qq -y",
+			"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' clean -qq",
 		}
 	case "rhel", "fedora":
 		cmds = []string{
-			fmt.Sprintf("sudo dnf install -q -y %s > /dev/null", packageName),
-			"sudo dnf update -q -y > /dev/null",
+			"sudo dnf update -q -y",
+			"sudo dnf upgrade -q -y",
+			"sudo dnf clean all",
 		}
 	}
 
