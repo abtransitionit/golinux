@@ -6,21 +6,21 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-// Name: InstallRepo
+// Name: InstallPackage
 //
-// Description: install a dnfapt repository on a Linux distro
-func InstallRepository(logger logx.Logger, osFamily string, packageName string) error {
+// Description: install a dnfapt package on a Linux distro
+func InstallRepository(logger logx.Logger, osFamily string, repoName string) error {
 
 	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
 		return fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
 	}
 
-	logger.Debugf("Attempting to install dnfapt package repository: %s on %s", packageName, osFamily)
+	logger.Debugf("Attempting to install dnfapt package repository: %s on %s", repoName, osFamily)
 	switch osFamily {
 	case "rhel", "fedora":
 	case "debian":
 	}
 
-	logger.Infof("Successfully installed dnfapt package: %s", packageName)
+	logger.Infof("Successfully installed dnfapt package repository: %s", repoName)
 	return nil
 }
