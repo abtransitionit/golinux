@@ -2,27 +2,25 @@ package dnfapt
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/abtransitionit/gocore/logx"
 )
 
 // Name: InstallRepo
+//
 // Description: install a dnfapt repository on a Linux distro
-func Install(packageName string) error {
-	logx.Init()
-	logx.Infof("Attempting to install package: %s", packageName)
+func InstallRepository(logger logx.Logger, osFamily string, packageName string) error {
 
-	os := runtime.GOOS
-	if os != "linux" {
-		// Use the errorx package from gocore to return a professional error
-		// return errorx.WithStack(fmt.Errorf("this function only supports Linux, but found: %s", os))
-		return fmt.Errorf("this function only supports Linux, but found: %s", os)
+	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
+		return fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
 	}
 
-	// logic for dnf/apt
-	fmt.Printf("Using a single primitive to install %s on a Linux system.\n", packageName)
+	logger.Debugf("Attempting to install dnfapt package repository: %s on %s", packageName, osFamily)
+	switch osFamily {
+	case "rhel", "fedora":
+	case "debian":
+	}
 
-	logx.Infof("Successfully installed package: %s", packageName)
+	logger.Infof("Successfully installed dnfapt package: %s", packageName)
 	return nil
 }
