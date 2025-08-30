@@ -93,7 +93,12 @@ func ScpAsSudo(l logx.Logger, source, destination string) (bool, error) {
 //
 //   - The function assume the user running this function is sudo
 func CpAsSudo(ctx context.Context, l logx.Logger, source, destination string) (string, error) {
-	cli := fmt.Sprintf("sudo cp %s %s", source, destination)
+	var clis = []string{
+		fmt.Sprintf("sudo cp %s %s", source, destination),
+		fmt.Sprintf("sudo chmod +x %s", destination),
+	}
+
+	cli := strings.Join(clis, " && ")
 	return cli, nil
 
 }
