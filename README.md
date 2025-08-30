@@ -1,8 +1,8 @@
 # Golinux
 
-A foundational Go library (i.e. no `main()`) containing low level reusable universal linux functions, primitives for managing any Linux platform. 
+A foundational Go library (i.e. no `main()`) containing low level reusable universal linux functions, for managing any Linux platform. 
 
-It provides a single set of primitives that handle cross-distribution differences automatically. no need to know if the linux host is `Rhel`, `debian`, `alpine`, `ubuntu`, ... .
+It provides a set of primitives that handle cross-distribution differences automatically. no need to know/worry if the linux host is `Rhel`, `debian`, `alpine`, `ubuntu`, ... .
 
 ----
 
