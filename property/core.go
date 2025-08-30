@@ -20,6 +20,7 @@ func GetProperty(vmName, property string, params ...string) (string, error) {
 	// Remote property
 	if vmName != "" {
 		cmd := fmt.Sprintf("goluc property %s", property)
+		// does CLI goluc exist on the remote
 		output, err := run.RunCliSsh(vmName, cmd)
 		if err != nil {
 			return "", fmt.Errorf("failed to get remote property '%s' from '%s': %w", property, vmName, err)
