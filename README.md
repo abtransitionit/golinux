@@ -2,7 +2,7 @@
 
 A foundational Go library (i.e. no `main()`) containing low level reusable universal linux functions, for managing any Linux platform. 
 
-It provides a set of primitives that handle cross-distribution differences automatically. no need to know/worry if the linux host is `Rhel`, `debian`, `alpine`, `ubuntu`, ... .
+It provides a set of primitives that handle cross-distribution differences automatically. no need to know/worry if the linux host is `Rhel`, `debian`, `alpine`, `ubuntu`, ..., nor if it is a `arm64`, `amd64`.
 
 ----
 
