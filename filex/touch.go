@@ -3,11 +3,34 @@ package filex
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/abtransitionit/gocore/errorx"
 	"github.com/abtransitionit/gocore/run"
 	"github.com/abtransitionit/golinux/user"
 )
+
+// Name: Touch
+//
+// Description: Creates a new file at the specified path.
+//
+// Parameters:
+//
+//	filePath: string: The full path to the file to be created.
+//
+// Returns:
+//
+// - bool: `true` if the file was successfully created, `false` otherwise.
+// - error: An error if the file already exists or if the user lacks privileges to create the file.
+func TouchFile(filePath string) string {
+	var cmds = []string{
+		fmt.Sprintf(`touch %s`, filePath),
+		fmt.Sprintf(`echo %s`, filePath),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+
+}
 
 // Name: TouchAsSudo
 //

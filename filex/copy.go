@@ -102,23 +102,24 @@ func CpAsSudo(ctx context.Context, l logx.Logger, source, destination string) (s
 	return cli, nil
 
 }
-func CpAsSudo2(ctx context.Context, l logx.Logger, source, destination string) (bool, error) {
-	// Build the command
-	// -p preserves mode, ownership, and timestamps
-	// command := fmt.Sprintf("sudo cp -p %s %s", source, destination)
-	command := fmt.Sprintf("sudo cp %s %s", source, destination)
-	l.Debugf("Initiating sudo copy from %s to %s", source, destination)
 
-	_, err := run.RunOnLocal(command)
-	if err != nil {
-		// l.Error(strings.TrimSpace(output)) // Log the raw output for debugging
-		return false, errorx.Wrap(err, "failed to copy file with sudo")
-	}
+// func CpAsSudo2(ctx context.Context, l logx.Logger, source, destination string) (bool, error) {
+// 	// Build the command
+// 	// -p preserves mode, ownership, and timestamps
+// 	// command := fmt.Sprintf("sudo cp -p %s %s", source, destination)
+// 	command := fmt.Sprintf("sudo cp %s %s", source, destination)
+// 	l.Debugf("Initiating sudo copy from %s to %s", source, destination)
 
-	l.Debugf("sudo copy completed successfully: %s -> %s", source, destination)
+// 	_, err := run.RunOnLocal(command)
+// 	if err != nil {
+// 		// l.Error(strings.TrimSpace(output)) // Log the raw output for debugging
+// 		return false, errorx.Wrap(err, "failed to copy file with sudo")
+// 	}
 
-	return true, nil
-}
+// 	l.Debugf("sudo copy completed successfully: %s -> %s", source, destination)
+
+// 	return true, nil
+// }
 
 // l.Debugf("Initiating sudo copy from %s to %s", source, destination)
 

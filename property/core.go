@@ -19,7 +19,7 @@ type PropertyHandler func(...string) (string, error)
 func GetProperty(vmName, property string, params ...string) (string, error) {
 	// Remote property
 	if vmName != "" {
-		cmd := fmt.Sprintf("goluc property %s", property)
+		cmd := fmt.Sprintf("goluc property %s %s", property, strings.Join(params, " "))
 		// does CLI goluc exist on the remote
 		output, err := run.RunCliSsh(vmName, cmd)
 		if err != nil {

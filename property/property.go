@@ -2,18 +2,43 @@
 package property
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 
 	"github.com/abtransitionit/gocore/errorx"
+	"github.com/abtransitionit/gocore/run"
 	"github.com/shirou/gopsutil/v3/host"
 )
 
 var linuxProperties = map[string]PropertyHandler{
-	"uuid":     getUuid,   // code change from original
-	"uname":    getUnameM, // code change from original
-	"osdistro": getOsDistro,
-	"osfamily": getOsFamily,
+	"uuid":       getUuid,   // code change from original
+	"uname":      getUnameM, // code change from original
+	"osdistro":   getOsDistro,
+	"osfamily":   getOsFamily,
+	"pathtree":   getPathTree,
+	"rcfilepath": getRcFilePath,
+}
+
+func getRcFilePath(params ...string) (string, error) {
+	return "$HOME/.bashrc", nil
+}
+func getPathTree(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("base path name required")
+	}
+
+	// get input
+	basePath := params[0]
+
+	// play code
+
+	cli := fmt.Sprintf(`find %s -type d | sort | paste -sd\:`, basePath)
+	path, err := run.RunOnLocal(cli)
+	if err != nil {
+		return "", err
+	}
+	return path, nil
 }
 
 // // Cross-platform property
