@@ -8,3 +8,14 @@ func EnableLinger() string {
 func DissableLinger() string {
 	return "loginctl disable-linger"
 }
+
+// func StartService(osService OsService) string {
+// 	var cmds = []string{
+// 		"sudo systemctl daemon-reload",
+// 		fmt.Sprintf("sudo systemctl start %s", action, service)
+// 		"echo $tmpfile",
+// 	}
+// 	cli := strings.Join(cmds, " && ")
+// 	return cli
+
+// }

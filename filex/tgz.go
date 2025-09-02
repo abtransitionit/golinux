@@ -15,7 +15,7 @@ func DetectTgzFile(filePath string) string {
 
 func CpTgzFile(filePath, goCliName string) string {
 	var cmds = []string{
-		DetectTgzFolder(filePath),
+		fmt.Sprintf(`nbFolder=$(%s)`, DetectTgzFolder(filePath)),
 		fmt.Sprintf(`sudo mkdir -p /usr/local/bin/%s`, goCliName),
 		fmt.Sprintf(`if [ "$nbFolder" -eq 0 ]; then sudo tar -xvzf %q -C /usr/local/bin/%s;fi`, filePath, goCliName),
 		fmt.Sprintf(`if [ "$nbFolder" -eq 1 ]; then sudo tar -xvzf %q -C /usr/local/bin/%s --strip-components=1; fi`, filePath, goCliName),
