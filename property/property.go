@@ -21,7 +21,7 @@ var linuxProperties = map[string]PropertyHandler{
 }
 
 func getRcFilePath(params ...string) (string, error) {
-	return "$HOME/.bashrc", nil
+	return "$HOME/.profile", nil
 }
 func getPathTree(params ...string) (string, error) {
 	if len(params) < 1 {
