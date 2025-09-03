@@ -1,6 +1,7 @@
 package dnfapt
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/abtransitionit/gocore/logx"
@@ -9,18 +10,17 @@ import (
 // Name: InstallPackage
 //
 // Description: install a dnfapt package on a Linux distro
-func InstallRepository(logger logx.Logger, osFamily string, repoName string) error {
+func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily string, repoName string) error {
 
 	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
 		return fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
 	}
 
-	logger.Debugf("Attempting to install dnfapt package repository: %s on %s", repoName, osFamily)
+	// logic for installtion
 	switch osFamily {
 	case "rhel", "fedora":
 	case "debian":
 	}
 
-	logger.Infof("Successfully installed dnfapt package repository: %s", repoName)
 	return nil
 }

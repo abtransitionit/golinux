@@ -14,11 +14,12 @@ func DissableLinger() string {
 	return "loginctl disable-linger"
 }
 
-func StartService(osService OsService) string {
+func StartService(serviceCName string) string {
+
 	var cmds = []string{
 		"sudo systemctl daemon-reload",
-		fmt.Sprintf("sudo systemctl enable %s", osService.Name),
-		fmt.Sprintf("sudo systemctl start %s", osService.Name),
+		fmt.Sprintf("sudo systemctl enable %s", serviceCName),
+		fmt.Sprintf("sudo systemctl start %s", serviceCName),
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli

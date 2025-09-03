@@ -59,7 +59,7 @@ func ScpAsSudo(l logx.Logger, source, destination string) (bool, error) {
 
 	command := fmt.Sprintf("cat %s | ssh %s 'sudo tee %s && sudo chmod +x %s'", source, vmName, vmFullPath, vmFullPath)
 
-	l.Debugf("Initiating sudo SCP transfer from %s to %s", source, destination)
+	l.Debugf("initiating SCP from %s to %s", source, destination)
 
 	output, err := run.RunOnLocal(command)
 	if err != nil {
@@ -68,7 +68,7 @@ func ScpAsSudo(l logx.Logger, source, destination string) (bool, error) {
 		return false, errorx.Wrap(err, "failed to run scp command with sudo")
 	}
 
-	l.Debugf("sudo SCP transfer completed successfully on %s", vmName)
+	l.Debugf("SCP completed successfully on %s", vmName)
 
 	// success
 	return true, nil
