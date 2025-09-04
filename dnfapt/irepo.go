@@ -3,7 +3,6 @@ package dnfapt
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
 )
@@ -44,38 +43,39 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 	return "", nil
 }
 
-func ResolveURLRepo(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
-	return substituteUrlRepoPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil(goCliRef.Url, cli, tag, osType, osArch, uname), nil
-	return "", nil
-}
-func ResolveURLGpg(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
-	return substituteUrlGpgPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil(goCliRef.Url, cli, tag, osType, osArch, uname), nil
-	return "", nil
-}
+// func ResolveURLRepo(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
+// 	return substituteUrlRepoPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil
+// 	// (goCliRef.Url, cli, tag, osType, osArch, uname), nil
+// 	// return "", nil
+// }
+// func ResolveURLGpg(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
+// 	return substituteUrlGpgPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil(goCliRef.Url, cli, tag, osType, osArch, uname), nil
+// 	return "", nil
+// }
 
-func substituteUrlRepoPlaceholders(tplDaRepoUrl string, tag string, pack string) string {
+// func substituteUrlRepoPlaceholders(tplDaRepoUrl string, tag string, pack string) string {
 
-	replacements := map[string]string{
-		"$TAG":  tag,
-		"$PACK": osType,
-	}
-	url := tplDaRepoUrl
-	for k, v := range replacements {
-		url = strings.ReplaceAll(url, k, v)
-	}
-	return url
-}
+// 	replacements := map[string]string{
+// 		"$TAG":  tag,
+// 		"$PACK": osType,
+// 	}
+// 	url := tplDaRepoUrl
+// 	for k, v := range replacements {
+// 		url = strings.ReplaceAll(url, k, v)
+// 	}
+// 	return url
+// }
 
-func substituteUrlGpgPlaceholders(tplDaRepoUrl string, cli GoCli, tag string, osType string, osArch string, uname string) string {
+// func substituteUrlGpgPlaceholders(tplDaRepoUrl string, cli GoCli, tag string, osType string, osArch string, uname string) string {
 
-	replacements := map[string]string{
-		"$TAG":  tag,
-		"$PACK": osType,
-		"$GPG":  osArch,
-	}
-	url := tplDaRepoUrl
-	for k, v := range replacements {
-		url = strings.ReplaceAll(url, k, v)
-	}
-	return url
-}
+// 	replacements := map[string]string{
+// 		"$TAG":  tag,
+// 		"$PACK": osType,
+// 		"$GPG":  osArch,
+// 	}
+// 	url := tplDaRepoUrl
+// 	for k, v := range replacements {
+// 		url = strings.ReplaceAll(url, k, v)
+// 	}
+// 	return url
+// }
