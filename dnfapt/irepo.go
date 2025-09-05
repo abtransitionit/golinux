@@ -3,6 +3,8 @@ package dnfapt
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
 )
@@ -10,72 +12,83 @@ import (
 // Name: InstallPackage
 //
 // Description: install a dnfapt package on a Linux distro
-func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily string, daRepository DaRepository) (string, error) {
+func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily string, daRepo DaRepo) (string, error) {
 
 	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
 		return "", fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
 	}
 
-	// lookup and get in the reference database that daRepository object
-	DaRepositoryRef, ok := DaRepositoryReference[daRepository.Name]
+	// lookup info into organization's reference database
+	// - templated URL of the repo
+	daRepoRef, ok := MapDaRepoReference[daRepo.Name]
 	if !ok {
-		return "", fmt.Errorf("failed to fetch in reference db : %s", daRepository.Name)
+		return "", fmt.Errorf("found no matches for this package repo: %s", daRepo.Name)
 	}
-	// check the field is not empty
-	if DaRepositoryRef.UrlRepo == "" {
-		return "", fmt.Errorf("no URL template defined for %s", daRepository.Name)
-	}
-	// check the field is not empty
-	if DaRepositoryRef.UrlGpg == "" {
-		return "", fmt.Errorf("no URL template defined for %s", daRepository.Name)
+	// - CTE OS specific repo data
+	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
+	if !ok {
+		return "", fmt.Errorf("found no matches for this os family: %s", osFamily)
 	}
 
-	// // logic for installtion
-	// switch osFamily {
-	// case "rhel", "fedora":
-	// case "debian":
-	// }
+	// define var from these infos - logic common to all OS families
+	urlRepo := ResolveURLRepo(daRepoRef.UrlRepo, daRepo.Version, daRepoRefCte.Pack)
+	urlGpg := ResolveURLGpg(daRepoRef.UrlGpg, daRepo.Version, daRepoRefCte.Pack, daRepoRefCte.Gpg)
+	repoFilePath := filepath.Join(daRepoRefCte.Folder, daRepo.FileName+daRepoRefCte.Ext)
 
-	logger.Debugf("🅰️ resolving UrlRepo and UrlGpg for %s:%s", osFamily, daRepository.Name)
-	logger.Debugf("🅰️ templated UrlRepo is: %s", DaRepositoryRef.UrlRepo)
-	logger.Debugf("🅰️ templated UrlGpg  is: %s", DaRepositoryRef.UrlGpg)
+	// logic specific to OS family
+	var gpgFilePath string
+	if daRepoRefCte.GpgFolder != "" && daRepoRefCte.GpgExt != "" {
+		gpgFilePath = filepath.Join(daRepoRefCte.GpgFolder, daRepo.FileName+daRepoRefCte.GpgExt)
+	}
+
+	// log
+	if gpgFilePath != "" {
+		logger.Debugf("🅰️ Gpg file path is: %s", gpgFilePath)
+	}
+	logger.Debugf("🅰️ Repo file path is: %s", repoFilePath)
+	logger.Debugf("🅰️ UrlRepo is: %s", urlRepo)
+	logger.Debugf("🅰️ UrlGpg  is: %s", urlGpg)
 
 	return "", nil
 }
 
-// func ResolveURLRepo(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
-// 	return substituteUrlRepoPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil
-// 	// (goCliRef.Url, cli, tag, osType, osArch, uname), nil
-// 	// return "", nil
-// }
+func ResolveURLRepo(tplUrlRepo string, tag string, pack string) string {
+	return substituteUrlRepoPlaceholders(tplUrlRepo, tag, pack)
+}
+func ResolveURLGpg(tplUrlGpg string, tag string, pack string, gpg string) string {
+	return substituteUrlGpgPlaceholders(tplUrlGpg, tag, pack, gpg)
+}
+
 // func ResolveURLGpg(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
 // 	return substituteUrlGpgPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil(goCliRef.Url, cli, tag, osType, osArch, uname), nil
 // 	return "", nil
 // }
 
-// func substituteUrlRepoPlaceholders(tplDaRepoUrl string, tag string, pack string) string {
+func substituteUrlRepoPlaceholders(tplDaRepoUrl string, tag string, pack string) string {
 
-// 	replacements := map[string]string{
-// 		"$TAG":  tag,
-// 		"$PACK": osType,
-// 	}
-// 	url := tplDaRepoUrl
-// 	for k, v := range replacements {
-// 		url = strings.ReplaceAll(url, k, v)
-// 	}
-// 	return url
-// }
+	replacements := map[string]string{
+		"$TAG":  tag,
+		"$PACK": pack,
+	}
+	url := tplDaRepoUrl
+	for k, v := range replacements {
+		url = strings.ReplaceAll(url, k, v)
+	}
+	return url
+}
 
-// func substituteUrlGpgPlaceholders(tplDaRepoUrl string, cli GoCli, tag string, osType string, osArch string, uname string) string {
+func substituteUrlGpgPlaceholders(tplDaRepoUrl string, tag string, pack string, gpg string) string {
 
-// 	replacements := map[string]string{
-// 		"$TAG":  tag,
-// 		"$PACK": osType,
-// 		"$GPG":  osArch,
-// 	}
-// 	url := tplDaRepoUrl
-// 	for k, v := range replacements {
-// 		url = strings.ReplaceAll(url, k, v)
-// 	}
-// 	return url
-// }
+	replacements := map[string]string{
+		"$TAG":  tag,
+		"$PACK": pack,
+		"$GPG":  gpg,
+	}
+	url := tplDaRepoUrl
+	for k, v := range replacements {
+		url = strings.ReplaceAll(url, k, v)
+	}
+	return url
+}
+
+// fun ResolveRepoContent

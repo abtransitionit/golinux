@@ -1,6 +1,6 @@
 package dnfapt
 
-var DaRepositoryReference = MapDaRepository{
+var MapDaRepoReference = MapDaRepo{
 	"crio": {
 		Name:    "crio",
 		UrlRepo: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/$TAG/$PACK/",
@@ -11,4 +11,26 @@ var DaRepositoryReference = MapDaRepository{
 		UrlRepo: "https://pkgs.k8s.io/core:/stable:/$TAG/$PACK/",
 		UrlGpg:  "https://pkgs.k8s.io/core:/stable:/$TAG/$PACK/$GPG",
 	},
+}
+
+var MapDaRepoCteReference = MapDaRepoCte{
+	"debian": {
+		Folder:    "/etc/apt/sources.list.d",
+		Ext:       ".list",
+		Pack:      "deb",
+		Gpg:       "Release.key",
+		GpgFolder: "/etc/apt/keyrings",
+		GpgExt:    "-apt-keyring.gpg",
+	},
+	"rhel": {
+		Folder: "/etc/yum.repos.d",
+		Ext:    ".repo",
+		Pack:   "rpm",
+		Gpg:    "repodata/repomd.xml.key",
+	},
+}
+
+func init() {
+	// alias fedora → rhel
+	MapDaRepoCteReference["fedora"] = MapDaRepoCteReference["rhel"]
 }
