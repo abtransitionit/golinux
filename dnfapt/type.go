@@ -36,18 +36,18 @@ func (list SliceDaRepo) GetListName() []string {
 	return names
 }
 
-var DaRepoTplFileContent = map[string]string{
+var MapDaRepoTplFileContent = map[string]string{
 	"rhel": `
-		[%data.CName]
-		name=%data.CName
+		[{{.RepoName}}]
 		enabled=1
+		name={{.RepoName}}
 		gpgcheck=1
-		baseurl=%data.UrlRepo
-		gpgkey=%data.UrlGpg
+		baseurl={{.UrlRepo}}
+		gpgkey={{..UrlGpg}}
 	`,
 
 	"debian": `
-		deb [signed-by=%data.GpgFilePath] %data.UrlRepo /
+		deb [signed-by={{.GpgFilePath}}] %{{UrlRepo}} /
 	`,
 }
 

@@ -29,6 +29,11 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 	if !ok {
 		return "", fmt.Errorf("found no matches for this os family: %s", osFamily)
 	}
+	// - templated Repo file content
+	daRepoTplFileContent, ok := MapDaRepoTplFileContent[osFamily]
+	if !ok {
+		return "", fmt.Errorf("found no matches for this os family: %s", osFamily)
+	}
 
 	// define var from these infos - logic common to all OS families
 	urlRepo := ResolveURLRepo(daRepoRef.UrlRepo, daRepo.Version, daRepoRefCte.Pack)
@@ -48,6 +53,7 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 	logger.Debugf("🅰️ Repo file path is: %s", repoFilePath)
 	logger.Debugf("🅰️ UrlRepo is: %s", urlRepo)
 	logger.Debugf("🅰️ UrlGpg  is: %s", urlGpg)
+	logger.Debugf("🅰️ TplRepoFileContent  is: %s", daRepoTplFileContent)
 
 	return "", nil
 }
