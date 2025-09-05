@@ -18,21 +18,20 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 		return "", fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
 	}
 
-	// lookup info into organization's reference database
-	// - templated URL of the repo
+	// lookup the organization's reference db - get templated URL of the repo
 	daRepoRef, ok := MapDaRepoReference[daRepo.Name]
 	if !ok {
 		return "", fmt.Errorf("found no matches for this package repo: %s", daRepo.Name)
 	}
-	// - CTE OS specific repo data
+	// lookup the organization's reference db - get CTE OS specific repo data
 	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
 	if !ok {
-		return "", fmt.Errorf("found no matches for this os family: %s", osFamily)
+		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
 	}
-	// - templated Repo file content
+	// lookup the organization's reference db - get templated Repo file content
 	daRepoTplFileContent, ok := MapDaRepoTplFileContent[osFamily]
 	if !ok {
-		return "", fmt.Errorf("found no matches for this os family: %s", osFamily)
+		return "", fmt.Errorf("found no matches for repository TPL file for this os family: %s", osFamily)
 	}
 
 	// define var from these infos - logic common to all OS families
@@ -53,7 +52,7 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 	logger.Debugf("🅰️ Repo file path is: %s", repoFilePath)
 	logger.Debugf("🅰️ UrlRepo is: %s", urlRepo)
 	logger.Debugf("🅰️ UrlGpg  is: %s", urlGpg)
-	logger.Debugf("🅰️ TplRepoFileContent  is: %s", daRepoTplFileContent)
+	fmt.Println(daRepoTplFileContent)
 
 	return "", nil
 }
@@ -97,4 +96,21 @@ func substituteUrlGpgPlaceholders(tplDaRepoUrl string, tag string, pack string, 
 	return url
 }
 
-// fun ResolveRepoContent
+// func ResolveFileContent(tplContent string, data RepoData) (string, error) {
+// 	// 1. Create a new template and parse the provided string.
+// 	tpl, err := template.New("repo_file").Parse(tplContent)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to parse template: %w", err)
+// 	}
+
+// 	// 2. Create a buffer to write the output to.
+// 	var buf bytes.Buffer
+
+// 	// 3. Execute the template with the provided data.
+// 	if err := tpl.Execute(&buf, data); err != nil {
+// 		return "", fmt.Errorf("failed to execute template: %w", err)
+// 	}
+
+// 	// Return the resolved string from the buffer.
+// 	return buf.String(), nil
+// }

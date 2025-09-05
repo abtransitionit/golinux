@@ -36,6 +36,14 @@ func (list SliceDaRepo) GetListName() []string {
 	return names
 }
 
+// Structure to resolve the content of a DaRepoTplFileContent
+type RepoData struct {
+	RepoName    string
+	UrlRepo     string
+	UrlGpg      string
+	GpgFilePath string
+}
+
 var MapDaRepoTplFileContent = map[string]string{
 	"rhel": `
 		[{{.RepoName}}]
@@ -51,7 +59,9 @@ var MapDaRepoTplFileContent = map[string]string{
 	`,
 }
 
-// func init() {
-// 	// alias fedora → rhel
-// 	DaRepoTplFileName["fedora"] = DaRepoTplFileName["rhel"]
-// }
+// template: data structure - parse template with this structure - Execute the template with this structure
+
+func init() {
+	// alias fedora → rhel
+	MapDaRepoTplFileContent["fedora"] = MapDaRepoTplFileContent["rhel"]
+}
