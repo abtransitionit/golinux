@@ -45,6 +45,16 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 		gpgFilePath = filepath.Join(daRepoRefCte.GpgFolder, daRepo.FileName+daRepoRefCte.GpgExt)
 	}
 
+	// define the vars/structure that will be used into a template (the repo file content)
+	daRepoTplFileContentVar := RepoFileContentVar{
+		RepoName:    daRepo.Name,
+		UrlRepo:     urlRepo,
+		UrlGpg:      urlGpg,
+		GpgFilePath: gpgFilePath,
+	}
+
+	_, daRepoFileContent := ResolveRepoFileContent(daRepoTplFileContent, daRepoTplFileContentVar)
+
 	// log
 	if gpgFilePath != "" {
 		logger.Debugf("🅰️ Gpg file path is: %s", gpgFilePath)
@@ -52,22 +62,20 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 	logger.Debugf("🅰️ Repo file path is: %s", repoFilePath)
 	logger.Debugf("🅰️ UrlRepo is: %s", urlRepo)
 	logger.Debugf("🅰️ UrlGpg  is: %s", urlGpg)
-	fmt.Println(daRepoTplFileContent)
+	fmt.Println(daRepoFileContent)
 
 	return "", nil
 }
 
+func ResolveRepoFileContent(tplRepoContent string, setVar RepoFileContentVar) (string, error) {
+	return tplRepoContent, nil
+}
 func ResolveURLRepo(tplUrlRepo string, tag string, pack string) string {
 	return substituteUrlRepoPlaceholders(tplUrlRepo, tag, pack)
 }
 func ResolveURLGpg(tplUrlGpg string, tag string, pack string, gpg string) string {
 	return substituteUrlGpgPlaceholders(tplUrlGpg, tag, pack, gpg)
 }
-
-// func ResolveURLGpg(logger logx.Logger, osType string, osArch string, uname string) (string, error) {
-// 	return substituteUrlGpgPlaceholders(goCliRef.Url, cli, tag, osType, osArch, uname), nil(goCliRef.Url, cli, tag, osType, osArch, uname), nil
-// 	return "", nil
-// }
 
 func substituteUrlRepoPlaceholders(tplDaRepoUrl string, tag string, pack string) string {
 
@@ -95,22 +103,3 @@ func substituteUrlGpgPlaceholders(tplDaRepoUrl string, tag string, pack string, 
 	}
 	return url
 }
-
-// func ResolveFileContent(tplContent string, data RepoData) (string, error) {
-// 	// 1. Create a new template and parse the provided string.
-// 	tpl, err := template.New("repo_file").Parse(tplContent)
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to parse template: %w", err)
-// 	}
-
-// 	// 2. Create a buffer to write the output to.
-// 	var buf bytes.Buffer
-
-// 	// 3. Execute the template with the provided data.
-// 	if err := tpl.Execute(&buf, data); err != nil {
-// 		return "", fmt.Errorf("failed to execute template: %w", err)
-// 	}
-
-// 	// Return the resolved string from the buffer.
-// 	return buf.String(), nil
-// }

@@ -37,7 +37,7 @@ func (list SliceDaRepo) GetListName() []string {
 }
 
 // Structure to resolve the content of a DaRepoTplFileContent
-type RepoData struct {
+type RepoFileContentVar struct {
 	RepoName    string
 	UrlRepo     string
 	UrlGpg      string
