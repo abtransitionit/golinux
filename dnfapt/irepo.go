@@ -1,34 +1,104 @@
 package dnfapt
 
 import (
-	"context"
+	"bytes"
 	"fmt"
+	"html/template"
 	"path/filepath"
 	"strings"
-
-	"github.com/abtransitionit/gocore/logx"
 )
 
 // Name: InstallPackage
 //
 // Description: install a dnfapt package on a Linux distro
-func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily string, daRepo DaRepo) (string, error) {
+// func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily string, daRepo DaRepo) (string, error) {
 
-	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
-		return "", fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
-	}
+// 	if osFamily != "rhel" && osFamily != "fedora" && osFamily != "debian" {
+// 		return "", fmt.Errorf("this function only supports Linux (rhel, fedora, debian), but found: %s", osFamily)
+// 	}
 
-	// lookup the organization's reference db - get templated URL of the repo
-	daRepoRef, ok := MapDaRepoReference[daRepo.Name]
-	if !ok {
-		return "", fmt.Errorf("found no matches for this package repo: %s", daRepo.Name)
-	}
-	// lookup the organization's reference db - get CTE OS specific repo data
+// 	// lookup the organization's reference db - get obj that contains the templated URL of the repo
+// 	daRepoRef, ok := MapDaRepoReference[daRepo.Name]
+// 	if !ok {
+// 		return "", fmt.Errorf("found no matches for this package repo: %s", daRepo.Name)
+// 	}
+// 	// lookup the organization's reference db - get obj thet contains the OS specific CTE of the repo
+// 	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
+// 	if !ok {
+// 		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
+// 	}
+// 	// lookup the organization's reference db - get obj that contains the templated file of the repo
+// 	daRepoTplFileContent, ok := MapDaRepoTplFileContent[osFamily]
+// 	if !ok {
+// 		return "", fmt.Errorf("found no matches for repository TPL file for this os family: %s", osFamily)
+// 	}
+
+// 	// define var from these infos - logic common to all OS families
+// 	urlRepo := ResolveURLRepo(daRepoRef.UrlRepo, daRepo.Version, daRepoRefCte.Pack)
+// 	urlGpg := ResolveURLGpg(daRepoRef.UrlGpg, daRepo.Version, daRepoRefCte.Pack, daRepoRefCte.Gpg)
+// 	repoFilePath := filepath.Join(daRepoRefCte.Folder, daRepo.FileName+daRepoRefCte.Ext)
+
+// 	// logic specific to OS family
+// 	var gpgFilePath string
+// 	if daRepoRefCte.GpgFolder != "" && daRepoRefCte.GpgExt != "" {
+// 		gpgFilePath = filepath.Join(daRepoRefCte.GpgFolder, daRepo.FileName+daRepoRefCte.GpgExt)
+// 	}
+
+// 	// define the structure that holds the vars that will be used to resolve the templated file
+// 	daRepoTplFileContentVar := RepoFileContentVar{
+// 		RepoName:    daRepo.Name,
+// 		UrlRepo:     urlRepo,
+// 		UrlGpg:      urlGpg,
+// 		GpgFilePath: gpgFilePath,
+// 	}
+
+// 	// resolve the templated file
+// 	daRepoFileContent, err := ResolveRepoFileContent(daRepoTplFileContent, daRepoTplFileContentVar)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failde to resolve templated repo file, for the file: %s", daRepoTplFileContent)
+// 	}
+
+// 	// // write the file
+// 	// if err := WriteFile(repoFilePath, daRepoFileContent); err != nil {
+// 	// 	return "", fmt.Errorf("failde to write repo file: %s", err)
+// 	// }
+
+// 	// log
+// 	// if gpgFilePath != "" {
+// 	// 	logger.Debugf("🅰️ Gpg file path is: %s", gpgFilePath)
+// 	// }
+// 	// logger.Debugf("🅰️ Repo file path is: %s", repoFilePath)
+// 	// logger.Debugf("🅰️ UrlRepo is: %s", urlRepo)
+// 	// logger.Debugf("🅰️ UrlGpg  is: %s", urlGpg)
+// 	// logger.Debugf("🅰️ Resolved repo file content:\n%s", daRepoFileContent)
+// 	// fmt.Println(daRepoFileContent)
+
+// 	return "", nil
+// }
+
+func GetRepoFilePath(osFamily string, daRepo DaRepo) (string, error) {
+	// lookup the organization's reference db - get obj thet contains the OS specific CTE of the repo
 	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
 	if !ok {
 		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
 	}
-	// lookup the organization's reference db - get templated Repo file content
+	return filepath.Join(daRepoRefCte.Folder, daRepo.FileName+daRepoRefCte.Ext), nil
+}
+func GetRepoFileContent(osFamily string, daRepo DaRepo) (string, error) {
+
+	// lookup the organization's reference db - get obj that contains the templated URL of the repo
+	daRepoRef, ok := MapDaRepoReference[daRepo.Name]
+	if !ok {
+		return "", fmt.Errorf("found no matches for this package repo: %s", daRepo.Name)
+	}
+
+	// lookup the organization's reference db - get obj thet contains the OS specific CTE of the repo
+	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
+	if !ok {
+		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
+	}
+
+	// lookup the organization's reference db - get obj that contains the templated file of the repo
 	daRepoTplFileContent, ok := MapDaRepoTplFileContent[osFamily]
 	if !ok {
 		return "", fmt.Errorf("found no matches for repository TPL file for this os family: %s", osFamily)
@@ -37,7 +107,6 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 	// define var from these infos - logic common to all OS families
 	urlRepo := ResolveURLRepo(daRepoRef.UrlRepo, daRepo.Version, daRepoRefCte.Pack)
 	urlGpg := ResolveURLGpg(daRepoRef.UrlGpg, daRepo.Version, daRepoRefCte.Pack, daRepoRefCte.Gpg)
-	repoFilePath := filepath.Join(daRepoRefCte.Folder, daRepo.FileName+daRepoRefCte.Ext)
 
 	// logic specific to OS family
 	var gpgFilePath string
@@ -45,30 +114,36 @@ func InstallDaRepository(ctx context.Context, logger logx.Logger, osFamily strin
 		gpgFilePath = filepath.Join(daRepoRefCte.GpgFolder, daRepo.FileName+daRepoRefCte.GpgExt)
 	}
 
-	// define the structure for plaveholders resolution in the template
+	// define the structure that holds the vars that will be used to resolve the templated file
 	daRepoTplFileContentVar := RepoFileContentVar{
 		RepoName:    daRepo.Name,
 		UrlRepo:     urlRepo,
 		UrlGpg:      urlGpg,
 		GpgFilePath: gpgFilePath,
 	}
-	// use this info to resolve theis template
-	_, daRepoFileContent := ResolveRepoFileContent(daRepoTplFileContent, daRepoTplFileContentVar)
 
-	// log
-	if gpgFilePath != "" {
-		logger.Debugf("🅰️ Gpg file path is: %s", gpgFilePath)
+	// resolve the templated file
+	daRepoFileContent, err := ResolveRepoFileContent(daRepoTplFileContent, daRepoTplFileContentVar)
+	if err != nil {
+		return "", fmt.Errorf("failde to resolve templated repo file, for the file: %s", daRepoTplFileContent)
 	}
-	logger.Debugf("🅰️ Repo file path is: %s", repoFilePath)
-	logger.Debugf("🅰️ UrlRepo is: %s", urlRepo)
-	logger.Debugf("🅰️ UrlGpg  is: %s", urlGpg)
-	fmt.Println(daRepoFileContent)
 
-	return "", nil
+	return daRepoFileContent, nil
 }
 
-func ResolveRepoFileContent(tplRepoContent string, setPlaceholderVar RepoFileContentVar) (string, error) {
-	return tplRepoContent, nil
+func ResolveRepoFileContent(tplRepoContent string, vars RepoFileContentVar) (string, error) {
+	tpl, err := template.New("repo").Parse(tplRepoContent)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	if err := tpl.Execute(&buf, vars); err != nil {
+		return "", err
+	}
+
+	// return tplRepoContent, nil
+	return buf.String(), nil
 }
 func ResolveURLRepo(tplUrlRepo string, tag string, pack string) string {
 	return substituteUrlRepoPlaceholders(tplUrlRepo, tag, pack)

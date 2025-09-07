@@ -51,7 +51,7 @@ var MapDaRepoTplFileContent = map[string]string{
 		name={{.RepoName}}
 		gpgcheck=1
 		baseurl={{.UrlRepo}}
-		gpgkey={{..UrlGpg}}
+		gpgkey={{.UrlGpg}}
 	`,
 
 	"debian": `
