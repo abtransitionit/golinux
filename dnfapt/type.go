@@ -55,7 +55,7 @@ var MapDaRepoTplFileContent = map[string]string{
 	`,
 
 	"debian": `
-		deb [signed-by={{.GpgFilePath}}] %{{UrlRepo}} /
+		deb [signed-by={{.GpgFilePath}}] {{.UrlRepo}} /
 	`,
 }
 
