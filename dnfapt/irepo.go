@@ -84,6 +84,30 @@ func GetRepoFilePath(osFamily string, daRepo DaRepo) (string, error) {
 	}
 	return filepath.Join(daRepoRefCte.Folder, daRepo.FileName+daRepoRefCte.Ext), nil
 }
+func GetGpgFilePath(osFamily string, daRepo DaRepo) (string, error) {
+	// lookup the organization's reference db - get obj thet contains the OS specific CTE of the repo
+	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
+	if !ok {
+		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
+	}
+	return filepath.Join(daRepoRefCte.GpgFolder, daRepo.FileName+daRepoRefCte.GpgExt), nil
+}
+
+func GetUrlGpgResolved(osFamily string, daRepo DaRepo) (string, error) {
+	// lookup the organization's reference db - get obj that contains the templated URL of the repo
+	daRepoRef, ok := MapDaRepoReference[daRepo.Name]
+	if !ok {
+		return "", fmt.Errorf("found no matches for this package repo: %s", daRepo.Name)
+	}
+
+	// lookup the organization's reference db - get obj thet contains the OS specific CTE of the repo
+	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
+	if !ok {
+		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
+	}
+	return ResolveURLGpg(daRepoRef.UrlGpg, daRepo.Version, daRepoRefCte.Pack, daRepoRefCte.Gpg), nil
+}
+
 func GetRepoFileContent(osFamily string, daRepo DaRepo) (string, error) {
 
 	// lookup the organization's reference db - get obj that contains the templated URL of the repo
