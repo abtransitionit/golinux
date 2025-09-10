@@ -44,24 +44,4 @@ type RepoFileContentVar struct {
 	GpgFilePath string
 }
 
-var MapDaRepoTplFileContent = map[string]string{
-	"rhel": `
-		[{{.RepoName}}]
-		enabled=1
-		name={{.RepoName}}
-		gpgcheck=1
-		baseurl={{.UrlRepo}}
-		gpgkey={{.UrlGpg}}
-	`,
-
-	"debian": `
-		deb [signed-by={{.GpgFilePath}}] {{.UrlRepo}} /
-	`,
-}
-
 // template: data structure - parse template with this structure - Execute the template with this structure
-
-func init() {
-	// alias fedora → rhel
-	MapDaRepoTplFileContent["fedora"] = MapDaRepoTplFileContent["rhel"]
-}

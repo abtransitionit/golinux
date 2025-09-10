@@ -28,3 +28,6 @@ func CreateGpgFileFromUrlAsSudo(url string, filePath string) string {
 	cli := strings.Join(cmds, " && ")
 	return cli
 }
+
+// set -o pipefail (or set -euo pipefail for stricter scripts).
+// With pipefail, the exit status of a pipeline is the last non-zero exit code in the chain:

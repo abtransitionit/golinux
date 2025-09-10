@@ -7,7 +7,8 @@ import (
 
 func CreateFileFromStringAsSudo(filePath, content string) string {
 	var cmds = []string{
-		fmt.Sprintf(`cleaned_content=$(echo %q | sed 's/^[ \t]*//')`, content),
+		// fmt.Sprintf(`cleaned_content=$(echo %q |  sed  's/\\t//g; s/\\n/\n/g')`, content),
+		fmt.Sprintf(`cleaned_content=$(echo %q |  sed  's/\\t//g; s/\\n/\n/g')`, content),
 		fmt.Sprintf(`echo "$cleaned_content" | sudo tee %q > /dev/null`, filePath),
 	}
 

@@ -30,7 +30,23 @@ var MapDaRepoCteReference = MapDaRepoCte{
 	},
 }
 
+var MapDaRepoTplFileContent = map[string]string{
+	"rhel": `
+		[{{.RepoName}}]
+		enabled=1
+		name={{.RepoName}}
+		gpgcheck=1
+		baseurl={{.UrlRepo}}
+		gpgkey={{.UrlGpg}}
+	`,
+
+	"debian": `
+		deb [signed-by={{.GpgFilePath}}] {{.UrlRepo}} /
+	`,
+}
+
 func init() {
-	// alias fedora → rhel
+	// lookup fedora → lookuprhel
 	MapDaRepoCteReference["fedora"] = MapDaRepoCteReference["rhel"]
+	MapDaRepoTplFileContent["fedora"] = MapDaRepoTplFileContent["rhel"]
 }
