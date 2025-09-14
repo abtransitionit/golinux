@@ -25,3 +25,12 @@ func StartService(serviceCName string) string {
 	return cli
 
 }
+
+func (s OsService) Start() string {
+	cmds := []string{
+		"sudo systemctl daemon-reload",
+		fmt.Sprintf("sudo systemctl enable %s", s.CName),
+		fmt.Sprintf("sudo systemctl start %s", s.CName),
+	}
+	return strings.Join(cmds, " && ")
+}

@@ -8,11 +8,21 @@ import (
 	"strings"
 )
 
+func GetPackCName(daPack DaPack) (string, error) {
+
+	// lookup the organization's reference db - get obj thet contains the property of the package
+	packName := daPack.Name
+	daPackRef, ok := MapDaPackReference[packName]
+	if !ok {
+		return "", fmt.Errorf("found no matches for dnfapt package '%s' in reference DB", packName)
+	}
+	return daPackRef.CName, nil
+}
 func GetRepoFilePath(osFamily string, daRepo DaRepo) (string, error) {
 	// lookup the organization's reference db - get obj thet contains the OS specific CTE of the repo
 	daRepoRefCte, ok := MapDaRepoCteReference[osFamily]
 	if !ok {
-		return "", fmt.Errorf("found no matches for repository CTE for this os family: %s", osFamily)
+		return "", fmt.Errorf("found no matches for OS family '%s' in repository CTE reference DB", osFamily)
 	}
 	return filepath.Join(daRepoRefCte.Folder, daRepo.FileName+daRepoRefCte.Ext), nil
 }

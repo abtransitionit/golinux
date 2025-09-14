@@ -8,16 +8,39 @@ import (
 
 	"github.com/abtransitionit/gocore/errorx"
 	"github.com/abtransitionit/gocore/run"
+	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/shirou/gopsutil/v3/host"
 )
 
 var linuxProperties = map[string]PropertyHandler{
-	"uuid":       getUuid,   // code change from original
-	"uname":      getUnameM, // code change from original
-	"osdistro":   getOsDistro,
-	"osfamily":   getOsFamily,
-	"pathtree":   getPathTree,
-	"rcfilepath": getRcFilePath,
+	"uuid":          getUuid,   // code change from original
+	"uname":         getUnameM, // code change from original
+	"osdistro":      getOsDistro,
+	"osfamily":      getOsFamily,
+	"pathtree":      getPathTree,
+	"rcfilepath":    getRcFilePath,
+	"selinuxStatus": getSelinuxStatus,
+	"selinuxMode":   getSelinuxMode,
+}
+
+func getSelinuxMode(_ ...string) (string, error) {
+	switch selinux.EnforceMode() {
+	case selinux.Enforcing:
+		return "enforcing", nil
+	case selinux.Permissive:
+		return "permissive", nil
+	case selinux.Disabled:
+		return "disabled", nil
+	default:
+		return "unknown", nil
+	}
+}
+
+func getSelinuxStatus(_ ...string) (string, error) {
+	if selinux.GetEnabled() {
+		return "enabled", nil
+	}
+	return "disabled", nil
 }
 
 func getRcFilePath(params ...string) (string, error) {

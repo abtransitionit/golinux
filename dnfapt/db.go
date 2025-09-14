@@ -1,5 +1,16 @@
 package dnfapt
 
+var MapDaPackReference = MapDaPack{
+	"crio": {
+		CName: "cri-o",
+	},
+	"kubeadm": {
+		CName: "kubeadm",
+	},
+	"kubelet": {
+		CName: "kubelet",
+	},
+}
 var MapDaRepoReference = MapDaRepo{
 	"crio": {
 		Name:    "crio",

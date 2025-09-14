@@ -6,7 +6,10 @@ go 1.24.2
 // prod mode
 require github.com/abtransitionit/gocore v0.0.1
 
-require github.com/shirou/gopsutil/v3 v3.24.5
+require (
+	github.com/opencontainers/selinux v1.12.0
+	github.com/shirou/gopsutil/v3 v3.24.5
+)
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect

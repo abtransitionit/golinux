@@ -47,7 +47,7 @@ var OsPropertyMap = map[string]PropertyHandler{
 	"serviceinfos":   getServiceInfos,
 	"cgroup":         getCgroupVersion,
 
-	"selstatus": getSelinuxStatus,
+	// "selstatus": getSelinuxStatus,
 	"selmode":   getSelinuxMode,
 	"selinfos":  getSelinuxInfos,
 
