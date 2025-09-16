@@ -21,6 +21,47 @@ var linuxProperties = map[string]PropertyHandler{
 	"rcfilepath":    getRcFilePath,
 	"selinuxStatus": getSelinuxStatus,
 	"selinuxMode":   getSelinuxMode,
+	"serviceStatus": getServiceStatus,
+}
+
+// func getServiceStatus(params ...string) (string, error) {
+// 	if len(params) < 1 {
+// 		return "", fmt.Errorf("service name required")
+// 	}
+
+// 	service := params[0]
+// 	cli := fmt.Sprintf("systemctl is-active %s", service)
+// 	output, err := run.RunOnLocal(cli)
+// 	status := strings.TrimSpace(output)
+
+// 	switch status {
+// 	case "active", "inactive", "failed", "unknown":
+// 		// treat all known states as valid, ignore err
+// 		return status, nil
+// 	}
+
+// 	// if we got something unexpected, propagate the real error
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return status, nil
+// }
+
+func getServiceStatus(params ...string) (string, error) {
+
+	// manage argument
+	if len(params) < 1 {
+		return "", fmt.Errorf("service name required")
+	}
+	// get service name
+	service := params[0]
+
+	// play cli
+	cli := fmt.Sprintf("systemctl is-active %s", service)
+	output, _ := run.RunOnLocal(cli)
+	return strings.TrimSpace(string(output)), nil
+
 }
 
 func getSelinuxMode(_ ...string) (string, error) {
