@@ -28,6 +28,36 @@ func StartService(serviceCName string) string {
 
 }
 
+func (osService OsService) Enable(osFamily string) (string, error) {
+
+	// get service canonical name
+	osServiceCName, err := OsServiceReference.GetCName(osService)
+	if err != nil {
+		return "", err
+	}
+
+	// logic
+	install := false
+	switch osServiceCName {
+	case "apparmor.service":
+		if osFamily == "debian" {
+			install = true
+		}
+	default:
+		install = true
+	}
+
+	// if nothing to isntall
+	if !install {
+		return "", nil
+	}
+
+	cmds := []string{
+		"sudo systemctl daemon-reload",
+		fmt.Sprintf("sudo systemctl enable %s", osServiceCName),
+	}
+	return strings.Join(cmds, " && "), nil
+}
 func (osService OsService) Start(osFamily string) (string, error) {
 
 	// get service canonical name
