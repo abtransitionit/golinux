@@ -13,40 +13,27 @@ import (
 )
 
 var linuxProperties = map[string]PropertyHandler{
-	"uuid":          getUuid,   // code change from original
-	"uname":         getUnameM, // code change from original
-	"osdistro":      getOsDistro,
-	"osfamily":      getOsFamily,
-	"pathtree":      getPathTree,
-	"rcfilepath":    getRcFilePath,
-	"selinuxStatus": getSelinuxStatus,
-	"selinuxMode":   getSelinuxMode,
-	"serviceStatus": getServiceStatus,
+	"uuid":           getUuid,   // code change from original
+	"uname":          getUnameM, // code change from original
+	"osdistro":       getOsDistro,
+	"osfamily":       getOsFamily,
+	"pathtree":       getPathTree,
+	"rcfilepath":     getRcFilePath,
+	"selinuxStatus":  getSelinuxStatus,
+	"selinuxMode":    getSelinuxMode,
+	"serviceStatus":  getServiceStatus,
+	"serviceEnabled": getServiceEnabled,
 }
 
-// func getServiceStatus(params ...string) (string, error) {
-// 	if len(params) < 1 {
-// 		return "", fmt.Errorf("service name required")
-// 	}
+func getServiceEnabled(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("service name required")
+	}
+	service := params[0]
+	cli := fmt.Sprintf("systemctl is-enabled %s", service)
 
-// 	service := params[0]
-// 	cli := fmt.Sprintf("systemctl is-active %s", service)
-// 	output, err := run.RunOnLocal(cli)
-// 	status := strings.TrimSpace(output)
-
-// 	switch status {
-// 	case "active", "inactive", "failed", "unknown":
-// 		// treat all known states as valid, ignore err
-// 		return status, nil
-// 	}
-
-// 	// if we got something unexpected, propagate the real error
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return status, nil
-// }
+	return run.RunOnLocal(cli)
+}
 
 func getServiceStatus(params ...string) (string, error) {
 
