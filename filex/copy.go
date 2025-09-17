@@ -100,7 +100,6 @@ func CpAsSudo(ctx context.Context, l logx.Logger, source, destination string) (s
 
 	cli := strings.Join(clis, " && ")
 	return cli, nil
-
 }
 
 // func CpAsSudo2(ctx context.Context, l logx.Logger, source, destination string) (bool, error) {
