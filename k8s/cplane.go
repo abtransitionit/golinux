@@ -14,6 +14,24 @@ func getK8sConfigFilePath() string {
 	return filepath.Join("/tmp", "config.yaml")
 }
 
+func InitCPlane(k8sConf K8sConf) (string, error) {
+
+	// get the resolved configuration file
+	config, err := getConfig(k8sConf)
+	if err != nil {
+		return "", err
+	}
+
+	// build the CLI
+	var clis = []string{
+		fmt.Sprintf(`printf '%%s\n' '%s'  | sudo kubeadm init --config /dev/stdin`, filex.DeleteLeftTab(config)),
+	}
+	cli := strings.Join(clis, " && ")
+
+	// return
+	return cli, nil
+}
+
 func InitCPlaneWithReset(k8sConf K8sConf) (string, error) {
 
 	// get the resolved configuration file
@@ -32,33 +50,17 @@ func InitCPlaneWithReset(k8sConf K8sConf) (string, error) {
 	// return
 	return cli, nil
 }
-func ResetCPlane() (string, error) {
+
+func GetJoinCli() string {
 
 	// build the CLI
 	var clis = []string{
-		`sudo kubeadm reset --force`,
+		`sudo kubeadm token create --print-join-command`,
 	}
 	cli := strings.Join(clis, " && ")
 
 	// return
-	return cli, nil
-}
-func InitCPlane(k8sConf K8sConf) (string, error) {
-
-	// get the resolved configuration file
-	config, err := getConfig(k8sConf)
-	if err != nil {
-		return "", err
-	}
-
-	// build the CLI
-	var clis = []string{
-		fmt.Sprintf(`printf '%%s\n' '%s'  | sudo kubeadm init --config /dev/stdin`, filex.DeleteLeftTab(config)),
-	}
-	cli := strings.Join(clis, " && ")
-
-	// return
-	return cli, nil
+	return cli
 }
 
 // Name: GetConfig

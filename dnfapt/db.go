@@ -10,6 +10,9 @@ var MapDaPackReference = MapDaPack{
 	"kubelet": {
 		CName: "kubelet",
 	},
+	"kubectl": {
+		CName: "kubectl",
+	},
 }
 var MapDaRepoReference = MapDaRepo{
 	"crio": {
