@@ -2,19 +2,17 @@ package release
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/abtransitionit/luc/pkg/logx"
+	"github.com/abtransitionit/gocore/logx"
 )
 
-func addRepo(ctx context.Context, logger logx.Logger, repoName string) (string, error) {
-	logger.Info("To implement: add repo")
-	return "", nil
-}
-func deleteRepo(ctx context.Context, logger logx.Logger, repoName string) (string, error) {
-	logger.Info("To implement: delete repo")
-	return "", nil
-}
-func listRepo(ctx context.Context, logger logx.Logger) (string, error) {
-	logger.Info("To implement: list repo")
+func listRelease(ctx context.Context, logger logx.Logger) (string, error) {
+	logger.Info("To implement: Manage Helm Releases")
+	logger.Info(`A [Helm] release is an instanciation of a [Helm] chart. It consists of:
+	→ a release name.
+	→ a K8s namespave.
+	→ a set of values`)
+	fmt.Sprintf(`helm list -A`)
 	return "", nil
 }
