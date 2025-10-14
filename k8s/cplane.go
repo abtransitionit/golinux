@@ -3,16 +3,15 @@ package k8s
 import (
 	"bytes"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/abtransitionit/gocore/filex"
 )
 
-func getK8sConfigFilePath() string {
-	return filepath.Join("/tmp", "config.yaml")
-}
+// func getK8sConfigFilePath() string {
+// 	return filepath.Join("/tmp", "config.yaml")
+// }
 
 func InitCPlane(k8sConf K8sConf) (string, error) {
 
