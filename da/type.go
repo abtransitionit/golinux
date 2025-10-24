@@ -1,38 +1,59 @@
 package da
 
+// Description: an object that model a repository for any native linux package manager
 type Repo struct {
 	Name string
 	Url  RepoUrl
 	Mgr  Manager
 }
+
 type RepoUrl struct {
 	Repo string
 	Gpg  string
 }
+
+// Description: an object that model a package for any native linux package manager
 type Package struct {
 	Name    string
 	Version string
 	Mgr     Manager
 }
 
+// Description: method to be implemented by each native package manager supported (apt, dnf)
 type Manager interface {
 	CliList() (string, error)
 	CliAdd() (string, error)
 	CliDelete() (string, error)
 }
 
-// APT Manager (manage for both Repo and Package)
+// APT Manager (manage both Repo and Package)
 type AptManager struct {
 	Repo   *Repo
 	Pkg    *Package
-	Distro string // e.g., "fedora", "rhel", "rocky", "alma"
+	Distro string // e.g., fedora, rhel, rocky, alma
 }
 
-// DNF Manager (manage for both Repo and Package)
+// DNF Manager (manage both Repo and Package)
 type DnfManager struct {
 	Repo   *Repo
 	Pkg    *Package
-	Distro string
+	Distro string // e.g., ubuntu
+}
+
+// Notes:
+// - define struct to convert static yaml file to memory structured data
+type Config struct {
+	Apt AptConfig `yaml:"apt"`
+	Dnf DnfConfig `yaml:"dnf"`
+}
+
+type AptConfig struct {
+	RepoFolder string `yaml:"repoFolder"`
+}
+
+type DnfConfig struct {
+	RepoFolder string `yaml:"repoFolder"`
+	GpgCheck   bool   `yaml:"gpgCheck"`
 }
 
 // a map of repo

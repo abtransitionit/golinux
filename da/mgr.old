@@ -6,7 +6,7 @@ import "fmt"
 //
 // Notes:
 // - the call is done from a repo
-func (pkg *Package) GetPM(osType string, repo *Repo) (Manager, error) {
+func (pkg *Package) GetManager(osType string, repo *Repo) (Manager, error) {
 	switch osType {
 	case "rhel", "fedora":
 		mgr := &DnfManager{Pkg: pkg}
@@ -29,7 +29,7 @@ func (pkg *Package) GetPM(osType string, repo *Repo) (Manager, error) {
 // Notes:
 // - the call is done from a package
 
-func (repo *Repo) GetPM(osType string) (Manager, error) {
+func (repo *Repo) GetManager(osType string) (Manager, error) {
 	switch osType {
 	case "rhel", "fedora":
 		return &DnfManager{Repo: repo}, nil

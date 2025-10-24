@@ -1,5 +1,25 @@
 # Purpose
-- a package manager that abstract `dnf` and `apt` by wrapping them
+- Define a generic package manager for some linux OS (`debian` and `rhel` based linux Family)
+- Abstract `dnf` and `apt` by wrapping them
+
+
+## Terminlogy
+|Name|type|desc|
+|-|-|-|
+|PM|acro|Package Manager|
+
+
+# Directory layout
+```
+da/
+  obj.pkg.go       # methods to manage package - eg. pkg.add(...)
+  obj.repo.go      # methods to manage repo    - eg. repo.delete(...)
+  mgr.go           # return the manager to be be used according to the OS type 
+  mgr.apt.go       # return the apt CLIs to manage repo and package for ubuntu-based linux OS
+  mgr.dnf.go       # return the dnf CLIs to manage repo and package for rhel/fedora-based linux OS
+  type.go          # define structure and interface
+  README.md.       # this doc
+```
 
 # How it works
 1. repository and package are each defined by a structure
@@ -17,16 +37,6 @@
 
 
 
-```
-da/
-  pkg.go           # the method to manage package - eg. pkg.add(...)
-  repo.go          # the method to manage repo    - eg. repo.delete(...)
-  pm.go            # return the manager according to the OS type 
-  repo.apt.go      # method to manage package the manager will used for ubuntu like OS
-  repo.dnf.go      # method to manage package the manager will used for rhel, fedora like OS
-  type.go          # define structure and interface
-  README.md.       1 this doc
-```
 
 
 1. **`da/pkg.go`**

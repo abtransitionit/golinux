@@ -10,7 +10,7 @@ import (
 func NewPackage(name, version, osType string, repo *Repo) (*Package, error) {
 	p := &Package{Name: name, Version: version}
 
-	mgr, err := p.GetPM(osType, repo)
+	mgr, err := p.GetManager(osType, repo)
 	if err != nil {
 		return nil, err
 	}

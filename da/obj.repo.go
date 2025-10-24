@@ -11,7 +11,7 @@ import (
 func NewRepo(name string, url RepoUrl, osType string) (*Repo, error) {
 	r := &Repo{Name: name, Url: url}
 
-	mgr, err := r.GetPM(osType)
+	mgr, err := r.GetManager(osType)
 	if err != nil {
 		return nil, err
 	}

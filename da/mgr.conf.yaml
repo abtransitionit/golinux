@@ -3,4 +3,3 @@ apt:
   keyFolder: "/usr/share/keyrings"
 dnf:
   repoFolder: "/etc/yum.repos.d"
-  gpgCheck: true

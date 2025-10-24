@@ -7,8 +7,7 @@ import (
 func (m *AptManager) CliList() (string, error) {
 	// repo - cat /etc/apt/sources.list.d/*.sources
 	if m.Repo != nil {
-		return fmt.Sprintf("cat /etc/apt/sources.list.d/*.sources"), nil
-		// return fmt.Sprintf("apt list --installed | grep %s", m.Repo.Name), nil
+		return "cat /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null | grep -E '^deb |^Components:'", nil
 	}
 	// package
 	return fmt.Sprintf("dpkg -l | grep %s", m.Pkg.Name), nil
