@@ -33,8 +33,8 @@ var MapDaRepoCteReference = MapDaRepoCte{
 		Ext:       ".list",
 		Pack:      "deb",
 		Gpg:       "Release.key",
-		GpgFolder: "/etc/apt/keyrings",
-		GpgExt:    "-apt-keyring.gpg",
+		GpgFolder: "/etc/apt/keyrings", //
+		GpgExt:    "-apt-keyring.gpg",  // /usr/share/keyrings/<repo>.gpg and reference in .list
 	},
 	"rhel": {
 		Folder: "/etc/yum.repos.d",
@@ -64,3 +64,5 @@ func init() {
 	MapDaRepoCteReference["fedora"] = MapDaRepoCteReference["rhel"]
 	MapDaRepoTplFileContent["fedora"] = MapDaRepoTplFileContent["rhel"]
 }
+
+// Todo in next version
