@@ -60,20 +60,20 @@ func (m MapRepo) ConvertToStringTruncated() string {
 
 var configFileTpl = `
   apt:
-    Pkg: deb
-    Ext: .list
-    Folder:
-      Repo: "/etc/apt/sources.list.d"
-      GpgKey: "/usr/share/keyrings"
+    pkg: deb
+    ext: .list
+    folder:
+      repo: "/etc/apt/sources.list.d"
+      gpgKey: "/usr/share/keyrings"
   dnf:
-    Pkg: rpm
-    Ext: .repo
-    Folder:
-      Repo: "/etc/yum.repos.d"
-    Os
-      Family: {{.Os.Family}}
-      Distro: {{.Os.Distro}}
-	`
+    pkg: rpm
+    ext: .repo
+    folder:
+      repo: "/etc/yum.repos.d"
+    os:
+      family: {{.Os.Family}}
+      distro: {{.Os.Distro}}
+`
 
 // var MapDaRepoCteReference = MapDaRepoCte{
 // 	"debian": {

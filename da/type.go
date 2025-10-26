@@ -50,29 +50,35 @@ type DnfManager struct {
 // Notes:
 // - define struct that contains data to be passed to the yaml
 type ConfigFileData struct {
-	Os OsInfo
-}
-
-type OsInfo struct {
-	Distro string
-	Family string
+	Os OsObj
 }
 
 // Notes:
-// - define struct to convert static yaml file to memory structured data
+// - define struct to convert yaml (string of file) to memory struct
 type Config struct {
 	Apt AptConfig `yaml:"apt"`
 	Dnf DnfConfig `yaml:"dnf"`
 }
 
 type AptConfig struct {
-	RepoFolder string `yaml:"repo-folder"`
+	Folder FolderObj `yaml:"folder"`
+	Ext    string    `yaml:"ext"`
+	Pkg    string    `yaml:"pkg"`
 }
 
 type DnfConfig struct {
-	RepoFolder   string `yaml:"repo-folder"`
-	GpgKeyFolder string `yaml:"gpgkey-folder"`
-	Distro       string `yaml:"distro"`
+	Folder FolderObj `yaml:"folder"`
+	Ext    string    `yaml:"ext"`
+	Pkg    string    `yaml:"pkg"`
+	Os     OsObj     `yaml:"os"`
+}
+type FolderObj struct {
+	Repo   string `yaml:"repo"`
+	GpgKey string `yaml:"GpgKey,omitempty"`
+}
+type OsObj struct {
+	Distro string
+	Family string
 }
 
 // a map of repo

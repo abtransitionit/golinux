@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Description: helper function to normalize the OS type (in case name differ between OS).
@@ -32,22 +34,30 @@ func (cbd CliBuilderFactory) get(osFamily string, osDistro string, repo *Repo, p
 	if family == "" {
 		return nil, fmt.Errorf("unsupported OS family: %s", osFamily)
 	}
+	if osDistro == "" {
+		return nil, fmt.Errorf("unsupported OS family: %s", osFamily)
+	}
 
 	// create object from property
 	data := ConfigFileData{
-		Os: OsInfo{
+		Os: OsObj{
 			Distro: osDistro,
 			Family: osFamily,
 		},
 	}
-	fmt.Println("hello")
-	resolvedYaml, err := getConfig(data)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("helli")
 
-	fmt.Println(resolvedYaml)
+	// Resolv templated conf into a Yaml string
+	resolvedYamlAsString, err := resolveTplConfig(configFileTpl, data)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	// convert Yaml string into a struct
+	var cfg Config // Declare the struct to hold the YAML
+	err = yaml.Unmarshal([]byte(resolvedYamlAsString), &cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling YAML: %v", err)
+	}
 
 	// get the package manager
 	switch family {
@@ -55,14 +65,14 @@ func (cbd CliBuilderFactory) get(osFamily string, osDistro string, repo *Repo, p
 		mgr := &DnfManager{
 			Repo: repo,
 			Pkg:  pkg,
-			Conf: cbd.Conf.Dnf,
+			Conf: cfg.Dnf,
 		}
 		return mgr, nil
 	case "debian":
 		mgr := &AptManager{
 			Repo: repo,
 			Pkg:  pkg,
-			Conf: cbd.Conf.Apt,
+			Conf: cfg.Apt,
 		}
 		return mgr, nil
 	default:
@@ -71,13 +81,23 @@ func (cbd CliBuilderFactory) get(osFamily string, osDistro string, repo *Repo, p
 }
 
 // convenience method
-func (pkg *Package) GetCliBuilder(osFamily string, osDistro string, repo *Repo) (CliBuilder, error) {
-	return CliBuilderFactory{}.get(osFamily, osDistro, repo, pkg)
+func (pkg *Package) SetCliBuilder(osFamily string, osDistro string, repo *Repo) error {
+	cbd, err := CliBuilderFactory{}.get(osFamily, osDistro, repo, pkg)
+	if err != nil {
+		return err
+	}
+	pkg.Cbd = cbd
+	return nil
 }
 
 // convenience method
-func (repo *Repo) GetCliBuilder(osFamily string, osDistro string) (CliBuilder, error) {
-	return CliBuilderFactory{}.get(osFamily, osDistro, repo, nil)
+func (repo *Repo) GetCliBuilder(osFamily string, osDistro string) error {
+	cbd, err := CliBuilderFactory{}.get(osFamily, osDistro, repo, nil)
+	if err != nil {
+		return err
+	}
+	repo.Cbd = cbd
+	return nil
 }
 
 // Name: GetConfig
