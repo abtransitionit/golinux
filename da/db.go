@@ -61,11 +61,13 @@ func (m MapRepo) ConvertToStringTruncated() string {
 var configFileTpl = `
   apt:
     Pkg: deb
+    Ext: .list
     Folder:
       Repo: "/etc/apt/sources.list.d"
       GpgKey: "/usr/share/keyrings"
   dnf:
     Pkg: rpm
+    Ext: .repo
     Folder:
       Repo: "/etc/yum.repos.d"
     Os
