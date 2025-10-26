@@ -1,12 +1,11 @@
 package k8s
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
-	"text/template"
 
 	"github.com/abtransitionit/gocore/filex"
+	"github.com/abtransitionit/gocore/tpl"
 )
 
 // func getK8sConfigFilePath() string {
@@ -76,7 +75,7 @@ func getConfig(k8sConf K8sConf) (string, error) {
 	}
 
 	// resolve the templated file
-	K8sConfigFile, err := resolveTplConfig(configFileTpl, k8sConfigFileTplVar)
+	K8sConfigFile, err := tpl.ResolveTplConfig(configFileTpl, k8sConfigFileTplVar)
 	if err != nil {
 		return "", fmt.Errorf("faild to resolve templated repo file, for the file: %s", configFileTpl)
 	}
@@ -84,18 +83,4 @@ func getConfig(k8sConf K8sConf) (string, error) {
 	// resturn the YamlString
 	return K8sConfigFile, nil
 
-}
-
-func resolveTplConfig(tplFile string, vars K8sConf) (string, error) {
-	tpl, err := template.New("repo").Parse(tplFile)
-	if err != nil {
-		return "", err
-	}
-
-	var buf bytes.Buffer
-	if err := tpl.Execute(&buf, vars); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
 }

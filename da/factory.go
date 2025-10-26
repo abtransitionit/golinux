@@ -1,12 +1,12 @@
 package da
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
-	"text/template"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/abtransitionit/gocore/tpl"
 )
 
 // Description: helper function to normalize the OS type (in case name differ between OS).
@@ -46,8 +46,13 @@ func (cbd CliBuilderFactory) get(osFamily string, osDistro string, repo *Repo, p
 		},
 	}
 
+	TemplatedConfFile, err := tpl.LoadFile("/Users/max/wkspc/git/golinux/da/conf.yaml")
+	if err != nil {
+		return nil, err
+	}
+
 	// Resolv templated conf into a Yaml string
-	resolvedYamlAsString, err := resolveTplConfig(configFileTpl, data)
+	resolvedYamlAsString, err := tpl.ResolveTplConfig(TemplatedConfFile, data)
 	if err != nil {
 		return nil, fmt.Errorf("error: %v", err)
 	}
@@ -111,7 +116,7 @@ func getConfig(c ConfigFileData) (string, error) {
 	// }
 
 	// resolve the templated file
-	configFile, err := resolveTplConfig(configFileTpl, c)
+	configFile, err := tpl.ResolveTplConfig(configFileTpl, c)
 	if err != nil {
 		return "", fmt.Errorf("faild to resolve templated file: %s", configFileTpl)
 	}
@@ -119,18 +124,4 @@ func getConfig(c ConfigFileData) (string, error) {
 	// resturn the YamlString
 	return configFile, nil
 
-}
-
-func resolveTplConfig(tplFile string, vars ConfigFileData) (string, error) {
-	tpl, err := template.New("repo").Parse(tplFile)
-	if err != nil {
-		return "", err
-	}
-
-	var buf bytes.Buffer
-	if err := tpl.Execute(&buf, vars); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
 }

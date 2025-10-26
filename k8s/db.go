@@ -38,5 +38,3 @@ var configFileTpl = `
 		kind: ResetConfiguration
 		cleanupTmpDir: true
 		`
-
-// , config.K8sVersion, config.KbePodCidr, config.KbeServiceCidr, config.CrioSocketName)
