@@ -8,27 +8,27 @@ import (
 	"github.com/abtransitionit/gocore/run"
 )
 
-func NewRepo(name string, url RepoUrl, osType string) (*Repo, error) {
-	r := &Repo{Name: name, Url: url}
+// func NewRepo(name string, url RepoUrl, osType string) (*Repo, error) {
+// 	r := &Repo{Name: name, Url: url}
 
-	mgr, err := r.GetManager(osType)
-	if err != nil {
-		return nil, err
-	}
-	r.Mgr = mgr
+// 	cbd, err := r.GetCliBuilder(osType)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	r.Cbd = cbd
 
-	return r, nil
-}
+// 	return r, nil
+// }
 
 func (r *Repo) Add(ctx context.Context, local bool, remoteHost string, logger logx.Logger) (string, error) {
-	return r.Mgr.CliAdd()
+	return r.Cbd.CliAdd()
 }
 func (r *Repo) Delete(ctx context.Context, local bool, remoteHost string, logger logx.Logger) (string, error) {
-	return r.Mgr.CliDelete()
+	return r.Cbd.CliDelete()
 }
 
 //	func (r *Repo) List(ctx context.Context, local bool, remoteHost string, logger logx.Logger) (string, error) {
-//		return r.Mgr.CliList()
+//		return r.Cbd.CliList()
 //	}
 func (r *Repo) EnableGPG(ctx context.Context) (string, error) {
 	return fmt.Sprintf("gpg --import %s.gpg", r.Name), nil
@@ -39,7 +39,7 @@ func (r *Repo) Update(ctx context.Context) (string, error) {
 
 func (r *Repo) List(ctx context.Context, local bool, remoteHost string, logger logx.Logger) (string, error) {
 	// define cli
-	cli, err := r.Mgr.CliList()
+	cli, err := r.Cbd.CliList()
 	if err != nil {
 		return "", fmt.Errorf("failed to build CLI list: %w", err)
 	}

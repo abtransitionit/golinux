@@ -3,11 +3,11 @@ package da
 // Description: an object that model a repository for any native linux package manager
 type Repo struct {
 	Name string
-	Url  RepoUrl
-	Mgr  Manager
+	Url  Url
+	Cbd  CliBuilder
 }
 
-type RepoUrl struct {
+type Url struct {
 	Repo string
 	Gpg  string
 }
@@ -16,28 +16,46 @@ type RepoUrl struct {
 type Package struct {
 	Name    string
 	Version string
-	Mgr     Manager
+	Cbd     CliBuilder
 }
 
 // Description: method to be implemented by each native package manager supported (apt, dnf)
-type Manager interface {
+type CliBuilder interface {
 	CliList() (string, error)
 	CliAdd() (string, error)
 	CliDelete() (string, error)
 }
 
+// Description: factory method that return a CliBuilder
+type CliBuilderFactory struct {
+	Conf Config
+}
+
 // APT Manager (manage both Repo and Package)
 type AptManager struct {
-	Repo   *Repo
-	Pkg    *Package
-	Distro string // e.g., fedora, rhel, rocky, alma
+	Repo *Repo
+	Pkg  *Package
+	// Distro string // e.g., fedora, rhel, rocky, alma
+	Conf AptConfig
 }
 
 // DNF Manager (manage both Repo and Package)
 type DnfManager struct {
-	Repo   *Repo
-	Pkg    *Package
-	Distro string // e.g., ubuntu
+	Repo *Repo
+	Pkg  *Package
+	// Distro string // e.g., ubuntu
+	Conf DnfConfig
+}
+
+// Notes:
+// - define struct that contains data to be passed to the yaml
+type ConfigFileData struct {
+	Os OsInfo
+}
+
+type OsInfo struct {
+	Distro string
+	Family string
 }
 
 // Notes:
@@ -48,50 +66,19 @@ type Config struct {
 }
 
 type AptConfig struct {
-	RepoFolder string `yaml:"repoFolder"`
+	RepoFolder string `yaml:"repo-folder"`
 }
 
 type DnfConfig struct {
-	RepoFolder string `yaml:"repoFolder"`
-	GpgCheck   bool   `yaml:"gpgCheck"`
+	RepoFolder   string `yaml:"repo-folder"`
+	GpgKeyFolder string `yaml:"gpgkey-folder"`
+	Distro       string `yaml:"distro"`
 }
 
 // a map of repo
 type MapRepo map[string]Repo
 
 // // Todo in next version
-
-// type Repo struct {
-// 	Name    string
-// 	URL     string
-// 	GPGKey  string
-// 	manager RepoManager // OS-specific manager: dnf or apt
-// 	Enabled bool
-// }
-
-// // DNF implementation
-// type DnfManager struct {
-// 	Repo Repo
-// }
-
-// // APT implementation
-// type AptManager struct {
-// 	Repo Repo
-// }
-
-// // type Repository struct {
-// // 	Name     string // logical name
-// // 	FileName string // Os file name
-// // 	Version  string // the version of the package repository
-// // 	UrlRepo  string
-// // 	UrlGpg   string
-// // }
-
-// type Package struct {
-// 	Name    string // logical name
-// 	CName   string // canonical name
-// 	Version string // the version of the package
-// }
 
 // type OSType string
 
@@ -131,21 +118,4 @@ type MapRepo map[string]Repo
 
 // // listFile := filepath.Join(config.APT.RepoFolder, "myrepo.list")
 // // keyFile := filepath.Join(config.APT.KeyFolder, "myrepo.gpg")
-
 // // repoFile := filepath.Join(config.DNF.RepoFolder, "myrepo.repo")
-
-// // func DetectOS() OSType
-
-// // var repo RepositoryManager
-// // var pkg PackageManager
-
-// // switch DetectOS() {
-// // case OS_APT:
-// //     repo = NewAPTRepositoryManager()
-// //     pkg = NewAPTPackageManager()
-// // case OS_DNF:
-// //     repo = NewDNFRepositoryManager()
-// //     pkg = NewDNFPackageManager()
-// // default:
-// //     // Handle unknown OS
-// // }

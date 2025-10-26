@@ -1,5 +1,0 @@
-apt:
-  repoFolder: "/etc/apt/sources.list.d"
-  keyFolder: "/usr/share/keyrings"
-dnf:
-  repoFolder: "/etc/yum.repos.d"

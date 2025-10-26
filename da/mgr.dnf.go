@@ -7,7 +7,7 @@ import (
 func (m *DnfManager) CliList() (string, error) {
 	// repo  sudo dnf repolist -v
 	if m.Repo != nil {
-		switch m.Distro {
+		switch m.Conf.Distro {
 		case "fedora":
 			return "dnf repolist", nil
 		default:

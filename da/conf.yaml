@@ -1,0 +1,6 @@
+apt:
+  repo-folder:   /etc/apt/sources.list.d
+  gpgkey-folder: /usr/share/keyrings
+  distro: {{.OsDistro}}  
+dnf:
+  repo-folder: /etc/yum.repos.d

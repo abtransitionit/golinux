@@ -8,14 +8,14 @@ import (
 var MapRepoReference = MapRepo{
 	"crio": {
 		Name: "crio",
-		Url: RepoUrl{
+		Url: Url{
 			Repo: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v$TAG/$PACK/",
 			Gpg:  "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v$TAG/$PACK/$GPG",
 		},
 	},
 	"k8s": {
 		Name: "k8s",
-		Url: RepoUrl{
+		Url: Url{
 			Repo: "https://pkgs.k8s.io/core:/stable:/v$TAG/$PACK/",
 			Gpg:  "https://pkgs.k8s.io/core:/stable:/v$TAG/$PACK/$GPG",
 		},
@@ -29,7 +29,7 @@ func (m MapRepo) ConvertToString() string {
 
 	for _, repo := range m {
 		sb.WriteString(fmt.Sprintf("%s\t%s\t%s\t%s\n",
-			repo.Name, repo.Url.Repo, repo.Url.Gpg, repo.Mgr))
+			repo.Name, repo.Url.Repo, repo.Url.Gpg, repo.Cbd))
 	}
 
 	return sb.String()
@@ -51,12 +51,27 @@ func (m MapRepo) ConvertToStringTruncated() string {
 			repo.Name,
 			truncate(repo.Url.Repo, 50),
 			truncate(repo.Url.Gpg, 50),
-			repo.Mgr,
+			repo.Cbd,
 		))
 	}
 
 	return sb.String()
 }
+
+var configFileTpl = `
+  apt:
+    Pkg: deb
+    Folder:
+      Repo: "/etc/apt/sources.list.d"
+      GpgKey: "/usr/share/keyrings"
+  dnf:
+    Pkg: rpm
+    Folder:
+      Repo: "/etc/yum.repos.d"
+    Os
+      Family: {{.Os.Family}}
+      Distro: {{.Os.Distro}}
+	`
 
 // var MapDaRepoCteReference = MapDaRepoCte{
 // 	"debian": {
