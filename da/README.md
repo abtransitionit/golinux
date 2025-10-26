@@ -14,7 +14,7 @@
 da/
   obj.pkg.go       # methods to manage package - eg. pkg.add(...)
   obj.repo.go      # methods to manage repo    - eg. repo.delete(...)
-  mgr.go           # return the manager to be be used according to the OS type 
+  mgr.go           # return the manager to be used according to the OS type 
   mgr.apt.go       # return the apt CLIs to manage repo and package for ubuntu-based linux OS
   mgr.dnf.go       # return the dnf CLIs to manage repo and package for rhel/fedora-based linux OS
   type.go          # define structure and interface
@@ -22,8 +22,10 @@ da/
 ```
 
 # How it works
-1. repository and package are each defined by a structure
-1. that structure has accessto a method (`GetPM`) that detect the os type (rhel, fedora, ubuntu, ...)
+1. OS repository and package are **modeled** by a structure (ie. `Repo` and `Package`)
+1. Each structure to model the object define members among which
+  - a method `GetManager` that detect the os type (rhel, fedora, ubuntu, ...)
+  - has access a method (`GetManager`) that detect the os type (rhel, fedora, ubuntu, ...)
 1. according to the os type, `GetPM` create another object (the manager) inside the repo or the package
    - `AptManager` if it's a `ubuntu` like OS
    - `DnfManager` if it's a `rhel` or `fedora` like OS
