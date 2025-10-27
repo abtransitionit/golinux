@@ -68,10 +68,10 @@ func getConfig(k8sConf K8sConf) (string, error) {
 
 	// define the structure that holds the vars that will be used to resolve the templated file
 	k8sConfigFileTplVar := K8sConf{
-		K8sVersion:     k8sConf.K8sVersion,
-		K8sPodCidr:     k8sConf.K8sPodCidr,
-		K8sServiceCidr: k8sConf.K8sServiceCidr,
-		CrSocketName:   k8sConf.CrSocketName,
+		K8sVersion:   k8sConf.K8sVersion,
+		PodCidr:      k8sConf.PodCidr,
+		ServiceCidr:  k8sConf.ServiceCidr,
+		CrSocketName: k8sConf.CrSocketName,
 	}
 
 	// resolve the templated file
