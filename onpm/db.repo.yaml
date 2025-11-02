@@ -1,0 +1,11 @@
+repository:
+  crio:
+    Name: crio
+    Url:
+      Repo: https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ .TAG }}/{{ .PACK }}/
+      Gpg: https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ .TAG/{{ .PACK }}/{{ .GPG }}
+  k8s:
+    Name: k8s
+    Url:
+      Repo: https://pkgs.k8s.io/core:/stable:/v{{ .TAG }}/{{ .PACK }}/
+      Gpg:  https://pkgs.k8s.io/core:/stable:/v{{ .TAG }}/{{ .PACK }}/{{ .GPG }}

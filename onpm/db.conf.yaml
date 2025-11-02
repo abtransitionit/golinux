@@ -1,0 +1,14 @@
+apt:
+  pkg: deb
+  ext: .list
+  folder:
+    repo: "/etc/apt/sources.list.d"
+    gpgKey: "/usr/share/keyrings"
+dnf:
+  pkg: rpm
+  ext: .repo
+  folder:
+    repo: "/etc/yum.repos.d"
+  os:
+    family: {{.Os.Family}}
+    distro: {{.Os.Distro}}
