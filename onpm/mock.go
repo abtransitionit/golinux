@@ -1,9 +1,107 @@
 package onpm
 
+import (
+	"bytes"
+	"fmt"
+	"os/exec"
+	"strings"
+)
+
 func UpgradePkg() (string, error) {
 	return "apt-get update -y", nil
 }
 
 func UpgradeOs() string {
 	return "apt-get upgrade -y"
+}
+
+// Parameter structs
+type ParamInstallRepo struct {
+	NodeName string
+	RepoList ListRepo
+}
+
+func InstallRepo(nodeName string, repoList ListRepo) (string, error) {
+	// log node
+	fmt.Printf("🖥️  Node: %s - Installing repositories\n", nodeName)
+
+	// check if listRepo is empty
+	if len(repoList) == 0 {
+		fmt.Printf("⚠️  No repositories to install on node %s\n", nodeName)
+		return fmt.Sprintf("%s: no repositories", nodeName), nil
+	}
+
+	// loop through the list of repositories
+	for _, repo := range repoList {
+		fmt.Printf("📦 Installing repo '%s' (version: %s) from file '%s'\n",
+			repo.Name)
+	}
+
+	// indicate success
+	return fmt.Sprintf("%s: %d repos processed", nodeName, len(repoList)), nil
+}
+
+type ParamLoadKModule struct {
+	KModuleList []string
+	KFilePath   string
+}
+
+func LoadKModule(kModuleList []string, kFilePath string) (string, error) {
+	fmt.Printf("🖥️  will load following Os Kernel Modules %s \n", kModuleList)
+	fmt.Printf("🖥️  will use following  file path %s \n", kFilePath)
+
+	return "", nil
+}
+
+type ParamSetPath struct {
+	BasePath         string
+	CustomRcFilename string
+}
+
+func SetPath(basePath string, customRcFileName string) error {
+	fmt.Printf("🖥️  basePath is  %s \n", basePath)
+	fmt.Printf("🖥️  custom rc filename is %s \n", customRcFileName)
+	return nil
+}
+
+type ParamCheckSshAccess struct {
+	NodeName string
+}
+
+// CheckSshAccess checks if an SSH connection to a node is reachable using the local SSH client.
+func CheckSshAccess(nodeName string) error {
+	// Basic validation
+	if strings.TrimSpace(nodeName) == "" {
+		return fmt.Errorf("invalid node name")
+	}
+
+	// Build SSH command
+	cmd := exec.Command(
+		"ssh",
+		"-o", "BatchMode=yes",
+		"-o", "ConnectTimeout=5",
+		nodeName,
+		"echo ok",
+	)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	// Execute
+	err := cmd.Run()
+	outStr := strings.TrimSpace(stdout.String())
+	errStr := strings.TrimSpace(stderr.String())
+
+	// Check result
+	if err != nil {
+		return fmt.Errorf("❌ SSH unreachable for node %s: %v (%s)", nodeName, err, errStr)
+	}
+
+	if outStr != "ok" {
+		return fmt.Errorf("⚠️ unexpected SSH output from %s: %q", nodeName, outStr)
+	}
+
+	fmt.Printf("✅ SSH reachable: %s\n", nodeName)
+	return nil
 }
