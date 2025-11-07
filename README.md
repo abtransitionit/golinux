@@ -1,8 +1,10 @@
-# Golinux
+# Golinux purpose
 
-A foundational Go library (i.e. no `main()`) containing low level reusable universal linux functions, for managing any Linux platform. 
-
-It provides a set of primitives that handle cross-distribution differences automatically. no need to know/worry if the linux host (VM or container) is `Rhel`, `debian`, `alpine`, `ubuntu`, ..., nor if it is a `arm64`, `amd64` or any cpu arch.
+- A Go library (i.e. no `main()`) 
+- abstract all Linux distr (version, name, ...). 
+- low level code that **CAN* manage any Linux distro whith **Configuration**. 
+- provides a set of primitives that handle cross-distribution differences automatically. 
+- no need to know/worry if the linux host (VM or container) is `Rhel`, `debian`, `alpine`, `ubuntu`, ..., nor if it is a `arm64`, `amd64` or any cpu arch.
 
 ----
 
@@ -13,7 +15,7 @@ It provides a set of primitives that handle cross-distribution differences autom
 ---
 
 
-# Features  
+# Policy
 This project template includes the following components:  
 
 
