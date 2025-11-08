@@ -1,10 +1,10 @@
-# Golinux purpose
+# Golinux
 
 - A Go library (i.e. no `main()`) 
-- abstract all Linux distr (version, name, ...). 
-- low level code that **CAN* manage any Linux distro whith **Configuration**. 
-- provides a set of primitives that handle cross-distribution differences automatically. 
-- no need to know/worry if the linux host (VM or container) is `Rhel`, `debian`, `alpine`, `ubuntu`, ..., nor if it is a `arm64`, `amd64` or any cpu arch.
+- provides a set of primitives that handle Linux OS and distribution differences automatically. 
+- the code is distro and architecture agnostic
+  - works on any distro: `Rhel`, `debian`, `alpine`, `ubuntu`, ...,
+  - works on any cpu arch: `arm64`, `amd64`
 
 ----
 
@@ -15,7 +15,7 @@
 ---
 
 
-# Policy
+# Introduction
 This project template includes the following components:  
 
 
@@ -32,25 +32,17 @@ This library offers a high-level API for common Linux administration tasks, unin
 - `runCliLocal()`: A primitive to play any complex linux CLI on the local VM
 - `runCliSsh()`: A primitive to play any complex linux CLI on a remote VM
 
----
 
-## Installation
+# Installation
 
-To use this library in your project, run:
+To use this library in your project, run: go get [github.com/abtransitionit/golinux](https://github.com/abtransitionit/golinux)
 
-```bash
-go get [github.com/abtransitionit/golinux](https://github.com/abtransitionit/golinux)
-```
-
----
-
-# Contributing  
+## Contributing  
 
 We welcome contributions! Before participating, please review:  
 - **[Code of Conduct](.github/CODE_OF_CONDUCT.md)** – Our community guidelines.  
 - **[Contributing Guide](.github/CONTRIBUTING.md)** – How to submit issues, PRs, and more.  
 
-----
 
 
 # Release History & Changelog  
@@ -59,12 +51,11 @@ Track version updates and changes:
 - **📦 Latest Release**: `vX.X.X` ([GitHub Releases](#))  
 - **📄 Full Changelog**: See [CHANGELOG.md](CHANGELOG.md) for detailed version history.  
 
----
 
 
 # Howtos
 ## get code from repo
-**purpose**
+**purpose**:
 How to use code from another `go` project that is also in active development.
 ```shell
 # in golinux/go.mod (need code form gocore)
