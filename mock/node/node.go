@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/golinux/mock/run"
@@ -21,7 +22,7 @@ func IsSshReachable(nodeName string, logger logx.Logger) (bool, error) {
 	// 2 -  Now that we know the node is configured, check if it's reachable.
 	cli := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s 'exit'", nodeName)
 
-	_, err = run.ExecuteCli(cli, logger)
+	_, err = run.RunOnLocal(cli, logger)
 	if err != nil {
 		// If an error is returned, it means the SSH connection failed
 		// This is the expected behavior for a non-reachable host.
@@ -32,22 +33,24 @@ func IsSshReachable(nodeName string, logger logx.Logger) (bool, error) {
 
 }
 
+// Description: check if a VM is SSH configured.
 func IsSshConfigured(vmName string, logger logx.Logger) (bool, error) {
+	// build CLI command
+	cli := fmt.Sprintf("ssh -G %s | grep '^hostname ' | cut -d' ' -f2", vmName)
 
-	// define cli
-	cli := fmt.Sprintf("ssh -G %s | grep 'hostname ' | cut -d' ' -f2", vmName)
-
-	// play cli
-	resolvedHostname, err := run.ExecuteCli(cli, logger)
+	// run command
+	resolvedHostname, err := run.RunOnLocal(cli, logger)
 	if err != nil {
 		return false, fmt.Errorf("getting resolved hostname: %w", err)
 	}
-	// The logic : compare the resolved hostname to the alias.
-	// If they are not the same, the VM is configured. We also check for an empty
-	// resolved hostname, which would indicate no match was found.
-	isConfigured := resolvedHostname != vmName && resolvedHostname != ""
 
-	// return response
+	// trim spaces/newlines
+	resolvedHostname = strings.TrimSpace(resolvedHostname)
+	// logger.Debugf("resolvedHostname for %s > %q", vmName, resolvedHostname)
+
+	// logic: if hostname is empty or identical, it's not configured
+	isConfigured := resolvedHostname != "" && resolvedHostname != vmName
+
 	return isConfigured, nil
 }
 
