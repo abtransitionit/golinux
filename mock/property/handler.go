@@ -210,6 +210,34 @@ func getOsArch(_ ...string) (string, error) {
 	return runtime.GOARCH, nil // go env GOARCH
 }
 
+func getNetIp(_ ...string) (string, error) {
+	// define CLI
+	cli := "curl -s ifconfig.me -4"
+	// run cli
+	output, err := run.RunCli("local", cli, nil)
+	// handle system error
+	if err != nil {
+		return "", fmt.Errorf("getting net-ip > %v", err)
+	}
+	// handle success
+	return output, nil
+}
+
+func getNetGateway(_ ...string) (string, error) {
+	// define CLI
+	cli := "ip route get 2.2.2.2"
+	// run cli
+	output, err := run.RunCli("local", cli, nil)
+	// handle system error
+	if err != nil {
+		return "", fmt.Errorf("getting net-ip > %v", err)
+	}
+	// First line only
+	line := strings.Split(output, "\n")[0]
+	// handle success
+	return strings.TrimSpace(line), nil
+}
+
 // ---------------- TODO -------------------------------- TODO -------------------------------- TODO ----------------
 // ---------------- TODO -------------------------------- TODO -------------------------------- TODO ----------------
 // ---------------- TODO -------------------------------- TODO -------------------------------- TODO ----------------
@@ -278,32 +306,4 @@ func getSelinuxInfos(_ ...string) (string, error) {
 	}
 
 	return fmt.Sprintf("status: %-10s :: mode: %s", status, mode), nil
-}
-
-func getNetIp(_ ...string) (string, error) {
-	// define CLI
-	cli := "curl -s ifconfig.me -4"
-	// run cli
-	output, err := run.RunCli("local", cli, nil)
-	// handle system error
-	if err != nil {
-		return "", fmt.Errorf("getting net-ip > %v", err)
-	}
-	// handle success
-	return output, nil
-}
-
-func getNetGateway(_ ...string) (string, error) {
-	// define CLI
-	cli := "ip route get 2.2.2.2"
-	// run cli
-	output, err := run.RunCli("local", cli, nil)
-	// handle system error
-	if err != nil {
-		return "", fmt.Errorf("getting net-ip > %v", err)
-	}
-	// First line only
-	line := strings.Split(output, "\n")[0]
-	// handle success
-	return strings.TrimSpace(line), nil
 }

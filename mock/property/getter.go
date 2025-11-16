@@ -2,52 +2,49 @@ package property
 
 import (
 	"fmt"
-	"os"
-	"sort"
 	"strings"
 
-	"github.com/jedib0t/go-pretty/table"
+	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/run"
 )
 
-// Description: retrieves a property from a target.
-func GetProperty(targetName string, property string, params ...string) (string, error) {
+func GetProperty(logger logx.Logger, targetName string, propertyName string, propertyParams ...string) (string, error) {
+	// define var
+	const goAgentPath = "luca"
+	var output string
+	var err error
 
-	// get function that manages that property
-	fnHandler, ok := propertyMap[property]
-	if !ok {
-		return "", fmt.Errorf("unknown property requested: %s", property)
+	if targetName == "local" {
+		// 1 -  local execution - get handler
+		// 11 - get handler
+		fnHandler, ok := PropertyMap[propertyName]
+		// 12 - handle error
+		if !ok {
+			return "", fmt.Errorf("unknown property requested: %s", propertyName)
+		}
+		// 13 - play function
+		output, err = fnHandler(propertyParams...)
+	} else {
+		// 2 - remote execution
+		// 21 - define CLI
+		quotedParams := make([]string, len(propertyParams))
+		for i, param := range propertyParams {
+			quotedParams[i] = fmt.Sprintf("%q", param)
+		}
+		PropertyAsFlag := fmt.Sprintf("%s%s", "--", propertyName)
+		cli := fmt.Sprintf("%s property %s %s", goAgentPath, PropertyAsFlag, strings.Join(quotedParams, " "))
+		// logger.Debugf("CLI is : %s", cli)
+		// 22 - run CLI on remote
+		output, err = run.RunOnRemote(targetName, cli, nil)
 	}
 
-	// play that function and get it output
-	output, err := fnHandler(params...)
+	// ---------  common to local and remote execution ---------
+
+	// 3 - handle system error
 	if err != nil {
-		return "", fmt.Errorf("error getting %s: %w", property, err)
-	}
+		return "", fmt.Errorf("%s > getting property %q > %v > output: %s", targetName, propertyName, err, output)
 
+	}
+	// 24 - handle success
 	return strings.TrimSpace(output), nil
-}
-
-func TodoShowMapProperty() {
-	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
-
-	// Simple header
-	t.AppendHeader(table.Row{"Property Name"})
-
-	// sort keys
-	var listPropertyName []string
-	for name := range propertyMap {
-		listPropertyName = append(listPropertyName, name)
-	}
-	sort.Strings(listPropertyName)
-
-	// Add rows
-	for _, name := range listPropertyName {
-		t.AppendRow(table.Row{
-			name,
-		})
-	}
-
-	// Render with default style
-	t.Render()
 }

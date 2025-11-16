@@ -21,34 +21,43 @@ func RunCli(targetName, cli string, logger logx.Logger) (string, error) {
 
 // Description: executes a CLI locally and returns its output as a string
 func RunOnLocal(cde string, logger logx.Logger) (string, error) {
-	// define CLI
+	// 1 - define CLI
 	cli := exec.Command("sh", "-c", cde)
+
 	// log
 	// logger.Debugf("executed local CLI > %s ", cli)
-	// run CLI
+
+	// 2 - run CLI
 	output, err := cli.CombinedOutput()
-	// handle system error
+
+	// 3 - handle system error
 	if err != nil {
 		return string(output), fmt.Errorf("running cli locally: %v, output: %s", err, string(output))
 	}
-	// handle success
+
+	// 4 - handle success
 	return string(output), nil
 }
 
 // Description: executes a CLI remotely via SSH and returns its output as a string
-func RunOnRemote(vm string, cde string, logger logx.Logger) (string, error) {
-	// define CLI - Build the SSH command: ssh <vm> "<cli>"
-	sshCmd := fmt.Sprintf("ssh %s \"%s\"", vm, cde)
+func RunOnRemote(target string, cde string, logger logx.Logger) (string, error) {
+
+	// 1 - define CLI - Build the SSH command: ssh <vm> "<cli>"
+	sshCmd := fmt.Sprintf("ssh %s \"%s\"", target, cde)
 	cli := exec.Command("sh", "-c", sshCmd)
+
 	// log
 	// logger.Debugf("executed remote CLI: %s > %s", vm, cli)
-	// run CLI
+
+	// 2 - run CLI
 	output, err := cli.CombinedOutput()
-	// handle system error
+
+	// 3 - handle system error
 	if err != nil {
-		return string(output), fmt.Errorf("running cli remotely on %s: %v, output: %s", vm, err, string(output))
+		return string(output), fmt.Errorf("running cli remotely on %s: %v, output: %s", target, err, string(output))
 	}
-	// handle success
+
+	// 4 - handle success
 	return string(output), nil
 }
 
