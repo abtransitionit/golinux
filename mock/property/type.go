@@ -1,4 +1,4 @@
-package onpm
+package property
 
 // map a key that represents a property to a function responsible for retrieving that property
 var propertyMap = map[string]FnPropertyHandler{
