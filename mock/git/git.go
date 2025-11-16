@@ -9,10 +9,9 @@ import (
 )
 
 // Description: git merge branch dev to main and push to github
-func MergeDevToMain(targetName string, repoName string, logger logx.Logger) (bool, error) {
+func MergeDevToMain(targetName string, repoFolder string, repoName string, logger logx.Logger) (bool, error) {
 
 	// define var
-	const repoFolder = "/Users/max/wkspc/git"
 	repoPath := fmt.Sprintf("%s/%s", repoFolder, repoName)
 
 	// 1 - build CLI to merge dev to main
