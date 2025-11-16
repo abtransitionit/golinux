@@ -36,7 +36,6 @@ func MergeDevToMain(targetName string, repoName string, logger logx.Logger) (boo
 		return false, fmt.Errorf("target: %s > node: %s > system error > merging and pushing dev to main: %w", targetName, repoName, err)
 	}
 
-	// 5 - handle success
-	logger.Infof("repo %s successfully updated", repoName)
+	// 4 - handle success
 	return true, nil
 }
