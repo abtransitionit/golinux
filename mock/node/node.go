@@ -8,58 +8,62 @@ import (
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
-// Description: check a ssh target is reachable
+// Description: check if a node iss SSH configured on a target.
 //
 // Notes:
-// - a ssh target is the localhost, a remote VM or a container
-func IsSshReachable(targetName string, logger logx.Logger) (bool, error) {
+// - a node is a remote VM, the localhost, a container or a remote container
+// - a target is a node from which the ssh command is executed
+func IsSshConfigured(targetName string, nodeName string, logger logx.Logger) (bool, error) {
+	// 1 - build CLI to test ssh configuration
+	cli := fmt.Sprintf("ssh -T -G %s | grep '^hostname ' | cut -d' ' -f2", nodeName)
 
-	// 1 - Check node is configured.
-	isConfigured, err := IsSshConfigured(targetName, logger)
+	// 2 - run CLI
+	resolvedHostname, err := run.RunCli(targetName, cli, logger)
+
+	// 3 - handle system error
 	if err != nil {
-		return false, fmt.Errorf("checking ssh configuration: %w", err)
-	}
-	if !isConfigured {
-		return false, nil
+		return false, fmt.Errorf("target: %s > node: %s > system error > getting resolved hostname: %w", targetName, nodeName, err)
 	}
 
-	// 2 -  Now that we know the node is configured, check if it's reachable.
-	cli := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s 'exit'", targetName)
-
-	_, err = run.RunOnLocal(cli, logger)
-	if err != nil {
-		// If an error is returned, it means the SSH connection failed
-		// This is the expected behavior for a non-reachable host.
-		return false, nil
+	// 4 - handle logic error - if hostname is empty or identical, it's not configured
+	resolvedHostname = strings.TrimSpace(resolvedHostname)
+	if resolvedHostname == "" || resolvedHostname == nodeName {
+		return false, nil // // SSH not configured - NOT a system error
 	}
-
+	// 5 - handle success
 	return true, nil
-
 }
 
-// Description: check a ssh target is configured.
+// Description: check if a node is SSH reachable from a target.
 //
 // Notes:
-// - a ssh target is the localhost, a remote VM or a container
+// - a node is a remote VM, the localhost, a container or a remote container
+// - a target is a node from which the ssh command is executed
+func IsSshReachable(targetName string, nodeName string, logger logx.Logger) (bool, error) {
 
-func IsSshConfigured(targetName string, logger logx.Logger) (bool, error) {
-	// build CLI command
-	cli := fmt.Sprintf("ssh -G %s | grep '^hostname ' | cut -d' ' -f2", targetName)
-
-	// run command
-	resolvedHostname, err := run.RunOnLocal(cli, logger)
+	// 1 - check node is configured first
+	isConfigured, err := IsSshConfigured(targetName, nodeName, logger)
 	if err != nil {
-		return false, fmt.Errorf("getting resolved hostname: %w", err)
+		return false, fmt.Errorf("target: %s > node: %s > system error > checking ssh configuration: %w", targetName, nodeName, err)
 	}
+	if !isConfigured {
+		logger.Debugf("target: %s > node: %s > is not SSH configured", targetName, nodeName)
+		return false, nil // SSH not configured, not a system error
+	}
+	//
+	// 2 - SSH is configured - Build CLI to test reachability
+	cli := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s 'exit'", nodeName)
 
-	// trim spaces/newlines
-	resolvedHostname = strings.TrimSpace(resolvedHostname)
-	// logger.Debugf("resolvedHostname for %s > %q", targetName, resolvedHostname)
+	// 3 - Run CLI locally or remotely
+	_, err = run.RunCli(targetName, cli, logger)
 
-	// logic: if hostname is empty or identical, it's not configured
-	isConfigured := resolvedHostname != "" && resolvedHostname != targetName
-
-	return isConfigured, nil
+	// 4 - If an error is returned, it means the SSH connection failed. This is the expected behavior for a non-reachable host.
+	if err != nil {
+		// return false, fmt.Errorf("target: %s > node: %s > is not SSH reachable", targetName, nodeName)
+		return false, nil
+	}
+	// handle success
+	return true, nil
 }
 
 func IsRemoteVm() bool {
