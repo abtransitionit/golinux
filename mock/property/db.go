@@ -30,5 +30,4 @@ var PropertyMap = map[string]FnPropertyHandler{
 	"infoService":     getServiceInfos,
 	"netip":           getNetIp,      // code change from original
 	"netgateway":      getNetGateway, // code change from original
-
 }
