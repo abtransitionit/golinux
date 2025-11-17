@@ -2,25 +2,11 @@ package property
 
 import (
 	"fmt"
-	"os"
-	"os/user"
-	"runtime"
 	"strings"
 
 	"github.com/abtransitionit/golinux/mock/run"
 	"github.com/opencontainers/selinux/go-selinux"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/mem"
 )
-
-func getPath(_ ...string) (string, error) {
-	path := os.Getenv("PATH")
-	if path == "" {
-		return "", fmt.Errorf("PATH environment variable is not set")
-	}
-	return path, nil
-}
 
 func isServiceEnabled(params ...string) (string, error) {
 	// get parameter
@@ -97,7 +83,7 @@ func getUuid(_ ...string) (string, error) {
 	// handle success
 	return output, nil
 }
-func getUnameM(_ ...string) (string, error) {
+func getOsArch2(_ ...string) (string, error) {
 	// define CLI
 	cli := "uname -m"
 	// run cli
@@ -142,74 +128,6 @@ func getPathTree(params ...string) (string, error) {
 	return output, nil
 }
 
-func getOsDistro(_ ...string) (string, error) {
-	info, err := host.Info()
-	if err != nil {
-		return "", err
-	}
-	return info.Platform, nil
-}
-
-func getOsFamily(_ ...string) (string, error) {
-	info, err := host.Info()
-	if err != nil {
-		return "", fmt.Errorf("getting os family > %v", err)
-	}
-	return info.PlatformFamily, nil
-}
-
-func getOsVersion(_ ...string) (string, error) {
-	info, err := host.Info()
-	if err != nil {
-		return "", fmt.Errorf("getting os version > %v", err)
-	}
-	return info.PlatformVersion, nil
-}
-
-func getOsUser(_ ...string) (string, error) {
-	output, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	return output.Username, nil
-}
-
-func getOsKernelVersion(_ ...string) (string, error) {
-	info, err := host.Info()
-	if err != nil {
-		return "", fmt.Errorf("getting os kernel version > %v", err)
-	}
-	return info.KernelVersion, nil
-}
-
-func getCpu(_ ...string) (string, error) {
-	output, err := cpu.Info()
-	if err != nil {
-		return "", fmt.Errorf("getting cpu info > %v", err)
-	}
-	return fmt.Sprintf("%v", output[0].Cores), nil
-}
-
-func getRam01(_ ...string) (string, error) {
-	output, err := cpu.Info()
-	if err != nil {
-		return "", fmt.Errorf("getting cpu info > %v", err)
-	}
-	return fmt.Sprintf("%v", output[0].Cores), nil
-}
-
-func getRam02(_ ...string) (string, error) {
-	output, err := mem.VirtualMemory()
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%v", output.Total/(1024*1024*1024)), nil
-}
-
-func getOsArch(_ ...string) (string, error) {
-	return runtime.GOARCH, nil // go env GOARCH
-}
-
 func getNetIp(_ ...string) (string, error) {
 	// define CLI
 	cli := "curl -s ifconfig.me -4"
@@ -238,36 +156,18 @@ func getNetGateway(_ ...string) (string, error) {
 	return strings.TrimSpace(line), nil
 }
 
-// ---------------- TODO -------------------------------- TODO -------------------------------- TODO ----------------
-// ---------------- TODO -------------------------------- TODO -------------------------------- TODO ----------------
-// ---------------- TODO -------------------------------- TODO -------------------------------- TODO ----------------
-
-func getOsType(_ ...string) (string, error) {
-	return runtime.GOOS, nil // go env GOOS
-}
-
-func getOsInfos(_ ...string) (string, error) {
-	family, err := getOsFamily()
+func getSelinuxInfos(_ ...string) (string, error) {
+	status, err := getSelinuxStatus()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("selstatus: %v", err)
 	}
 
-	distro, err := getOsDistro()
+	mode, err := getSelinuxMode()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("selmode: %v", err)
 	}
 
-	version, err := getOsVersion()
-	if err != nil {
-		return "", err
-	}
-
-	kernel, err := getOsKernelVersion()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("family: %-6s :: distro: %-10s :: OsVersion: %-6s :: OsKernelVersion: %s", family, distro, version, kernel), nil
+	return fmt.Sprintf("status: %-10s :: mode: %s", status, mode), nil
 }
 
 func getServiceInfos(params ...string) (string, error) {
@@ -292,18 +192,4 @@ func getServiceInfos(params ...string) (string, error) {
 	// return
 	return fmt.Sprintf("%-6s / %-6s", isActive, isEnabled), nil
 
-}
-
-func getSelinuxInfos(_ ...string) (string, error) {
-	status, err := getSelinuxStatus()
-	if err != nil {
-		return "", fmt.Errorf("selstatus: %v", err)
-	}
-
-	mode, err := getSelinuxMode()
-	if err != nil {
-		return "", fmt.Errorf("selmode: %v", err)
-	}
-
-	return fmt.Sprintf("status: %-10s :: mode: %s", status, mode), nil
 }

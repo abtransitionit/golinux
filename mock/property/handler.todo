@@ -1,0 +1,191 @@
+/*
+Copyright © 2025 AB TRANSITION IT abtransitionit@hotmail.com
+*/
+
+package property
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+// "rebootstatus":   getReboot,
+// "serviceStatus":  getServiceStatus,
+// "serviceEnabled": getServiceEnabled,
+// "serviceinfos":   getServiceInfos,
+// "cgroup":         getCgroupVersion,
+
+// // "selstatus": getSelinuxStatus,
+// "selmode":  getSelinuxMode,
+// "selinfos": getSelinuxInfos,
+
+// "clipackage":      getPackage,
+// "init":            getInitSystem,
+// "host":            getHost,
+// "userlinger":      getLinger,
+// "osinfos":         getOsInfos,
+// "pathext":         getPathExtend,
+// "pathtree":        getPathTree,
+// "sshreachability": getSshReachability,
+
+func getPackage(params ...string) (string, error) {
+
+	// manage argument
+	if len(params) < 1 {
+		return "", fmt.Errorf("cli name required")
+	}
+
+	// get input
+	cliName := params[0]
+
+	// get os:type
+	osType, err := getOsType()
+	if err != nil {
+		return "", err
+	}
+	// get os:arch
+	osfamily, err := getOsFamily()
+	if err != nil {
+		return "", err
+	}
+
+	// manage linux only
+	if strings.TrimSpace(strings.ToLower(osType)) != "linux" {
+		return "", fmt.Errorf("os:type not manage: [%s]", osType)
+	}
+
+	return osfamily + " " + cliName, nil
+}
+func getLingerStatus(params ...string) (string, error) {
+	if len(params) < 1 {
+		return "", fmt.Errorf("user name required")
+	}
+
+	// get input
+	OsUserName := params[0]
+
+	// play test cli - same as testing if cli : loginctl exists
+	cli := fmt.Sprintf(`loginctl show-user %s`, OsUserName)
+	if _, err := RunCLILocal(cli); err != nil {
+		return "", err
+	}
+	// now grep is safe
+	cli = fmt.Sprintf(`loginctl show-user %s | grep -i linger | cut -d= -f2`, OsUserName)
+	output, err := RunCLILocal(cli)
+	if err != nil {
+		return "", err
+	}
+	// success
+	return output, nil
+}
+
+func getSshReachability(params ...string) (string, error) {
+	// manage argument
+	if len(params) < 1 {
+		return "", fmt.Errorf("vm name required")
+	}
+
+	// get service name
+	vm := params[0]
+
+	// play cli
+	if _, cli := IsVmSshReachable(vm); cli != nil {
+		return "false", nil
+	}
+	return "true", nil
+}
+
+func getRebootStatus(_ ...string) (string, error) {
+	// Ensure we're on Linux
+	osType, err := getOsType()
+	if err != nil {
+		return "", fmt.Errorf("could not detect OS type: %w", err)
+	}
+	if osType != "linux" {
+		return "", fmt.Errorf("unsupported OS type: %s (only linux is supported)", osType)
+	}
+
+	// Detect the OS family
+	osFamily, err := getOsFamily()
+	if err != nil {
+		return "", fmt.Errorf("could not detect OS family: %w", err)
+	}
+
+	// Select appropriate command
+	var cli string
+	switch strings.TrimSpace(osFamily) {
+	case "debian":
+		cli = "test -f /var/run/reboot-required && echo true || echo false"
+	case "rhel":
+		cli = "	command -v needs-restarting >/dev/null && needs-restarting -r | grep -q 'Reboot is required' && echo true || echo false"
+	default:
+		return "", fmt.Errorf("unsupported OS family: %s", osFamily)
+	}
+
+	// Run the command
+	output, err := RunCLILocal(cli)
+	if err != nil {
+		return "", fmt.Errorf("failed to check reboot requirement: %w", err)
+	}
+
+	return strings.TrimSpace(output), nil
+}
+
+func getHost(_ ...string) (string, error) {
+	osType, err := getOsType()
+	if err != nil {
+		return "", err
+	}
+	if osType != "linux" {
+		return "Unsupported OS", nil
+	}
+	cmd := "systemd-detect-virt"
+	out, err := RunCLILocal(cmd)
+	if err != nil {
+		return "", err
+	}
+	return out, nil
+}
+
+func getInitSystem(_ ...string) (string, error) {
+	output, err := RunCLILocal("ps -p 1 -o comm=")
+	if err != nil {
+		return "", fmt.Errorf("getting init > %v", err)
+	}
+	if strings.Contains(output, "systemd") {
+		return "systemd (cgroup v2)", nil
+	}
+	return "initd (likely cgroup v1)", nil
+}
+
+func getPathExtend(params ...string) (string, error) {
+	// check arg
+	if len(params) < 1 {
+		return "", fmt.Errorf("semi-colon separated paths required")
+	}
+	// get property
+	path := os.Getenv("PATH")
+	if path == "" {
+		return "", fmt.Errorf("PATH environment variable is not set")
+	}
+	// get extension
+	extension := params[0]
+
+	pathExtend, err := UpdatePath(extension)
+	if err != nil {
+		return "", err
+	}
+	return pathExtend, nil
+}
+
+func getCgroupVersion(_ ...string) (string, error) {
+	content, err := os.ReadFile("/proc/self/cgroup")
+	if err != nil {
+		return "", fmt.Errorf("getting cgroup > %w", err)
+	}
+	if strings.Contains(string(content), "0::/") {
+		return "v2", nil
+	}
+	return "v1", nil
+}
