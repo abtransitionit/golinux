@@ -7,12 +7,16 @@ import (
 	"strings"
 )
 
-func UpgradePkg() (string, error) {
-	return "apt-get update -y", nil
-}
-
-func UpgradeOs() string {
-	return "apt-get upgrade -y"
+func normalizeOsFamily(osFamily string) string {
+	s := strings.ToLower(strings.TrimSpace(osFamily))
+	switch s {
+	case "debian":
+		return "debian"
+	case "rhel", "fedora":
+		return "rhel"
+	default:
+		return ""
+	}
 }
 
 // Parameter structs

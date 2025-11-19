@@ -26,7 +26,7 @@ func normalizeOsFamily(osFamily string) string {
 
 // Name:GetCliBuilder
 //
-// Description: factory function that returns a PackageManager based on the OS type (rhel/dnf or debian/apt)
+// Description: returns a PackageManager based on the OS type (rhel/dnf or debian/apt)
 func (cbd CliBuilderFactory) get(osFamily string, osDistro string, repo *Repo, pkg *Package) (CliBuilder, error) {
 	// normalize input
 	family := normalizeOsFamily(osFamily)

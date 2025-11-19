@@ -70,8 +70,8 @@ onpm/
 # How it works
 1. OS repository and package are **modeled** by a structure (ie. `Repo` and `Package`)
 1. Each structure to model the object define members among which
-  - a method `GetManager` that detect the os type (rhel, fedora, ubuntu, ...)
-  - has access a method (`GetManager`) that detect the os type (rhel, fedora, ubuntu, ...)
+    - a method `GetManager` that detect the os type (rhel, fedora, ubuntu, ...)
+    - has access a method (`GetManager`) that detect the os type (rhel, fedora, ubuntu, ...)
 1. according to the os type, `GetPM` create another object (the manager) inside the repo or the package
    - `AptManager` if it's a `ubuntu` like OS
    - `DnfManager` if it's a `rhel` or `fedora` like OS
