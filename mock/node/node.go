@@ -2,7 +2,9 @@ package node
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/golinux/mock/run"
@@ -42,20 +44,17 @@ func IsSshConfigured(hostName string, nodeName string, logger logx.Logger) (bool
 func IsSshReachable(hostName string, nodeName string, logger logx.Logger) (bool, error) {
 
 	// 1 - check node is configured first
-	isConfigured, err := IsSshConfigured(hostName, nodeName, logger)
-	if err != nil {
+	if isConfigured, err := IsSshConfigured(hostName, nodeName, logger); err != nil {
 		return false, fmt.Errorf("host: %s > node: %s > system error > checking ssh configuration: %w", hostName, nodeName, err)
+	} else if !isConfigured {
+		return false, fmt.Errorf("host: %s > node: %s > is not SSH configured", hostName, nodeName)
 	}
-	if !isConfigured {
-		logger.Debugf("host: %s > node: %s > is not SSH configured", hostName, nodeName)
-		return false, nil // SSH not configured, not a system error
-	}
-	//
+
 	// 2 - SSH is configured - Build CLI to test reachability
 	cli := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s 'exit'", nodeName)
 
 	// 3 - Run CLI locally or remotely
-	_, err = run.RunCli(hostName, cli, logger)
+	_, err := run.RunCli(hostName, cli, logger)
 
 	// 4 - If an error is returned, it means the SSH connection failed. This is the expected behavior for a non-reachable host.
 	if err != nil {
@@ -84,28 +83,49 @@ func IsSshReachable(hostName string, nodeName string, logger logx.Logger) (bool,
 // - a host is a node from which the ssh command is executed
 // - the check consist of a SSH connection test every X seconds until the delay is reached
 // - the purpose of the check is to test availability for example after a reboot
-func IsSshOnline(hostName string, nodeName string, logger logx.Logger) (bool, error) {
+func IsSshOnline(hostName string, nodeName string, delayMax string, logger logx.Logger) (bool, error) {
 
-	// 1 - check node is configured first
+	// 1 - check parameters - Convert delayMax provided as secondAsString into to seconds
+	maxDelayInSec, err := strconv.Atoi(delayMax)
+	if err != nil {
+		return false, fmt.Errorf("invalid delayMax value '%s': %w", delayMax, err)
+	}
+	// 2 - check node is configured first
 	if isConfigured, err := IsSshConfigured(hostName, nodeName, logger); err != nil {
 		return false, fmt.Errorf("host: %s > node: %s > system error > checking ssh configuration: %w", hostName, nodeName, err)
 	} else if !isConfigured {
 		return false, fmt.Errorf("host: %s > node: %s > is not SSH configured", hostName, nodeName)
 	}
 
-	// 1 - Build CLI to test reachability
+	// 3 - Build CLI to test reachability
 	cli := fmt.Sprintf("ssh -o BatchMode=yes -o ConnectTimeout=5 %s 'exit' 2>/dev/null && echo true || echo false", nodeName)
+	// logger.Debugf("play cli: %s", cli)
 
-	// 2 - Run CLI locally or remotely - return true or false as string
-	ok, err := run.RunCli(hostName, cli, logger)
+	// 4 - loop until delayMax is expired
+	start := time.Now()
+	timeout := time.Duration(maxDelayInSec) * time.Second
 
-	// 3 - handle system error
-	if err != nil {
-		return false, fmt.Errorf("host: %s > node: %s > system error > getting ssh reachability: %w", hostName, nodeName, err)
+	for {
+		// 41 - Run CLI locally or remotely - return true or false as string
+		ok, err := run.RunCli(hostName, cli, logger)
+
+		// 42 - system error ? → if yes → finish
+		if err != nil {
+			return false, fmt.Errorf("host: %s > node: %s > system error > getting ssh reachability: %w", hostName, nodeName, err)
+		}
+		// 43 - SSH reachable ? → if yes → finish
+		if strings.TrimSpace(ok) == "true" {
+			return true, nil
+		}
+
+		// 44 - Not SSH reachable → are we outside delayMax ? → if yes → finish
+		if time.Since(start) > timeout {
+			return false, nil // Not reachable within delayMax
+		}
+
+		// 44 - inside delayMax → wait before retry
+		time.Sleep(1 * time.Second) // Wait before retry
 	}
-
-	// 4 - handle logic for success evaluates to true if ok == "true". else evaluates to false
-	return ok == "true", nil
 
 }
 

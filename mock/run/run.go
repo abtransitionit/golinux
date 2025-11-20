@@ -10,12 +10,12 @@ import (
 // Description: executes a CLI locally or remotly (via SSH) and returns its output as a string
 //
 // Notes:
-// - choice to is based on the targetName parameter
-func RunCli(targetName, cli string, logger logx.Logger) (string, error) {
-	if targetName == "local" {
+// - choice to is based on the hostName parameter
+func RunCli(hostName, cli string, logger logx.Logger) (string, error) {
+	if hostName == "local" {
 		return RunOnLocal(cli, logger)
 	}
-	return RunOnRemote(targetName, cli, logger)
+	return RunOnRemote(hostName, cli, logger)
 }
 
 // Description: executes a CLI locally and returns its output as a string
@@ -39,10 +39,10 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 }
 
 // Description: executes a CLI remotely via SSH and returns its output as a string
-func RunOnRemote(target string, cde string, logger logx.Logger) (string, error) {
+func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error) {
 
 	// 1 - define CLI - Build the SSH command: ssh <vm> "<cli>"
-	sshCmd := fmt.Sprintf("ssh %s \"%s\"", target, cde)
+	sshCmd := fmt.Sprintf("ssh %s \"%s\"", hostName, cde)
 	cli := exec.Command("sh", "-c", sshCmd)
 
 	// log
@@ -53,7 +53,7 @@ func RunOnRemote(target string, cde string, logger logx.Logger) (string, error) 
 
 	// 3 - handle system error
 	if err != nil {
-		return string(output), fmt.Errorf("running cli remotely on %s: %v, output: %s", target, err, string(output))
+		return string(output), fmt.Errorf("running cli remotely on %s: %v, output: %s", hostName, err, string(output))
 	}
 
 	// 4 - handle success
