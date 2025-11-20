@@ -10,5 +10,5 @@ dnf:
   folder:
     repo: "/etc/yum.repos.d"
   os:
-    family: {{.Os.Family}}
-    distro: {{.Os.Distro}}
+    family: {{ .Os.Family }}
+    distro: {{ .Os.Distro }}
