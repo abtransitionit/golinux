@@ -8,13 +8,13 @@ var PropertyMap = map[string]FnPropertyHandler{
 	"path": cproperty.GetPath,
 	// "envar":           getEnvar,
 	// "cgroupVersion":   getCgroupVersion,
-	"cpu":      cproperty.GetCpu,
-	"ram":      cproperty.GetRam,
-	"uname":    getOsArch2, // code change from original
-	"uuid":     getUuid,    // code change from original
-	"osDistro": cproperty.GetOsDistro,
-	// "osType":          getOsType, // e.g. linux, windows, darwin
-	"osFamily":        cproperty.GetOsFamily, // TODO Type vs family
+	"cpu":             cproperty.GetCpu,
+	"ram":             cproperty.GetRam,
+	"uname":           getOsArch2, // code change from original
+	"uuid":            getUuid,    // code change from original
+	"osDistro":        cproperty.GetOsDistro,
+	"osType":          cproperty.GetOsType,   // e.g. linux, windows, darwin
+	"osFamily":        cproperty.GetOsFamily, // linux:rhel, debian; windows:windows; mac:Worstation
 	"osKernelVersion": cproperty.GetOsKernelVersion,
 	"osUser":          cproperty.GetOsUser,
 	"osVersion":       cproperty.GetOsVersion,
@@ -28,6 +28,7 @@ var PropertyMap = map[string]FnPropertyHandler{
 	"infoOs":          cproperty.GetOsInfos,
 	"infoSelinux":     getSelinuxInfos,
 	"infoService":     getServiceInfos,
-	"netip":           getNetIp,      // code change from original
-	"netgateway":      getNetGateway, // code change from original
+	"netip":           getNetIp,
+	"netgateway":      getNetGateway,
+	"needReboot":      getNeedReboot,
 }

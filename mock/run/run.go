@@ -10,8 +10,7 @@ import (
 // Description: executes a CLI locally or remotly (via SSH) and returns its output as a string
 //
 // Notes:
-// - choice to is made based on the targetName parameter
-
+// - choice to is based on the targetName parameter
 func RunCli(targetName, cli string, logger logx.Logger) (string, error) {
 	if targetName == "local" {
 		return RunOnLocal(cli, logger)

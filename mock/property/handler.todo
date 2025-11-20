@@ -1,14 +1,3 @@
-/*
-Copyright © 2025 AB TRANSITION IT abtransitionit@hotmail.com
-*/
-
-package property
-
-import (
-	"fmt"
-	"os"
-	"strings"
-)
 
 // "rebootstatus":   getReboot,
 // "serviceStatus":  getServiceStatus,
@@ -96,41 +85,6 @@ func getSshReachability(params ...string) (string, error) {
 	return "true", nil
 }
 
-func getRebootStatus(_ ...string) (string, error) {
-	// Ensure we're on Linux
-	osType, err := getOsType()
-	if err != nil {
-		return "", fmt.Errorf("could not detect OS type: %w", err)
-	}
-	if osType != "linux" {
-		return "", fmt.Errorf("unsupported OS type: %s (only linux is supported)", osType)
-	}
-
-	// Detect the OS family
-	osFamily, err := getOsFamily()
-	if err != nil {
-		return "", fmt.Errorf("could not detect OS family: %w", err)
-	}
-
-	// Select appropriate command
-	var cli string
-	switch strings.TrimSpace(osFamily) {
-	case "debian":
-		cli = "test -f /var/run/reboot-required && echo true || echo false"
-	case "rhel":
-		cli = "	command -v needs-restarting >/dev/null && needs-restarting -r | grep -q 'Reboot is required' && echo true || echo false"
-	default:
-		return "", fmt.Errorf("unsupported OS family: %s", osFamily)
-	}
-
-	// Run the command
-	output, err := RunCLILocal(cli)
-	if err != nil {
-		return "", fmt.Errorf("failed to check reboot requirement: %w", err)
-	}
-
-	return strings.TrimSpace(output), nil
-}
 
 func getHost(_ ...string) (string, error) {
 	osType, err := getOsType()

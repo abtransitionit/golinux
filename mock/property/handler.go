@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	cproperty "github.com/abtransitionit/gocore/mock/property"
 	"github.com/abtransitionit/golinux/mock/run"
 	"github.com/opencontainers/selinux/go-selinux"
 )
@@ -192,4 +193,39 @@ func getServiceInfos(params ...string) (string, error) {
 	// return
 	return fmt.Sprintf("%-6s / %-6s", isActive, isEnabled), nil
 
+}
+
+func getNeedReboot(_ ...string) (string, error) {
+	// 1 - get property
+	osType, err := cproperty.GetOsType()
+	if err != nil {
+		return "", fmt.Errorf("could not detect OS type: %w", err)
+	}
+	osFamily, err := cproperty.GetOsFamily()
+	if err != nil {
+		return "", err
+	}
+	// 2 - manage only linux
+	if osType != "linux" {
+		return "", err
+	}
+
+	// 3 - define CLI
+	var cli string
+	switch strings.TrimSpace(osFamily) {
+	case "debian":
+		cli = "test -f /var/run/reboot-required && echo true || echo false"
+	case "rhel", "fedora":
+		cli = "	command -v needs-restarting >/dev/null && needs-restarting -r | grep -q 'Reboot is required' && echo true || echo false"
+	default:
+		return "", fmt.Errorf("unsupported OS family: %s", osFamily)
+	}
+	// 4 - run cli
+	output, err := run.RunCli("local", cli, nil)
+	// handle system error
+	if err != nil {
+		return "", fmt.Errorf("getting reboot status: %w", err)
+	}
+	// handle success
+	return strings.TrimSpace(output), nil
 }

@@ -3,9 +3,8 @@ package onpm
 import "github.com/abtransitionit/gocore/logx"
 
 type SysCli interface {
-	Update() (string, error)
-	Clean() (string, error)
 	Upgrade(logx.Logger) string
+	NeedReboot(logx.Logger) string // TODO: this is not a PM but rather a system manager
 }
 
 type PackageCli interface {

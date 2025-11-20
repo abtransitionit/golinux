@@ -8,13 +8,13 @@ import (
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
-func GetProperty(logger logx.Logger, targetName string, propertyName string, propertyParams ...string) (string, error) {
+func GetProperty(logger logx.Logger, hostName string, propertyName string, propertyParams ...string) (string, error) {
 	// define var
-	const goAgentPath = "luca"
+	const goAgentPath = "luca" // in /usr/local/bin
 	var output string
 	var err error
 
-	if targetName == "local" {
+	if hostName == "local" {
 		// 1 -  local execution - get handler
 		// 11 - get handler
 		fnHandler, ok := PropertyMap[propertyName]
@@ -35,14 +35,14 @@ func GetProperty(logger logx.Logger, targetName string, propertyName string, pro
 		cli := fmt.Sprintf("%s property %s %s", goAgentPath, PropertyAsFlag, strings.Join(quotedParams, " "))
 		// logger.Debugf("CLI is : %s", cli)
 		// 22 - run CLI on remote
-		output, err = run.RunOnRemote(targetName, cli, nil)
+		output, err = run.RunOnRemote(hostName, cli, nil)
 	}
 
 	// ---------  common to local and remote execution ---------
 
 	// 3 - handle system error
 	if err != nil {
-		return "", fmt.Errorf("%s > getting property %q > %v > output: %s", targetName, propertyName, err, output)
+		return "", fmt.Errorf("%s > getting property %q > %v > output: %s", hostName, propertyName, err, output)
 
 	}
 	// 24 - handle success

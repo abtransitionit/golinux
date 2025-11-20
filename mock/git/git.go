@@ -9,7 +9,7 @@ import (
 )
 
 // Description: git merge branch dev to main and push to github
-func MergeDevToMain(targetName string, repoFolder string, repoName string, logger logx.Logger) (bool, error) {
+func MergeDevToMain(hostName string, repoFolder string, repoName string, logger logx.Logger) (bool, error) {
 
 	// define var
 	repoPath := fmt.Sprintf("%s/%s", repoFolder, repoName)
@@ -28,11 +28,11 @@ func MergeDevToMain(targetName string, repoFolder string, repoName string, logge
 	cli := strings.Join(cmds, " && ")
 
 	// 2 - run CLI
-	_, err := run.RunCli(targetName, cli, logger)
+	_, err := run.RunCli(hostName, cli, logger)
 
 	// 3 - handle system error
 	if err != nil {
-		return false, fmt.Errorf("target: %s > node: %s > system error > merging and pushing dev to main: %w", targetName, repoName, err)
+		return false, fmt.Errorf("host: %s > node: %s > system error > merging and pushing dev to main: %w", hostName, repoName, err)
 	}
 
 	// 4 - handle success
