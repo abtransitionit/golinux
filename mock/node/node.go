@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/property"
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
@@ -115,6 +116,13 @@ func IsSshOnline(hostName string, nodeName string, delayMax string, logger logx.
 		}
 		// 43 - SSH reachable ? → if yes → finish
 		if strings.TrimSpace(ok) == "true" {
+			// get osKernelVersion
+			osKernelVersion, err := property.GetProperty(logger, nodeName, "osKernelVersion")
+			if err != nil {
+				return false, err
+			}
+			// logè
+			logger.Infof("%s/%s > KVersion: %s", hostName, nodeName, osKernelVersion)
 			return true, nil
 		}
 
@@ -127,6 +135,43 @@ func IsSshOnline(hostName string, nodeName string, delayMax string, logger logx.
 		time.Sleep(1 * time.Second) // Wait before retry
 	}
 
+}
+
+// Description: reboot a host if needed
+func RebootIfNeeded(hostName string, logger logx.Logger) (string, error) {
+	// 1 - get host:property
+	osFamily, err := property.GetProperty(logger, hostName, "osFamily")
+	if err != nil {
+		return "", err
+	}
+	osDistro, err := property.GetProperty(logger, hostName, "osDistro")
+	if err != nil {
+		return "", err
+	}
+	needReboot, err := property.GetProperty(logger, hostName, "needReboot")
+	if err != nil {
+		return "", err
+	}
+	osKernelVersion, err := property.GetProperty(logger, hostName, "osKernelVersion")
+	if err != nil {
+		return "", err
+	}
+
+	if strings.TrimSpace(needReboot) == "true" {
+		// 2 - log
+		logger.Debugf("%s > %s:%s > kVersion: %s, need reboot: %s > rebooting", hostName, osFamily, osDistro, osKernelVersion, needReboot)
+		// 3 - definé CLI
+		cli := "sudo systemctl reboot"
+		logger.Debugf("%s > %s:%s > will do %s", hostName, osFamily, osDistro, cli)
+		// 4 - run CLI
+		out, err := run.RunCli(hostName, cli, logger)
+		if err != nil {
+			return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
+		}
+	}
+
+	// handle success
+	return "", nil
 }
 
 func IsRemoteVm() bool {
