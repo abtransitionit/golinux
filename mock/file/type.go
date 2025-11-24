@@ -1,10 +1,11 @@
 package file
 
-import "encoding/json"
+import "gopkg.in/yaml.v3"
 
 type FileProperty struct {
-	Src string // filePath
-	Dst string // filePath or folderPath
+	Src   string // filePath
+	Dst   string // filePath or folderPath
+	Chmod string // optional
 }
 
 // Description: returns a value of type T from a JSON-encoded string
@@ -23,7 +24,7 @@ type FileProperty struct {
 //	fmt.Println(fp.Name) // Output: example.txt
 func GetVarStruct[T any](s string) (T, error) {
 	var v T
-	if err := json.Unmarshal([]byte(s), &v); err != nil {
+	if err := yaml.Unmarshal([]byte(s), &v); err != nil {
 		return v, err
 	}
 	return v, nil

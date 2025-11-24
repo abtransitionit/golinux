@@ -31,7 +31,7 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 
 	// 3 - handle system error
 	if err != nil {
-		return string(output), fmt.Errorf("running cli locally: %v, output: %s", err, string(output))
+		return string(output), fmt.Errorf("running cli locally: %v", err)
 	}
 
 	// 4 - handle success
