@@ -22,22 +22,46 @@ func CopyFileWithSudo(hostName string, nodeName string, fileProperty FilePropert
 		// if file just copy Dst
 		dstFile = fileProperty.Dst
 	}
+	// 2 - logic - copy file only if different
+	// 21 - get the SHA of the source file
+	cli := "sha256sum " + fileProperty.Src
+	shaSrc, err := run.RunCli(hostName, cli, nil)
+	if err != nil {
+		return "", err
+	}
 
-	// 2 - define CLI
+	// 22 - get the SHA of the destination file if exists alese difine a default value (needed for comparison)
+	cli = "sha256sum " + dstFile
+	shaDst, err := run.RunCli(nodeName, cli, nil)
+	if err != nil {
+		shaDst = fmt.Sprintf("11111 %s", dstFile)
+	}
+	// 23 - extract only the hash (first field) and trim whitespace
+	shaSrc = strings.Fields(strings.TrimSpace(shaSrc))[0]
+	shaDst = strings.Fields(strings.TrimSpace(shaDst))[0]
+
+	// 24 - return success if the files are the same
+	if shaSrc == shaDst {
+		// handle success
+		return "", nil
+	}
+
+	// 3 - define CLI
 	cmds := []string{
 		fmt.Sprintf(`cat %s | ssh %s 'sudo tee %s > /dev/null'`, fileProperty.Src, nodeName, dstFile),
 	}
-	// 21 - add chmod
+	// 31 - add chmod
 	if fileChmod != "" {
 		cmds = append(cmds,
 			fmt.Sprintf(`ssh %s 'sudo chmod %s %s'`, nodeName, fileChmod, dstFile),
 		)
 	}
-	cli := strings.Join(cmds, " && ")
+	cli = strings.Join(cmds, " && ")
+
 	// log
 	// logger.Infof("%s/%s > sudo copy to %s : %v", hostName, nodeName, dstType, cli)
 
-	// 3 - run CLI
+	// 4 - run CLI
 	output, err := run.RunCli(hostName, cli, nil)
 	// handle system error
 	if err != nil {

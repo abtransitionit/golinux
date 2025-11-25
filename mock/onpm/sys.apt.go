@@ -25,3 +25,15 @@ func (d *AptSysManager) Upgrade(logger logx.Logger) string {
 
 	return strings.Join(cmds, " && ")
 }
+func (d *AptSysManager) Update(logger logx.Logger) string {
+	logger.Infof("pkg is: %s", d.Cfg.Pkg)
+	// cmds := []string{
+	// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' update -qq -y",
+	// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade -qq -y",
+	// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' clean -qq",
+	// }
+	// // logger.Infof("pkg is: %s", d.Cfg.Pkg)
+
+	// return strings.Join(cmds, " && ")
+	return ""
+}

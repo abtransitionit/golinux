@@ -21,3 +21,15 @@ func (d *DnfSysManager) Upgrade(logger logx.Logger) string {
 	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
 	return strings.Join(cmds, " && ")
 }
+
+func (d *DnfSysManager) Update(logger logx.Logger) string {
+	logger.Infof("pkg is: %s", d.Cfg.Pkg)
+
+	// cmds := []string{
+	// 	"sudo dnf update -q -y",
+	// 	"sudo dnf upgrade -q -y",
+	// 	"sudo dnf clean all",
+	// }
+	// return strings.Join(cmds, " && ")
+	return ""
+}
