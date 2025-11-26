@@ -12,7 +12,7 @@ import (
 //go:embed db.conf.yaml
 var confData []byte
 
-// cache the YAML configuration file for the same couple (osFamily, osDistro)
+// cache the YAML configuration file  on call for the same couple (osFamily, osDistro)
 var (
 	configCache = make(map[string]*ManagerConfig)
 	cacheMu     sync.Mutex

@@ -1,11 +1,19 @@
 apt:
-  pkg: deb
+  pkg: 
+    type: deb
+    required:
+      all:    # all distro
+        - uidmap
+      debian: # distro
+        - dbus-user-session
+        - gnupg
   ext: .list
   folder:
     repo: "/etc/apt/sources.list.d"
     gpgKey: "/usr/share/keyrings"
 dnf:
-  pkg: rpm
+  pkg: 
+    type: rpm
   ext: .repo
   folder:
     repo: "/etc/yum.repos.d"

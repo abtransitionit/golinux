@@ -11,15 +11,15 @@ type SysCli interface {
 }
 
 type PackageCli interface {
-	List() (string, error)
-	Install() (string, error)
-	Remove() (string, error)
+	List() string
+	Add(Pkg2) string
+	Remove() string
 }
 
 type RepoCli interface {
-	List() (string, error)
-	Add() (string, error)
-	Remove() (string, error)
+	List() string
+	Add(Repo2) string
+	Remove() string
 }
 
 // Description: System manager implementations to manage non-repo and non-package actions
@@ -51,18 +51,33 @@ type Package struct {
 
 // Repo represents a repository to be managed.
 type Repo struct {
-	Name string
-	Url  string
-	Cbd  RepoCli // the CLI builder producing commands for this package - set by SetCliBuilder.
+	FileName string
+	Name     string
+	Version  string
+	Url      string
+	Cbd      RepoCli // the CLI builder producing commands for this package - set by SetCliBuilder.
 }
+
+type Pkg2 struct {
+	Name string
+}
+
+type PkgSlice []Pkg2
+type Repo2 struct {
+	Filename string
+	Name     string
+	Version  string
+}
+
+type RepoSlice []Repo2
 
 // Description: represents the whole YAML configuration file
 //
 // Notes:
 //   - Manage the YAML configuration file
 type ManagerConfig struct {
-	Apt *AptConfig
-	Dnf *DnfConfig
+	Apt *AptConfig `yaml:"apt"`
+	Dnf *DnfConfig `yaml:"dnf"`
 }
 
 // Description: represents a part of the YAML configuration file
@@ -70,7 +85,10 @@ type ManagerConfig struct {
 // Notes:
 //   - represents the part of the YAML configuration file for Apt manager
 type AptConfig struct {
-	Pkg    string
+	Pkg struct {
+		Type     string
+		Required map[string][]string
+	}
 	Ext    string
 	Folder struct {
 		Repo   string
@@ -83,7 +101,9 @@ type AptConfig struct {
 // Notes:
 //   - represents the part of the YAML configuration file for Dnf manager
 type DnfConfig struct {
-	Pkg    string
+	Pkg struct {
+		Type string
+	}
 	Ext    string
 	Folder struct {
 		Repo string
