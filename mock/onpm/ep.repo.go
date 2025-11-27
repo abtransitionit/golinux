@@ -15,20 +15,29 @@ func AddRepo(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// if err != nil {
 	// 	return "", err
 	// }
-	osFamily := "rhel"
-	osDistro := "rhel"
 
-	// 2 - get a system manager
+	osFamily := "rhel"
+	osDistro := "almalinux"
+	// osFamily := "debian"
+	// osDistro := "ubuntu"
+	// osFamily := "debian"
+	// osDistro := "debian"
+	// osFamily := "rhel"
+	// osDistro := "rocky"
+	// osFamily := "fedora"
+	// osDistro := "fedora"
+
+	// 2 - get a manager
 	repoMgr, err := GetRepoMgr(osFamily, osDistro)
 	if err != nil {
 		return "", err
 	}
 
 	// 3 - get CLI
-	cli := repoMgr.Add(repo)
+	cli := repoMgr.Add(repo, logger)
 
 	// log
-	logger.Infof("%s/%s > %s:%s > will install repository with %v", hostName, repo.Name, osFamily, osDistro, cli)
+	logger.Infof("%s/%s > %s:%s > add repo >  %v", hostName, repo.Name, osFamily, osDistro, cli)
 
 	// // 4 - run CLI
 	// out, err := run.RunCli(hostName, cli, logger)
@@ -39,3 +48,5 @@ func AddRepo(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// handle success
 	return "", nil
 }
+
+// 1 -

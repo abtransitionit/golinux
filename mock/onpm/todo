@@ -1,9 +1,5 @@
-package onpm
 
-import (
-	"fmt"
-	"strings"
-)
+
 
 func normalizeOsFamily(osFamily string) string {
 	s := strings.ToLower(strings.TrimSpace(osFamily))

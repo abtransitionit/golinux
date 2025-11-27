@@ -8,7 +8,7 @@ type FileProperty struct {
 	Chmod string // optional
 }
 
-// Description: returns a value of type T from a JSON-encoded string
+// Description: returns a value of type T from a yaml-encoded string
 //
 // Example:
 //

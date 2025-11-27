@@ -20,3 +20,4 @@ dnf:
   os:
     family: {{ .Os.Family }}
     distro: {{ .Os.Distro }}
+

@@ -6,16 +6,29 @@ import (
 
 	"fmt"
 
-	"github.com/abtransitionit/gocore/yamlx"
+	"github.com/abtransitionit/gocore/mock/yamlx"
 )
 
-//go:embed db.conf.yaml
-var confData []byte
+// -----------------------------------------
+// ------ get manager ----------------------
+// -----------------------------------------
 
-// cache the YAML configuration file  on call for the same couple (osFamily, osDistro)
+//go:embed db.mgr.yaml
+var yamlMgr []byte
+
+//go:embed db.repo.yaml
+var yamlRepo []byte
+
+// cache the YAML file (for the mng) in memory on call for the same couple (osFamily, osDistro)
 var (
-	configCache = make(map[string]*ManagerConfig)
-	cacheMu     sync.Mutex
+	configMgrCache = make(map[string]*ManagerConfig)
+	cacheMgrMu     sync.Mutex
+)
+
+// cache the YAML file in memory on call for the same couple (osFamily, osDistro)
+var (
+	configRepoCache = make(map[string]*RepoConfig)
+	cacheRepoMu     sync.Mutex
 )
 
 // Description: returns a SysManager based on OS family
@@ -24,7 +37,7 @@ var (
 // - the PM has access to the part of the YAML configuration that relates to the package manager
 func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
 	// 1 - load config file - Ensure it is loaded only once
-	conf, err := getConfig(osFamily, osDistro)
+	conf, err := getMgrConfig(osFamily, osDistro)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +60,7 @@ func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
 func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 
 	// 1 - load config file
-	conf, err := getConfig(osFamily, osDistro)
+	conf, err := getMgrConfig(osFamily, osDistro)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +82,7 @@ func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 // - the PM has access to the part of the YAML configuration that relates to the package manager
 func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
 	// 1 - load config file
-	conf, err := getConfig(osFamily, osDistro)
+	conf, err := getMgrConfig(osFamily, osDistro)
 	if err != nil {
 		return nil, err
 	}
@@ -85,43 +98,89 @@ func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
 	}
 }
 
+// -----------------------------------------
+// ------ get Mgr Config YAML --------------
+// -----------------------------------------
+
 // Description: returns the YAML configuration
 //
 // Notes:
-// - The YAML is reolved ({{.Os.Family}}, {{.Os.Distro}})
-// - TODO: use a structured data instead of osXXX to do this resolution
-// - TODO: this method should be private - for ease of use
-func getConfig(osFamily, osDistro string) (*ManagerConfig, error) {
+// - The placeholders {{ .XXX }} in the YAML are reolved
+// - TODO: find a better structured data or solution for the resolution
+func getMgrConfig(osFamily, osDistro string) (*ManagerConfig, error) {
 	cacheKey := fmt.Sprintf("%s-%s", osFamily, osDistro)
 
-	cacheMu.Lock()
-	cfg, found := configCache[cacheKey]
-	cacheMu.Unlock()
+	cacheMgrMu.Lock()
+	theYaml, found := configMgrCache[cacheKey]
+	cacheMgrMu.Unlock()
 
 	if found {
-		return cfg, nil
+		return theYaml, nil
 	}
 
 	// Not in cache → resolve YAML
 	// 1. define the data structure to resolve the YAML placeholders
-	ctx := map[string]map[string]string{
+	varPlaceholder := map[string]map[string]string{
 		"Os": {
 			"Family": osFamily,
 			"Distro": osDistro,
 		},
 	}
 	// 2 - get resolved YAML into struct
-	cfg, err := yamlx.LoadTplYamlFileEmbed[ManagerConfig](confData, ctx)
+	theYaml, err := yamlx.LoadTplYamlFileEmbed[ManagerConfig](yamlMgr, varPlaceholder)
 	if err != nil {
 		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
 	}
 
 	// Store in cache
-	cacheMu.Lock()
-	configCache[cacheKey] = cfg
-	cacheMu.Unlock()
+	cacheMgrMu.Lock()
+	configMgrCache[cacheKey] = theYaml
+	cacheMgrMu.Unlock()
 
-	return cfg, nil
+	return theYaml, nil
+}
+
+// -----------------------------------------
+// ------ get Repo Config YAML -------------
+// -----------------------------------------
+
+// Description: returns the YAML repository db
+//
+// Notes:
+// - The placeholders {{ .XXX }} in the YAML are reolved
+// - TODO: find a better structured data or solution for the resolution
+func getRepoConfig(Version, osDistro string) (*RepoConfig, error) {
+	cacheKey := fmt.Sprintf("%s-%s", osDistro)
+
+	cacheRepoMu.Lock()
+	theYaml, found := configRepoCache[cacheKey]
+	cacheRepoMu.Unlock()
+
+	if found {
+		return theYaml, nil
+	}
+
+	// Not in cache → resolve YAML
+	// 1. define the data structure to resolve the YAML placeholders
+	varPlaceholder := map[string]map[string]string{
+		"Repo": {
+			"Tag": "tag",
+			"Pkg": "pkg",
+			"Gpg": "gp",
+		},
+	}
+	// 2 - get resolved YAML into struct
+	theYaml, err := yamlx.LoadTplYamlFileEmbed[RepoConfig](yamlRepo, varPlaceholder)
+	if err != nil {
+		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
+	}
+
+	// Store in cache
+	cacheRepoMu.Lock()
+	configRepoCache[cacheKey] = theYaml
+	cacheRepoMu.Unlock()
+
+	return theYaml, nil
 }
 
 // func getConfig(osFamily, osDistro string) (*ManagerConfig, error) {

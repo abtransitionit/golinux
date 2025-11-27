@@ -17,19 +17,23 @@ func AddPkg(hostName string, pkg Pkg2, logger logx.Logger) (string, error) {
 	// }
 
 	osFamily := "rhel"
-	osDistro := "rhel"
+	osDistro := "almalinux"
+	// osFamily := "debian"; osDistro := "ubuntu"
+	// osFamily := "debian"; osDistro := "debian"
+	// osFamily := "rhel"; osDistro := "rocky"
+	// osFamily := "fedora"; osDistro := "fedora"
 
-	// 2 - get a system manager
+	// 2 - get a manager
 	pkgMgr, err := GetPkgMgr(osFamily, osDistro)
 	if err != nil {
 		return "", err
 	}
 
 	// 3 - get CLI
-	cli := pkgMgr.Add(pkg)
+	cli := pkgMgr.Add(pkg, logger)
 
 	// log
-	logger.Infof("%s > %s:%s > will install package with %v", hostName, osFamily, osDistro, cli)
+	logger.Infof("%s > %s:%s > add package >  %v", hostName, osFamily, osDistro, cli)
 
 	// // 4 - run CLI
 	// out, err := run.RunCli(hostName, cli, logger)

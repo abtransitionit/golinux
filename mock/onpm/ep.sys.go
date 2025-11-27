@@ -24,7 +24,7 @@ func UpgradeOs(hostName string, logger logx.Logger) (string, error) {
 		return "", err
 	}
 
-	// 2 - get a system manager
+	// 2 - get a manager
 	sysMgr, err := GetSysMgr(osFamily, osDistro)
 	if err != nil {
 		return "", err

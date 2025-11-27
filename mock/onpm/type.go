@@ -2,7 +2,9 @@ package onpm
 
 import "github.com/abtransitionit/gocore/logx"
 
+// ---------------------------------------------------
 // -------------------- interface --------------------
+// ---------------------------------------------------
 
 type SysCli interface {
 	Update(logx.Logger) string
@@ -12,64 +14,34 @@ type SysCli interface {
 
 type PackageCli interface {
 	List() string
-	Add(Pkg2) string
+	Add(Pkg2, logx.Logger) string
 	Remove() string
 }
 
 type RepoCli interface {
 	List() string
-	Add(Repo2) string
+	Add(Repo2, logx.Logger) string
 	Remove() string
 }
 
-// Description: System manager implementations to manage non-repo and non-package actions
+// ---------------------------------------------------
+// -------------------- struct for YAML --------------
+// ---------------------------------------------------
+
+// Description: represents the whole organization's repository db
 //
 // Notes:
-// - has access to the YAML configuration data
-type AptSysManager struct{ Cfg *AptConfig }
-type DnfSysManager struct{ Cfg *DnfConfig }
-
-// Description: Package manager implementations
-//
-// Notes:
-// - has access to the YAML configuration data
-type AptPkgManager struct{ Cfg *AptConfig }
-type DnfPkgManager struct{ Cfg *DnfConfig }
-
-// Repo manager implementations
-//
-// Notes:
-// - has access to the YAML configuration data
-type AptRepoManager struct{ Cfg *AptConfig }
-type DnfRepoManager struct{ Cfg *DnfConfig }
-
-// Description: represents a package.
-type Package struct {
+//   - Manage the YAML repo file
+type RepoConfig struct {
+	Repo map[string]RepoEntry
+}
+type RepoEntry struct {
 	Name string
-	Cbd  PackageCli // the CLI builder producing commands for this package - set by SetCliBuilder.
+	Url  struct {
+		Repo string
+		Gpg  string
+	}
 }
-
-// Repo represents a repository to be managed.
-type Repo struct {
-	FileName string
-	Name     string
-	Version  string
-	Url      string
-	Cbd      RepoCli // the CLI builder producing commands for this package - set by SetCliBuilder.
-}
-
-type Pkg2 struct {
-	Name string
-}
-
-type PkgSlice []Pkg2
-type Repo2 struct {
-	Filename string
-	Name     string
-	Version  string
-}
-
-type RepoSlice []Repo2
 
 // Description: represents the whole YAML configuration file
 //
@@ -113,6 +85,59 @@ type DnfConfig struct {
 		Distro string
 	}
 }
+
+// ---------------------------------------------------
+// -------------------- Other --------------
+// ---------------------------------------------------
+
+// Description: System manager implementations to manage non-repo and non-package actions
+//
+// Notes:
+// - has access to the YAML configuration data
+type AptSysManager struct{ Cfg *AptConfig }
+type DnfSysManager struct{ Cfg *DnfConfig }
+
+// Description: Package manager implementations
+//
+// Notes:
+// - has access to the YAML configuration data
+type AptPkgManager struct{ Cfg *AptConfig }
+type DnfPkgManager struct{ Cfg *DnfConfig }
+
+// Repo manager implementations
+//
+// Notes:
+// - has access to the YAML configuration data
+type AptRepoManager struct{ Cfg *AptConfig }
+type DnfRepoManager struct{ Cfg *DnfConfig }
+
+// Description: represents a package.
+type Package struct {
+	Name string
+	Cbd  PackageCli // the CLI builder producing commands for this package - set by SetCliBuilder.
+}
+
+// Repo represents a repository to be managed.
+type Repo struct {
+	Name     string
+	FileName string
+	Version  string
+	Url      string
+	// Cbd      RepoCli // the CLI builder producing commands for this package - set by SetCliBuilder.
+}
+
+type Pkg2 struct {
+	Name string
+}
+
+type PkgSlice []Pkg2
+type Repo2 struct {
+	Filename string
+	Name     string
+	Version  string
+}
+
+type RepoSlice []Repo2
 
 // // Description: is a light factory for building CliBuilder instances.
 // //
