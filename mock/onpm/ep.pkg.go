@@ -1,12 +1,15 @@
 package onpm
 
 import (
+	"fmt"
+
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/run"
 )
 
 // Description: add a set of native os packages
 func AddPkg(hostName string, pkg Pkg2, logger logx.Logger) (string, error) {
-	var osFamily, osDistro string
+	var cli, osFamily, osDistro string
 	var err error
 	// // 1 - get host:property
 	// osFamily, err = property.GetProperty(logger, hostName, "osFamily")
@@ -32,24 +35,38 @@ func AddPkg(hostName string, pkg Pkg2, logger logx.Logger) (string, error) {
 		osDistro = "fedora"
 	}
 
-	// 2 - get a manager
+	// 2 - get a manager (dnf or apt)
 	pkgMgr, err := GetPkgMgr(osFamily, osDistro)
 	if err != nil {
 		return "", err
 	}
 
-	// 3 - get CLI
-	_, cli := pkgMgr.Add(pkg, logger)
+	// 1 - get yaml:resolved organization's repository list
+	pkgYamlList, err := getPkgList()
+	if err != nil {
+		return "", fmt.Errorf("getting YAML repo config file: %w", err)
+	}
+	// 2 - is there an entry for our package (that denote a different pkg name)
+	pkgName := pkgYamlList.Package[pkg.Name]
+	if pkgName == "" {
+		pkgName = pkg.Name
+	} else {
+		logger.Debugf("%s/%s > package name overridden: %s", hostName, pkg.Name, pkgName)
+	}
 
+	// 3 - get the cli
+	cli, err = pkgMgr.Add(pkgName, logger)
+	if err != nil {
+		return "", err
+	}
 	// log
-	logger.Infof("%s > %s:%s > add package >  %v", hostName, osFamily, osDistro, cli)
+	logger.Infof("%s > %s:%s > %s", hostName, osFamily, osDistro, cli)
 
-	// // 4 - run CLI
-	// out, err := run.RunCli(hostName, cli, logger)
-	// if err != nil {
-	// 	return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
-	// }
-
+	// play the cli
+	out, err := run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
+	}
 	// handle success
 	return "", nil
 }

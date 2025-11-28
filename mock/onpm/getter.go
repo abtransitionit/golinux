@@ -19,6 +19,9 @@ var yamlMgr []byte // cache the raw yaml file in this var
 //go:embed db.repo.list.yaml
 var yamlRepo []byte // cache the raw yaml file in this var
 
+//go:embed db.package.list.yaml
+var yamlPkgList []byte // cache the raw yaml file in this var
+
 //go:embed db.repo.content.yaml
 var yamlRepoConent []byte // cache the raw yaml file in this var
 
@@ -39,7 +42,7 @@ var (
 // Notes:
 // - the PM has access to the part of the YAML configuration that relates to the package manager
 func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
-	// 1 - load config file - Ensure it is loaded only once
+	// 1 - load yaml mgr - Ensure it is loaded only once
 	conf, err := getMgrConfig(osFamily, osDistro)
 	if err != nil {
 		return nil, err
@@ -83,7 +86,7 @@ func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 //
 // Notes:
 // - the PM has access to the part of the YAML configuration that relates to the package manager
-func GetRepoMgr(repo Repo2, osFamily, osDistro string) (RepoCli, error) {
+func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
 	// 1 - load config file
 	conf, err := getMgrConfig(osFamily, osDistro)
 	if err != nil {
@@ -144,7 +147,7 @@ func getMgrConfig(osFamily, osDistro string) (*ManagerConfig, error) {
 }
 
 // -----------------------------------------
-// ------ get Repo Config YAML -------------
+// ------ get Repo YAML List ---------------
 // -----------------------------------------
 
 // Description: returns the YAML repository db
@@ -183,6 +186,17 @@ func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfi
 	configRepoCache[cacheKey] = theYaml
 	cacheRepoMu.Unlock()
 
+	return theYaml, nil
+}
+
+// -----------------------------------------
+// ------ get Pkg YAML List ---------------
+// -----------------------------------------
+func getPkgList() (*PkgYamlList, error) {
+	theYaml, err := yamlx.LoadTplYamlFileEmbed[PkgYamlList](yamlPkgList, "")
+	if err != nil {
+		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
+	}
 	return theYaml, nil
 }
 

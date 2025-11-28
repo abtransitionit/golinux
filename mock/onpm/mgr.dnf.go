@@ -19,14 +19,27 @@ func (mgr *DnfPkgManager) List() string {
 	return cli
 }
 
-func (mgr *DnfPkgManager) Add(pkg Pkg2, logger logx.Logger) (string, error) {
-	cmds := []string{
-		fmt.Sprintf("sudo dnf install -q -y %s > /dev/null", pkg.Name),
+func (mgr *DnfPkgManager) Add(pkgName string, logger logx.Logger) (string, error) {
+	// // 1 - get resolved organization's repository list
+	// pkgYamlList, err := getPkgList()
+	// if err != nil {
+	// 	return "", fmt.Errorf("getting YAML repo config file: %w", err)
+	// }
+	// // 2 - is there an entry for our package (that denote a different pkg name)
+	// pkgName := pkgYamlList.Package[pkg.Name]
+	// if pkgName == "" {
+	// 	pkgName = pkg.Name
+	// } else {
+	// 	logger.Debugf("%s/%s > package name overridden: %s", hostName, pkg.Name, pkgName)
+	// }
+	// 3 - define cli
+	var cmds = []string{
+		fmt.Sprintf("sudo dnf install -q -y %s > /dev/null", pkgName),
 	}
-	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
-	logger.Debugf("yoyo")
+	cli := strings.Join(cmds, " && ")
 
-	return strings.Join(cmds, " && "), nil
+	// handle success
+	return cli, nil
 }
 
 func (mgr *DnfPkgManager) Remove() string {
@@ -51,19 +64,19 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// 11 - get resolved repo filepath
 	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
 	// 12 - get resolved organization's repository list
-	repoYamlCfg, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
+	repoYamlList, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
 	// 13 - get resolved templated repo file content
-	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlCfg.Repository[repo.Name].Url.Repo, repoYamlCfg.Repository[repo.Name].Url.Gpg, "")
+	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlList.Repository[repo.Name].Url.Repo, repoYamlList.Repository[repo.Name].Url.Gpg, "")
 	if err != nil {
 		return "", fmt.Errorf("getting repo file content: %w", err)
 	}
 	// log
-	// logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
-	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
-	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
+	// logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlList.Repository[repo.Name].Name)
+	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlList.Repository[repo.Name].Url.Repo)
+	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlList.Repository[repo.Name].Url.Gpg)
 	// logger.Debugf("repo filecontent : %s", repoFileContent.Dnf)
 	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilepath)
 	// fmt.Printf("%s", repoFileContent.Dnf)
@@ -99,18 +112,34 @@ func (mgr *DnfSysManager) Upgrade(logger logx.Logger) string {
 		"sudo dnf upgrade -q -y",
 		"sudo dnf clean all",
 	}
-	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
 	return strings.Join(cmds, " && ")
 }
 
-func (mgr *DnfSysManager) Update(logger logx.Logger) string {
-	logger.Infof("pkg is: %s", mgr.Cfg.Pkg)
+func (mgr *DnfSysManager) Update(osDistro string, logger logx.Logger) string {
+	// 1 - get the section:required of the manager yaml
+	required := mgr.Cfg.Pkg.Required
+	// logger.Debugf("distro = %s required: %v", osDistro, required)
 
-	// cmds := []string{
-	// 	"sudo dnf update -q -y",
-	// 	"sudo dnf upgrade -q -y",
-	// 	"sudo dnf clean all",
-	// }
-	// return strings.Join(cmds, " && ")
+	// 1 - loop over the map to get all the pkg to install
+	var pkgToInstall []string
+	for key, pkgs := range required {
+		// 11 - if this key exists: add all the pkg to the list
+		if key == "all" {
+			pkgToInstall = append(pkgToInstall, pkgs...)
+			continue
+		}
+		// 12 - if this key exists => add all the pkg to the list
+		if key == osDistro {
+			pkgToInstall = append(pkgToInstall, pkgs...)
+		}
+	}
+
+	// 2 - exit if no pkg to install
+	if len(pkgToInstall) == 0 {
+		return ""
+	}
+	// log
+	logger.Debugf("%s > Pkg to install : %v", osDistro, pkgToInstall)
+	// handle success
 	return ""
 }

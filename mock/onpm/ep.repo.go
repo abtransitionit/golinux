@@ -33,26 +33,17 @@ func AddRepo(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// 	osDistro = "fedora"
 	// }
 
-	// 2 - get a manager
-	repoMgr, err := GetRepoMgr(repo, osFamily, osDistro)
+	// 2 - get a manager (dnf or apt)
+	repoMgr, err := GetRepoMgr(osFamily, osDistro)
 	if err != nil {
 		return "", err
 	}
 
-	// 3 - get CLI
-	cli, err := repoMgr.Add(hostName, repo, logger)
+	// 3 - do the job
+	_, err = repoMgr.Add(hostName, repo, logger)
 	if err != nil {
 		return "", err
 	}
-
-	// log
-	logger.Infof("%s/%s > %s:%s > add repo >  %v", hostName, repo.Name, osFamily, osDistro, cli)
-
-	// // 4 - run CLI
-	// out, err := run.RunCli(hostName, cli, logger)
-	// if err != nil {
-	// 	return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
-	// }
 
 	// handle success
 	return "", nil

@@ -19,13 +19,27 @@ func (mgr *AptPkgManager) List() string {
 	return cli
 }
 
-func (mgr *AptPkgManager) Add(pkg Pkg2, logger logx.Logger) (string, error) {
-	cmds := []string{
-		fmt.Sprintf("DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install -qq -y %s > /dev/null", pkg.Name),
+func (mgr *AptPkgManager) Add(pkgName string, logger logx.Logger) (string, error) {
+	// // 1 - get resolved organization's repository list
+	// pkgYamlList, err := getPkgList()
+	// if err != nil {
+	// 	return "", fmt.Errorf("getting YAML repo config file: %w", err)
+	// }
+	// // 2 - is there an entry for our package (that denote a different pkg name)
+	// pkgName := pkgYamlList.Package[pkg.Name]
+	// if pkgName == "" {
+	// 	pkgName = pkg.Name
+	// } else {
+	// 	logger.Debugf("%s/%s > package name overridden: %s", hostName, pkg.Name, pkgName)
+	// }
+	// 3 - define cli
+	var cmds = []string{
+		fmt.Sprintf("DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install -qq -y %s > /dev/null", pkgName),
 	}
-	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
+	cli := strings.Join(cmds, " && ")
 
-	return strings.Join(cmds, " && "), nil
+	// handle success
+	return cli, nil
 }
 
 func (mgr *AptPkgManager) Remove() string {
@@ -99,7 +113,6 @@ func (mgr *AptSysManager) NeedReboot(logger logx.Logger) string {
 	cmds := []string{
 		"test -f /var/run/reboot-required && echo true || echo false",
 	}
-	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
 
 	return strings.Join(cmds, " && ")
 }
@@ -110,19 +123,43 @@ func (mgr *AptSysManager) Upgrade(logger logx.Logger) string {
 		"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade -qq -y",
 		"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' clean -qq",
 	}
-	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
 
 	return strings.Join(cmds, " && ")
 }
-func (mgr *AptSysManager) Update(logger logx.Logger) string {
-	logger.Infof("pkg is: %s", mgr.Cfg.Pkg)
-	// cmds := []string{
-	// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' update -qq -y",
-	// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade -qq -y",
-	// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' clean -qq",
-	// }
-	// // logger.Infof("pkg is: %s", d.Cfg.Pkg)
+func (mgr *AptSysManager) Update(osDistro string, logger logx.Logger) string {
+	// 1 - get the section:required of the manager yaml
+	required := mgr.Cfg.Pkg.Required
+	// logger.Debugf("distro = %s required: %v", osDistro, required)
 
-	// return strings.Join(cmds, " && ")
+	// 1 - loop over the map to get all the pkg to install
+	var pkgToInstall []string
+	for key, pkgs := range required {
+		// 11 - if this key exists: add all the pkg to the list
+		if key == "all" {
+			pkgToInstall = append(pkgToInstall, pkgs...)
+			continue
+		}
+		// 12 - if this key exists => add all the pkg to the list
+		if key == osDistro {
+			pkgToInstall = append(pkgToInstall, pkgs...)
+		}
+	}
+
+	// 2 - exit if no pkg to install
+	if len(pkgToInstall) != 0 {
+		return ""
+	}
+	// log
+	logger.Debugf("%s > Pkg to install : %v", osDistro, pkgToInstall)
+	// handle success
 	return ""
 }
+
+// cmds := []string{
+// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' update -qq -y",
+// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' upgrade -qq -y",
+// 	"DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' clean -qq",
+// }
+// // logger.Infof("pkg is: %s", d.Cfg.Pkg)
+
+// return strings.Join(cmds, " && ")

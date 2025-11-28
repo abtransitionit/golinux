@@ -7,14 +7,14 @@ import "github.com/abtransitionit/gocore/logx"
 // ---------------------------------------------------
 
 type SysCli interface {
-	Update(logx.Logger) string
+	Update(string, logx.Logger) string
 	Upgrade(logx.Logger) string
 	NeedReboot(logx.Logger) string
 }
 
 type PackageCli interface {
 	List() string
-	Add(Pkg2, logx.Logger) (string, error)
+	Add(pkgName string, logger logx.Logger) (string, error)
 	Remove() string
 }
 
@@ -38,7 +38,7 @@ type RepoContentConfig struct {
 }
 
 // -------------------------------------------------------
-// -------------------- struct for Repo YAML -------------
+// -------------------- struct for Repo YAML List --------
 // -------------------------------------------------------
 
 // Description: represents the whole organization's repository db
@@ -54,6 +54,18 @@ type RepoEntry struct {
 		Repo string
 		Gpg  string
 	}
+}
+
+// -------------------------------------------------------
+// -------------------- struct for Pkg YAML List ---------
+// -------------------------------------------------------
+
+// Description: represents the whole organization's repository db
+//
+// Notes:
+//   - Manage the YAML repo file
+type PkgYamlList struct {
+	Package map[string]string
 }
 
 // -------------------------------------------------------
@@ -99,7 +111,8 @@ type AptConfig struct {
 type DnfConfig struct {
 	Content string
 	Pkg     struct {
-		Type string
+		Type     string
+		Required map[string][]string
 	}
 	Ext struct {
 		Repo string
