@@ -7,14 +7,21 @@ apt:
       debian: # distro
         - dbus-user-session
         - gnupg
-  ext: .list
+  ext: 
+    repo: .list
+    gpg: 
+      url: Release.key
+      file: -apt-keyring.gpg # maybe .gpg
   folder:
     repo: "/etc/apt/sources.list.d"
-    gpgKey: "/usr/share/keyrings"
+    gpgkey: "/usr/share/keyrings" # deprecated >  /etc/apt/keyrings.  /usr/share/keyrings/<repo>.gpg and reference in .list
 dnf:
   pkg: 
     type: rpm
-  ext: .repo
+  ext: 
+    gpg: 
+      url: repodata/repomd.xml.key
+    repo: .repo
   folder:
     repo: "/etc/yum.repos.d"
   os:

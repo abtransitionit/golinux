@@ -17,14 +17,14 @@ func (mgr *DnfPkgManager) List() string {
 	return cli
 }
 
-func (mgr *DnfPkgManager) Add(pkg Pkg2, logger logx.Logger) string {
+func (mgr *DnfPkgManager) Add(pkg Pkg2, logger logx.Logger) (string, error) {
 	cmds := []string{
 		fmt.Sprintf("sudo dnf install -q -y %s > /dev/null", pkg.Name),
 	}
 	// logger.Infof("pkg is: %s", d.Cfg.Pkg)
 	logger.Debugf("yoyo")
 
-	return strings.Join(cmds, " && ")
+	return strings.Join(cmds, " && "), nil
 }
 
 func (mgr *DnfPkgManager) Remove() string {
@@ -37,7 +37,6 @@ func (mgr *DnfPkgManager) Remove() string {
 // -----------------------------------------
 
 func (mgr *DnfRepoManager) List() string {
-	// 1 - GetRepoFilePath
 	// 2 - GetGpgFilePath
 	// 3 - GetUrlGpgResolved
 	// 4 - GetRepoFileContent
@@ -45,22 +44,24 @@ func (mgr *DnfRepoManager) List() string {
 	return cli
 }
 
-func (mgr *DnfRepoManager) Add(repo Repo2, logger logx.Logger) string {
-	// 1 - get os:repository file path
-	repoFilePath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext)
-	logger.Debugf("repo file path > %s", repoFilePath)
-	// 1 - get organization's repoditory db
-	theYaml, err := getRepoConfig(repo.Version, "rhel")
+func (mgr *DnfRepoManager) Add(repo Repo2, logger logx.Logger) (string, error) {
+	// 1 - get variables
+	repoFilePath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
+	// 11 - get organization's repoditory db (from now a yaml file inside the package)
+	repoYamlCfg, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
 	if err != nil {
-		return ""
+		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
-	logger.Debugf("repo db yaml > %v", theYaml)
+	logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
+	logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
+	logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
+	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilePath)
 
 	// fmt.Println("2 - GetRepoFileContent")
 	// fmt.Println("3 - save the repo file") // CreateFileFromStringAsSudo(repoFilePath, repoFileContent)
 	// fmt.Println("4 - GPG key url is included in the repo file and manage internally")
 	cli := "dnf config-manager --add-repo <repo>"
-	return cli
+	return cli, nil
 }
 
 func (mgr *DnfRepoManager) Remove() string {

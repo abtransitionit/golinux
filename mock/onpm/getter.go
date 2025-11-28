@@ -149,7 +149,7 @@ func getMgrConfig(osFamily, osDistro string) (*ManagerConfig, error) {
 // Notes:
 // - The placeholders {{ .XXX }} in the YAML are reolved
 // - TODO: find a better structured data or solution for the resolution
-func getRepoConfig(Version, osDistro string) (*RepoConfig, error) {
+func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfig, error) {
 	cacheKey := fmt.Sprintf("%s-%s", osDistro)
 
 	cacheRepoMu.Lock()
@@ -164,9 +164,9 @@ func getRepoConfig(Version, osDistro string) (*RepoConfig, error) {
 	// 1. define the data structure to resolve the YAML placeholders
 	varPlaceholder := map[string]map[string]string{
 		"Repo": {
-			"Tag": "tag",
-			"Pkg": "pkg",
-			"Gpg": "gp",
+			"Tag": repoVersion,
+			"Pkg": pkgType,
+			"Gpg": gpgUrlExt,
 		},
 	}
 	// 2 - get resolved YAML into struct

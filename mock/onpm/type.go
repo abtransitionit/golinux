@@ -14,26 +14,26 @@ type SysCli interface {
 
 type PackageCli interface {
 	List() string
-	Add(Pkg2, logx.Logger) string
+	Add(Pkg2, logx.Logger) (string, error)
 	Remove() string
 }
 
 type RepoCli interface {
 	List() string
-	Add(Repo2, logx.Logger) string
+	Add(Repo2, logx.Logger) (string, error)
 	Remove() string
 }
 
-// ---------------------------------------------------
-// -------------------- struct for YAML --------------
-// ---------------------------------------------------
+// -------------------------------------------------------
+// -------------------- struct for Repo YAML -------------
+// -------------------------------------------------------
 
 // Description: represents the whole organization's repository db
 //
 // Notes:
 //   - Manage the YAML repo file
 type RepoConfig struct {
-	Repo map[string]RepoEntry
+	Repository map[string]RepoEntry
 }
 type RepoEntry struct {
 	Name string
@@ -42,6 +42,10 @@ type RepoEntry struct {
 		Gpg  string
 	}
 }
+
+// -------------------------------------------------------
+// -------------------- struct for Mgr YAML --------------
+// -------------------------------------------------------
 
 // Description: represents the whole YAML configuration file
 //
@@ -61,7 +65,14 @@ type AptConfig struct {
 		Type     string
 		Required map[string][]string
 	}
-	Ext    string
+	Ext struct {
+		Repo string
+		Gpg  struct {
+			Url  string
+			File string
+		}
+	}
+	Gpg    string
 	Folder struct {
 		Repo   string
 		GpgKey string
@@ -76,7 +87,12 @@ type DnfConfig struct {
 	Pkg struct {
 		Type string
 	}
-	Ext    string
+	Ext struct {
+		Repo string
+		Gpg  struct {
+			Url string
+		}
+	}
 	Folder struct {
 		Repo string
 	}
