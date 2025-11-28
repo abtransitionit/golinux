@@ -1,11 +1,9 @@
-repository:
-  crio:
-    name: crio
-    url:
-      repo: https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ .Repo.Tag }}/{{ .Repo.Pkg }}/
-      gpg: https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ .Repo.Tag }}/{{ .Repo.Pkg }}/{{ .Repo.Gpg }}
-  k8s:
-    name: k8s
-    url:
-      repo: https://pkgs.k8s.io/core:/stable:/v{{ .Repo.Tag }}/{{ .Repo.Pkg }}/
-      gpg:  https://pkgs.k8s.io/core:/stable:/v{{ .Repo.Tag }}/{{ .Repo.Pkg }}/{{ .Repo.Gpg }}
+dnf: |
+  [{{ .Repo.Name }}] 
+  enabled=1
+  name={{ .Repo.Name }}
+  gpgcheck=1
+  baseurl={{ .Repo.Url }}
+  gpgkey={{ .Gpg.Url }} 
+apt: |
+  deb [signed-by={{ .Gpg.Filepath}}] {{ .Repo.Url }} /

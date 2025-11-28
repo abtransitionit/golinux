@@ -24,6 +24,20 @@ func UpgradeOs(hostName string, logger logx.Logger) (string, error) {
 		return "", err
 	}
 
+	// if hostName == "o1u" {
+	// 	osFamily = "debian"
+	// 	osDistro = "ubuntu"
+	// } else if hostName == "o2a" {
+	// 	osFamily = "rhel"
+	// 	osDistro = "almalinux"
+	// } else if hostName == "o3r" {
+	// 	osFamily = "rhel"
+	// 	osDistro = "rocky"
+	// } else if hostName == "o4f" {
+	// 	osFamily = "fedora"
+	// 	osDistro = "fedora"
+	// }
+
 	// 2 - get a manager
 	sysMgr, err := GetSysMgr(osFamily, osDistro)
 	if err != nil {

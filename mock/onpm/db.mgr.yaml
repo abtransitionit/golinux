@@ -13,8 +13,8 @@ apt:
       url: Release.key
       file: -apt-keyring.gpg # maybe .gpg
   folder:
-    repo: "/etc/apt/sources.list.d"
-    gpgkey: "/usr/share/keyrings" # deprecated >  /etc/apt/keyrings.  /usr/share/keyrings/<repo>.gpg and reference in .list
+    repo: /etc/apt/sources.list.d
+    gpgkey: /usr/share/keyrings # /etc/apt/keyrings is deprecated.  /usr/share/keyrings/<repo>.gpg and reference in .list
 dnf:
   pkg: 
     type: rpm
@@ -23,8 +23,7 @@ dnf:
       url: repodata/repomd.xml.key
     repo: .repo
   folder:
-    repo: "/etc/yum.repos.d"
+    repo: /etc/yum.repos.d
   os:
     family: {{ .Os.Family }}
     distro: {{ .Os.Distro }}
-

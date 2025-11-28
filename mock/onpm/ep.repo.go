@@ -34,13 +34,13 @@ func AddRepo(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// }
 
 	// 2 - get a manager
-	repoMgr, err := GetRepoMgr(osFamily, osDistro)
+	repoMgr, err := GetRepoMgr(repo, osFamily, osDistro)
 	if err != nil {
 		return "", err
 	}
 
 	// 3 - get CLI
-	cli, err := repoMgr.Add(repo, logger)
+	cli, err := repoMgr.Add(hostName, repo, logger)
 	if err != nil {
 		return "", err
 	}

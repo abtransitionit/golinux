@@ -14,18 +14,21 @@ import (
 // -----------------------------------------
 
 //go:embed db.mgr.yaml
-var yamlMgr []byte
+var yamlMgr []byte // cache the raw yaml file in this var
 
-//go:embed db.repo.yaml
-var yamlRepo []byte
+//go:embed db.repo.list.yaml
+var yamlRepo []byte // cache the raw yaml file in this var
 
-// cache the YAML file (for the mng) in memory on call for the same couple (osFamily, osDistro)
+//go:embed db.repo.content.yaml
+var yamlRepoConent []byte // cache the raw yaml file in this var
+
+// allow to cache the resolved YAML file for the same couple (osFamily, osDistro)
 var (
 	configMgrCache = make(map[string]*ManagerConfig)
 	cacheMgrMu     sync.Mutex
 )
 
-// cache the YAML file in memory on call for the same couple (osFamily, osDistro)
+// allow to cache the resolved YAML file for the same couple (osFamily, osDistro)
 var (
 	configRepoCache = make(map[string]*RepoConfig)
 	cacheRepoMu     sync.Mutex
@@ -80,7 +83,7 @@ func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 //
 // Notes:
 // - the PM has access to the part of the YAML configuration that relates to the package manager
-func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
+func GetRepoMgr(repo Repo2, osFamily, osDistro string) (RepoCli, error) {
 	// 1 - load config file
 	conf, err := getMgrConfig(osFamily, osDistro)
 	if err != nil {
@@ -183,27 +186,28 @@ func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfi
 	return theYaml, nil
 }
 
-// func getConfig(osFamily, osDistro string) (*ManagerConfig, error) {
-// 	// cache the YAML configuration file for the same couple (osFamily, osDistro)
-// 	cacheKey := fmt.Sprintf("%s-%s", osFamily, osDistro)
-// 	cacheMu.Lock()
-// 	defer cacheMu.Unlock()
-// 	if cfg, ok := configCache[cacheKey]; ok {
-// 		return cfg, nil
-// 	}
-// 	// 1. define the data structure to resolve the YAML placeholders
-// 	ctx := map[string]map[string]string{
-// 		"Os": {
-// 			"Family": osFamily,
-// 			"Distro": osDistro,
-// 		},
-// 	}
+// -----------------------------------------
+// ------ get Repo Content Config YAML -----
+// -----------------------------------------
 
-// 	// 2 - get resolved YAML into struct
-// 	cfg, err := yamlx.LoadTplYamlFileEmbed[ManagerConfig](confData, ctx)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("getting YAML config file in package")
-// 	}
+func getRepoContentConfig(repoName, repoUrl, gpgUrl, gpgFilepath string) (*RepoContentConfig, error) {
 
-// 	return cfg, nil
-// }
+	// 1. define the data structure to resolve the YAML placeholders
+	varPlaceholder := map[string]map[string]string{
+		"Repo": {
+			"Name": repoName,
+			"Url":  repoUrl,
+		},
+		"Gpg": {
+			"Filepath": gpgFilepath,
+			"Url":      gpgUrl,
+		},
+	}
+	// 2 - get resolved YAML into struct
+	theYaml, err := yamlx.LoadTplYamlFileEmbed[RepoContentConfig](yamlRepoConent, varPlaceholder)
+	if err != nil {
+		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
+	}
+
+	return theYaml, nil
+}

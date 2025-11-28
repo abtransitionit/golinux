@@ -20,8 +20,21 @@ type PackageCli interface {
 
 type RepoCli interface {
 	List() string
-	Add(Repo2, logx.Logger) (string, error)
+	Add(hostName string, repository Repo2, logger logx.Logger) (string, error)
 	Remove() string
+}
+
+// -------------------------------------------------------
+// -------------------- struct for Repo File Content YAML -------------
+// -------------------------------------------------------
+
+// Description: represents the content of the repository file on the os
+//
+// Notes:
+//   - Manage the YAML repo file content
+type RepoContentConfig struct {
+	Apt string
+	Dnf string
 }
 
 // -------------------------------------------------------
@@ -61,7 +74,8 @@ type ManagerConfig struct {
 // Notes:
 //   - represents the part of the YAML configuration file for Apt manager
 type AptConfig struct {
-	Pkg struct {
+	Content string
+	Pkg     struct {
 		Type     string
 		Required map[string][]string
 	}
@@ -72,7 +86,6 @@ type AptConfig struct {
 			File string
 		}
 	}
-	Gpg    string
 	Folder struct {
 		Repo   string
 		GpgKey string
@@ -84,7 +97,8 @@ type AptConfig struct {
 // Notes:
 //   - represents the part of the YAML configuration file for Dnf manager
 type DnfConfig struct {
-	Pkg struct {
+	Content string
+	Pkg     struct {
 		Type string
 	}
 	Ext struct {

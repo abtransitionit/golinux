@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/file"
+	"github.com/abtransitionit/golinux/mock/run"
 )
 
 // -----------------------------------------
@@ -44,23 +46,39 @@ func (mgr *DnfRepoManager) List() string {
 	return cli
 }
 
-func (mgr *DnfRepoManager) Add(repo Repo2, logger logx.Logger) (string, error) {
+func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// 1 - get variables
+	// 11 - get resolved repo:filepath
 	repoFilePath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
-	// 11 - get organization's repoditory db (from now a yaml file inside the package)
+	// 12 - get resolved organization:repo:list
 	repoYamlCfg, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
-	logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
-	logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
-	logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
+	// 13 - get repo file content with placeholders resolved
+	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlCfg.Repository[repo.Name].Url.Repo, repoYamlCfg.Repository[repo.Name].Url.Gpg, "")
+	if err != nil {
+		return "", fmt.Errorf("getting repo file content: %w", err)
+	}
+	// log
+	// logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
+	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
+	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
+	// logger.Debugf("repo filecontent : %s", repoFileContent.Dnf)
 	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilePath)
+	// fmt.Printf("%s", repoFileContent.Dnf)
+	// logger.Debugf("TODO: CreateFileFromStringAsSudo for repo file")
 
-	// fmt.Println("2 - GetRepoFileContent")
-	// fmt.Println("3 - save the repo file") // CreateFileFromStringAsSudo(repoFilePath, repoFileContent)
-	// fmt.Println("4 - GPG key url is included in the repo file and manage internally")
-	cli := "dnf config-manager --add-repo <repo>"
+	// 2 - save content to file - GPG key url is included in the repo file
+	logger.Debugf("DOING: CreateFileFromStringAsSudo for repo file")
+	cli := file.SudoCreateFileFromString("/usr/local/bin/mxtest", repoFileContent.Dnf)
+	_, err = run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
+	}
+
+	// other
+	cli = "dnf config-manager --add-repo <repo>"
 	return cli, nil
 }
 
