@@ -43,21 +43,19 @@ func (mgr *AptRepoManager) List() string {
 }
 
 func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) (string, error) {
+	var cli string
 	// 1 - get variables
-	// 11 - get resolved repo:filepath
-	repoFilePath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
-	gpgFilePath := filepath.Join(mgr.Cfg.Folder.GpgKey, repo.Filename+mgr.Cfg.Ext.Gpg.File)
-	// 12 - get resolved organization:repo:list
+	// 11 - get resolved repo filepath
+	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
+	// 12 - get resolved organization's repository list
 	repoYamlCfg, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
-	// 13 - get repo file content for all package manager (TODO: get only the one related. ie. dnf or apt)
-	repoFileContent, err := getRepoContentConfig(
-		repo.Name,
-		repoYamlCfg.Repository[repo.Name].Url.Repo,
-		repoYamlCfg.Repository[repo.Name].Url.Gpg,
-		gpgFilePath)
+	// 13 - get resolved gpg filepath
+	gpgFilepath := filepath.Join(mgr.Cfg.Folder.GpgKey, repo.Filename+mgr.Cfg.Ext.Gpg.File)
+	// 14 - get resolved templated repo file content
+	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlCfg.Repository[repo.Name].Url.Repo, repoYamlCfg.Repository[repo.Name].Url.Gpg, gpgFilepath)
 	if err != nil {
 		return "", fmt.Errorf("getting repo file content: %w", err)
 	}
@@ -65,40 +63,27 @@ func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
 	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
 	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
-	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilePath)
-	logger.Debugf("repo:gpg:filepath > (%s) %s", mgr.Cfg.Pkg.Type, gpgFilePath)
-	logger.Debugf("TODO: CreateGpgFileFromUrlAsSudo for gpg key")
+	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilepath)
+	logger.Debugf("repo:gpg:filepath > (%s) %s", mgr.Cfg.Pkg.Type, gpgFilepath)
 	// logger.Debugf("repo file content : %s", repoFileContent.Apt)
 	fmt.Printf("%s", repoFileContent.Apt)
 
-	// 2 - save repo file to destination file - GPG key url is included in the repo file
-
-	logger.Debugf("DOING: CreateFileFromStringAsSudo for repo file")
-	// cli := filex.CreateFileFromStringAsSudo("/tmp/toto", repoFileContent.Apt)
-	// _, err = run.RunCli(hostName, cli, logger)
-	// if err != nil {
-	// 	return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
-	// }
-
-	logger.Debugf("DOING: CreateFileFromStringAsSudo for repo file")
-	cli := file.SudoCreateFileFromString("/usr/local/bin/mxtest", repoFileContent.Apt)
+	// 2 - create repo file - GPG key is saved separately
+	cli = file.SudoCreateFileFromString(repoFilepath+".test", repoFileContent.Apt)
+	_, err = run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
+	}
+	// 2 - create gpg file
+	logger.Debugf("DOING: saving gpg key to /tmp/toto")
+	cli = file.SudoCreateGpgFileFromUrl(repoYamlCfg.Repository[repo.Name].Url.Gpg, gpgFilepath+".test")
+	// cli = file.SudoCreateGpgFileFromUrl(repoYamlCfg.Repository[repo.Name].Url.Repo, gpgFilepath)
 	_, err = run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
 	}
 
-	// fmt.Println("2 - GetRepoFileContent")
-	// fmt.Println("3 - save the repo file") // CreateFileFromStringAsSudo(repoFilePath, repoFileContent)
-	// fmt.Println("4 - manage GPG key:  download GPG key - only for debian. For rhel: gpg key url is included in the repo file and manage internally")
-	// download the key to dst file
-
-	// _, err = run.RunCliSsh(vmName, cli)
-	// if err != nil {
-	// 	return "", fmt.Errorf("failed to play cli %s on vm '%s': %w", cli, vmName, err)
-	// }
-
-	cli = "add-apt-repo <repo>"
-	return cli, nil
+	return "", nil
 }
 
 func (mgr *AptRepoManager) Remove() string {

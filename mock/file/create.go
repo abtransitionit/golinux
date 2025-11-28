@@ -16,3 +16,14 @@ func SudoCreateFileFromString(filePath, content string) string {
 
 	return cli
 }
+
+func SudoCreateGpgFileFromUrl(url string, filePath string) string {
+	var cmds = []string{
+		// fmt.Sprintf(`sudo install -d -m 0755  $(dirname %s)`, filePath),
+		"set -o pipefail",
+		fmt.Sprintf(`curl -fsSL %s | gpg --dearmor | sudo tee %s`, url, filePath),
+		fmt.Sprintf(`sudo chmod 0644  %s`, filePath),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}

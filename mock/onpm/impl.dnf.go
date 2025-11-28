@@ -48,14 +48,14 @@ func (mgr *DnfRepoManager) List() string {
 
 func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// 1 - get variables
-	// 11 - get resolved repo:filepath
-	repoFilePath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
-	// 12 - get resolved organization:repo:list
+	// 11 - get resolved repo filepath
+	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
+	// 12 - get resolved organization's repository list
 	repoYamlCfg, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
-	// 13 - get repo file content with placeholders resolved
+	// 13 - get resolved templated repo file content
 	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlCfg.Repository[repo.Name].Url.Repo, repoYamlCfg.Repository[repo.Name].Url.Gpg, "")
 	if err != nil {
 		return "", fmt.Errorf("getting repo file content: %w", err)
@@ -65,21 +65,17 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
 	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
 	// logger.Debugf("repo filecontent : %s", repoFileContent.Dnf)
-	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilePath)
+	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilepath)
 	// fmt.Printf("%s", repoFileContent.Dnf)
 	// logger.Debugf("TODO: CreateFileFromStringAsSudo for repo file")
 
-	// 2 - save content to file - GPG key url is included in the repo file
-	logger.Debugf("DOING: CreateFileFromStringAsSudo for repo file")
-	cli := file.SudoCreateFileFromString("/usr/local/bin/mxtest", repoFileContent.Dnf)
+	// 2 - create repo file - GPG key url is included as a parameter
+	cli := file.SudoCreateFileFromString(repoFilepath+".test", repoFileContent.Dnf)
 	_, err = run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
 	}
-
-	// other
-	cli = "dnf config-manager --add-repo <repo>"
-	return cli, nil
+	return "", nil
 }
 
 func (mgr *DnfRepoManager) Remove() string {
