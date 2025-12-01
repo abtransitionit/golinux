@@ -7,7 +7,7 @@ import "github.com/abtransitionit/gocore/logx"
 // ---------------------------------------------------
 
 type SysCli interface {
-	Update(string, logx.Logger) string
+	Update(hostName string, osDistro string, logger logx.Logger) (string, error)
 	Upgrade(logx.Logger) string
 	NeedReboot(logx.Logger) string
 }
@@ -123,10 +123,10 @@ type DnfConfig struct {
 	Folder struct {
 		Repo string
 	}
-	OS struct {
-		Family string
-		Distro string
-	}
+	// OS struct {
+	// 	Family string
+	// 	Distro string
+	// }
 }
 
 // ---------------------------------------------------

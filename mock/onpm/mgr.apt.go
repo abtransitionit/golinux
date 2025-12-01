@@ -126,8 +126,9 @@ func (mgr *AptSysManager) Upgrade(logger logx.Logger) string {
 
 	return strings.Join(cmds, " && ")
 }
-func (mgr *AptSysManager) Update(osDistro string, logger logx.Logger) string {
-	// 1 - get the section:required of the manager yaml
+func (mgr *AptSysManager) Update(hostName string, osDistro string, logger logx.Logger) (string, error) {
+	var pkgMgr *AptPkgManager
+	// 1 - get the section named required of the yaml:manager
 	required := mgr.Cfg.Pkg.Required
 	// logger.Debugf("distro = %s required: %v", osDistro, required)
 
@@ -146,13 +147,27 @@ func (mgr *AptSysManager) Update(osDistro string, logger logx.Logger) string {
 	}
 
 	// 2 - exit if no pkg to install
-	if len(pkgToInstall) != 0 {
-		return ""
+	if len(pkgToInstall) == 0 {
+		return "", nil
 	}
 	// log
-	logger.Debugf("%s > Pkg to install : %v", osDistro, pkgToInstall)
+	logger.Debugf("distro:%s > install package(s): %v", osDistro, pkgToInstall)
+
+	// 3 - install pcakge in the list
+	for _, pkg := range pkgToInstall {
+		// 3 - get the cli
+		cli, err := pkgMgr.Add(pkg, logger)
+		if err != nil {
+			return "", err
+		}
+		// play the cli
+		out, err := run.RunCli(hostName, cli, logger)
+		if err != nil {
+			return "", fmt.Errorf("%s > %s > %w > out:%s", hostName, osDistro, err, out)
+		}
+	}
 	// handle success
-	return ""
+	return "", nil
 }
 
 // cmds := []string{

@@ -90,6 +90,9 @@ func UpdateOs(hostName string, logger logx.Logger) (string, error) {
 	} else if hostName == "o4f" {
 		osFamily = "fedora"
 		osDistro = "fedora"
+	} else if hostName == "o5d" {
+		osFamily = "debian"
+		osDistro = "debian"
 	}
 
 	// 2 - get a system manager
@@ -99,10 +102,12 @@ func UpdateOs(hostName string, logger logx.Logger) (string, error) {
 	}
 
 	// 3 - do the job
-	cli := sysMgr.Update(osDistro, logger)
+	cli, err := sysMgr.Update(hostName, osDistro, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s > %s:%s > updating the OS with cli : %s> %v", hostName, osFamily, osDistro, cli, err)
+	}
 
 	// log
-	logger.Infof("%s > %s:%s > %s", hostName, osFamily, osDistro, cli)
 
 	// // 4 - run CLI
 	// out, err := run.RunCli(hostName, cli, logger)
@@ -111,6 +116,7 @@ func UpdateOs(hostName string, logger logx.Logger) (string, error) {
 	// }
 
 	// handle success
+	logger.Infof("%s > %s:%s > updated OS successfully with %s", hostName, osFamily, osDistro, cli)
 	return "", nil
 }
 func NeedReboot(hostName string, logger logx.Logger) (string, error) {
