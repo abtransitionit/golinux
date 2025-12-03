@@ -20,18 +20,19 @@ func (mgr *AptPkgManager) List() string {
 }
 
 func (mgr *AptPkgManager) Add(pkgName string, logger logx.Logger) (string, error) {
-	// // 1 - get resolved organization's repository list
-	// pkgYamlList, err := getPkgList()
-	// if err != nil {
-	// 	return "", fmt.Errorf("getting YAML repo config file: %w", err)
-	// }
-	// // 2 - is there an entry for our package (that denote a different pkg name)
-	// pkgName := pkgYamlList.Package[pkg.Name]
-	// if pkgName == "" {
-	// 	pkgName = pkg.Name
-	// } else {
-	// 	logger.Debugf("%s/%s > package name overridden: %s", hostName, pkg.Name, pkgName)
-	// }
+	// 1 - is there an entry for this package in the organization's package list
+	// 21 - get the list
+	pkgYamlList, err := getPkgList()
+	if err != nil {
+		return "", fmt.Errorf("getting YAML repo config file: %w", err)
+	}
+	// 22 - check pkg exist in the list
+	pkgNameFormal := pkgYamlList.Package[pkgName]
+	if pkgNameFormal == "" {
+		pkgNameFormal = pkgName
+	} else {
+		logger.Debugf("package %s > overridden: %s", pkgName, pkgNameFormal)
+	}
 	// 3 - define cli
 	var cmds = []string{
 		fmt.Sprintf("DEBIAN_FRONTEND=noninteractive sudo apt-get -o Dpkg::Options::='--force-confdef' -o Dpkg::Options::='--force-confold' install -qq -y %s > /dev/null", pkgName),
@@ -151,20 +152,22 @@ func (mgr *AptSysManager) Update(hostName string, osDistro string, logger logx.L
 		return "", nil
 	}
 	// log
-	logger.Debugf("distro:%s > install package(s): %v", osDistro, pkgToInstall)
+	logger.Debugf("%s:%s > installing package(s): %v", hostName, osDistro, pkgToInstall)
 
 	// 3 - install pcakge in the list
-	for _, pkg := range pkgToInstall {
+	for _, pkgName := range pkgToInstall {
 		// 3 - get the cli
-		cli, err := pkgMgr.Add(pkg, logger)
+		cli, err := pkgMgr.Add(pkgName, logger)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("❌ %s:%s > installing package : %s with cli : %s : %w", hostName, osDistro, pkgName, cli, err)
 		}
 		// play the cli
 		out, err := run.RunCli(hostName, cli, logger)
 		if err != nil {
-			return "", fmt.Errorf("%s > %s > %w > out:%s", hostName, osDistro, err, out)
+			return "", fmt.Errorf("❌ %s:%s > %w > out:%s", hostName, osDistro, err, out)
 		}
+		// log
+		logger.Debugf("%s:%s > installed package: %s > out:%s", hostName, osDistro, pkgName, out)
 	}
 	// handle success
 	return "", nil

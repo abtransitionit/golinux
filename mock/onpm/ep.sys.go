@@ -108,12 +108,12 @@ func UpdateOs(hostName string, logger logx.Logger) (string, error) {
 	}
 
 	// log
-
-	// // 4 - run CLI
-	// out, err := run.RunCli(hostName, cli, logger)
-	// if err != nil {
-	// 	return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
-	// }
+	logger.Debugf("%s > %s:%s > yo %s", hostName, osFamily, osDistro, cli)
+	// 4 - run CLI
+	out, err := run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
+	}
 
 	// handle success
 	logger.Infof("%s > %s:%s > updated OS successfully with %s", hostName, osFamily, osDistro, cli)

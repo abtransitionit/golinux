@@ -9,7 +9,7 @@ import (
 )
 
 // Description: add a set of native os packages
-func AddPkg(hostName string, pkg Pkg2, logger logx.Logger) (string, error) {
+func AddPkg(hostName string, pkgName string, logger logx.Logger) (string, error) {
 	var cli, osFamily, osDistro string
 	var err error
 	// 1 - get host:property
@@ -48,15 +48,15 @@ func AddPkg(hostName string, pkg Pkg2, logger logx.Logger) (string, error) {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
 	// 2 - is there an entry for our package (that denote a different pkg name)
-	pkgName := pkgYamlList.Package[pkg.Name]
-	if pkgName == "" {
-		pkgName = pkg.Name
+	pkgNameFormal := pkgYamlList.Package[pkgName]
+	if pkgNameFormal == "" {
+		pkgNameFormal = pkgName
 	} else {
-		logger.Debugf("%s/%s > package name overridden: %s", hostName, pkg.Name, pkgName)
+		logger.Debugf("%s/%s > package name overridden: %s", hostName, pkgName, pkgNameFormal)
 	}
 
 	// 3 - get the cli
-	cli, err = pkgMgr.Add(pkgName, logger)
+	cli, err = pkgMgr.Add(pkgNameFormal, logger)
 	if err != nil {
 		return "", err
 	}
