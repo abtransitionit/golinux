@@ -16,10 +16,10 @@ import (
 //go:embed db.mgr.yaml
 var yamlMgr []byte // cache the raw yaml file in this var
 
-//go:embed db.repo.list.yaml
+//go:embed db.list.repo.yaml
 var yamlRepo []byte // cache the raw yaml file in this var
 
-//go:embed db.package.list.yaml
+//go:embed db.list.package.yaml
 var yamlPkgList []byte // cache the raw yaml file in this var
 
 //go:embed db.repo.content.yaml

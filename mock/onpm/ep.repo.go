@@ -48,5 +48,3 @@ func AddRepo(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// handle success
 	return "", nil
 }
-
-// 1 -
