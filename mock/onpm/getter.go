@@ -10,7 +10,7 @@ import (
 )
 
 // -----------------------------------------
-// ------ get manager ----------------------
+// ------ define file location -------------
 // -----------------------------------------
 
 //go:embed db.mgr.yaml
@@ -25,21 +25,30 @@ var yamlPkgList []byte // cache the raw yaml file in this var
 //go:embed db.repo.content.yaml
 var yamlRepoConent []byte // cache the raw yaml file in this var
 
-// allow to cache the resolved YAML file for the same couple (osFamily, osDistro)
+// -----------------------------------------
+// ------ define caching parameters --------
+// -----------------------------------------
+
+// Description: used to cache the resolved YAML file for the same couple (osFamily, osDistro)
 var (
 	configMgrCache = make(map[string]*ManagerConfig)
 	cacheMgrMu     sync.Mutex
 )
 
-// allow to cache the resolved YAML file for the same couple (osFamily, osDistro)
+// Description: used to cache the resolved YAML file for the same couple (osFamily, osDistro)
 var (
 	configRepoCache = make(map[string]*RepoConfig)
 	cacheRepoMu     sync.Mutex
 )
 
+// -----------------------------------------
+// ------ get manager ----------------------
+// -----------------------------------------
+
 // Description: returns a SysManager based on OS family
 //
 // Notes:
+//
 // - the PM has access to the part of the YAML configuration that relates to the package manager
 func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
 	// 1 - load yaml mgr - Ensure it is loaded only once
@@ -105,8 +114,10 @@ func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
 }
 
 // -----------------------------------------
-// ------ get Mgr Config YAML --------------
+// ------ get YAML file --------------------
 // -----------------------------------------
+
+// ####### of global config #######
 
 // Description: returns the YAML configuration
 //
@@ -143,12 +154,11 @@ func getMgrConfig(osFamily, osDistro string) (*ManagerConfig, error) {
 	configMgrCache[cacheKey] = theYaml
 	cacheMgrMu.Unlock()
 
+	// handle success
 	return theYaml, nil
 }
 
-// -----------------------------------------
-// ------ get Repo YAML List ---------------
-// -----------------------------------------
+// ####### of Repo List #######
 
 // Description: returns the YAML repository db
 //
@@ -189,9 +199,8 @@ func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfi
 	return theYaml, nil
 }
 
-// -----------------------------------------
-// ------ get Pkg YAML List ---------------
-// -----------------------------------------
+// ####### of Pkg List #######
+
 func getPkgList() (*PkgYamlList, error) {
 	theYaml, err := yamlx.LoadTplYamlFileEmbed[PkgYamlList](yamlPkgList, "")
 	if err != nil {
@@ -200,9 +209,7 @@ func getPkgList() (*PkgYamlList, error) {
 	return theYaml, nil
 }
 
-// -----------------------------------------
-// ------ get Repo Content Config YAML -----
-// -----------------------------------------
+// ####### of Repo Content #######
 
 func getRepoContentConfig(repoName, repoUrl, gpgUrl, gpgFilepath string) (*RepoContentConfig, error) {
 
@@ -222,6 +229,5 @@ func getRepoContentConfig(repoName, repoUrl, gpgUrl, gpgFilepath string) (*RepoC
 	if err != nil {
 		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
 	}
-
 	return theYaml, nil
 }
