@@ -25,7 +25,7 @@ type RepoCli interface {
 }
 
 // -------------------------------------------------------
-// -------------------- struct for Repo File Content YAML -------------
+// -------	 struct for Repo File Content YAML -------------
 // -------------------------------------------------------
 
 // Description: represents the content of the repository file on the os
