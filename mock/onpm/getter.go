@@ -1,29 +1,14 @@
 package onpm
 
 import (
-	_ "embed"
+	// _ "embed"
 	"sync"
 
 	"fmt"
 
+	"github.com/abtransitionit/gocore/filex"
 	"github.com/abtransitionit/gocore/mock/yamlx"
 )
-
-// -----------------------------------------
-// ------ define file location -------------
-// -----------------------------------------
-
-//go:embed db.mgr.yaml
-var yamlMgr []byte // cache the raw yaml file in this var
-
-//go:embed db.list.repo.yaml
-var yamlRepo []byte // cache the raw yaml file in this var
-
-//go:embed db.list.package.yaml
-var yamlPkgList []byte // cache the raw yaml file in this var
-
-//go:embed db.repo.content.yaml
-var yamlRepoConent []byte // cache the raw yaml file in this var
 
 // -----------------------------------------
 // ------ define caching parameters --------
@@ -202,7 +187,7 @@ func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfi
 // ####### of Pkg List #######
 
 func getPkgList() (*PkgYamlList, error) {
-	theYaml, err := yamlx.LoadTplYamlFileEmbed[PkgYamlList](yamlPkgList, "")
+	theYaml, err := filex.LoadYamlIntoStruct[PkgYamlList](yamlPkgList)
 	if err != nil {
 		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
 	}
