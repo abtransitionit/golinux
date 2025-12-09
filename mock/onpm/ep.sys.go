@@ -108,7 +108,7 @@ func UpdateOs(hostName string, logger logx.Logger) (string, error) {
 	}
 
 	// log
-	logger.Debugf("%s > %s:%s > yo %s", hostName, osFamily, osDistro, cli)
+	// logger.Debugf("%s > %s:%s > yo %s", hostName, osFamily, osDistro, cli)
 	// 4 - run CLI
 	out, err := run.RunCli(hostName, cli, logger)
 	if err != nil {

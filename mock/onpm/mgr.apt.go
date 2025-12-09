@@ -78,8 +78,8 @@ func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
 	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
 	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
-	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilepath)
-	logger.Debugf("repo:gpg:filepath > (%s) %s", mgr.Cfg.Pkg.Type, gpgFilepath)
+	logger.Debugf(`%s:%s > repo:filepath     >  %s`, hostName, mgr.Cfg.Pkg.Type, repoFilepath)
+	logger.Debugf("%s:%s > repo:gpg:filepath >  %s", hostName, mgr.Cfg.Pkg.Type, gpgFilepath)
 	// logger.Debugf("repo file content : %s", repoFileContent.Apt)
 	fmt.Printf("%s", repoFileContent.Apt)
 
@@ -167,7 +167,7 @@ func (mgr *AptSysManager) Update(hostName string, osDistro string, logger logx.L
 			return "", fmt.Errorf("❌ %s:%s > %w > out:%s", hostName, osDistro, err, out)
 		}
 		// log
-		logger.Debugf("%s:%s > installed package: %s > out:%s", hostName, osDistro, pkgName, out)
+		// logger.Debugf("%s:%s > installed package: %s > out:%s", hostName, osDistro, pkgName, out)
 	}
 	// handle success
 	return "", nil
