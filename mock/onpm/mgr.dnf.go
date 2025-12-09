@@ -61,16 +61,16 @@ func (mgr *DnfRepoManager) List() string {
 
 func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// 1 - get variables
-	// 11 - get resolved repo filepath
+	// 11 - repo:filepath
 	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
-	// 12 - get resolved organization's repository list
-	repoYamlList, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
+	// 12 - organization:repo:list (whitelist)
+	yamlAsStruct, err := getRepoList(mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, repo.Version, "rhel")
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
 	// logger.Debugf("%s:%s:%s yoyo repoYamlList: %v", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoYamlList)
 	// 13 - get resolved templated repo file content
-	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlList.Repository[repo.Name].Url.Repo, repoYamlList.Repository[repo.Name].Url.Gpg, "")
+	repoFileContent, err := getRepoContentConfig(repo.Name, yamlAsStruct.Repository[repo.Name].Url.Repo, yamlAsStruct.Repository[repo.Name].Url.Gpg, "")
 	if err != nil {
 		return "", fmt.Errorf("getting repo file content: %w", err)
 	}

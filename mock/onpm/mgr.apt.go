@@ -59,18 +59,18 @@ func (mgr *AptRepoManager) List() string {
 
 func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	var cli string
-	// 1 - get variables
-	// 11 - get resolved repo filepath
+	// 1 - define var
+	// 11 - repo:filepath
 	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
-	// 12 - get resolved organization's repository list
-	repoYamlCfg, err := getRepoConfig(repo.Version, mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, "rhel")
+	// 12 - organization:repo:list (whitelist)
+	yamlAsStruct, err := getRepoList(mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, repo.Version, "rhel")
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
-	// 13 - get resolved gpg filepath
+	// 13 - gpg:filepath
 	gpgFilepath := filepath.Join(mgr.Cfg.Folder.GpgKey, repo.Filename+mgr.Cfg.Ext.Gpg.File)
 	// 14 - get resolved templated repo file content
-	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlCfg.Repository[repo.Name].Url.Repo, repoYamlCfg.Repository[repo.Name].Url.Gpg, gpgFilepath)
+	repoFileContent, err := getRepoContentConfig(repo.Name, yamlAsStruct.Repository[repo.Name].Url.Repo, yamlAsStruct.Repository[repo.Name].Url.Gpg, gpgFilepath)
 	if err != nil {
 		return "", fmt.Errorf("getting repo file content: %w", err)
 	}
@@ -93,7 +93,7 @@ func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// 2 - create gpg file
 	// gpgFilepath = fmt.Sprintf("%s%s", gpgFilepath, ".test")
 	logger.Debugf("%s:%s:%s > saving repo:gpg:filepath to >  %s", hostName, mgr.Cfg.Pkg.Type, repo.Name, gpgFilepath)
-	cli = file.SudoCreateGpgFileFromUrl(repoYamlCfg.Repository[repo.Name].Url.Gpg, gpgFilepath)
+	cli = file.SudoCreateGpgFileFromUrl(yamlAsStruct.Repository[repo.Name].Url.Gpg, gpgFilepath)
 	_, err = run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)

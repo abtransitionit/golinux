@@ -110,7 +110,7 @@ func GetRepoMgr(osFamily, osDistro string, logger logx.Logger) (RepoCli, error) 
 // Notes:
 // - The placeholders {{ .XXX }} in the YAML are reolved
 // - TODO: find a better structured data or solution for the resolution
-func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfig, error) {
+func getRepoList(pkgType, gpgUrlExt, repoVersion, osDistro string) (*RepoConfig, error) {
 	cacheKey := fmt.Sprintf("%s-%s", osDistro)
 
 	cacheRepoMu.Lock()
