@@ -68,7 +68,7 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
-	logger.Debugf("%s:%s:%s yoyo repoYamlList: %v", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoYamlList)
+	// logger.Debugf("%s:%s:%s yoyo repoYamlList: %v", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoYamlList)
 	// 13 - get resolved templated repo file content
 	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlList.Repository[repo.Name].Url.Repo, repoYamlList.Repository[repo.Name].Url.Gpg, "")
 	if err != nil {

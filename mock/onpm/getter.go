@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/abtransitionit/gocore/filex"
+	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/gocore/mock/yamlx"
 )
 
@@ -30,14 +31,14 @@ var (
 // ------ get manager ----------------------
 // -----------------------------------------
 
-// Description: returns a SysManager based on OS family
+// Description: returns a system manager that implement the SysCli interface
 //
 // Notes:
 //
-// - the PM has access to the part of the YAML configuration that relates to the package manager
+// - the manager has access to only to a part of the YAML (that is related to him)
 func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
-	// 1 - load yaml mgr - Ensure it is loaded only once
-	conf, err := getMgrConfig(osFamily, osDistro)
+	// 1 - get local auto cached (embedded) file into a struct
+	cfg, err := filex.LoadYamlIntoStruct[ManagerConfig](yamlCfgGlobal)
 	if err != nil {
 		return nil, err
 	}
@@ -45,22 +46,22 @@ func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
 	// 2 - retrun the package manager
 	switch osFamily {
 	case "debian":
-		return &AptSysManager{Cfg: conf.Apt}, nil
+		return &AptSysManager{Cfg: cfg.Apt}, nil
 	case "rhel", "fedora":
-		return &DnfSysManager{Cfg: conf.Dnf}, nil
+		return &DnfSysManager{Cfg: cfg.Dnf}, nil
 	default:
 		return nil, fmt.Errorf("unsupported OS family: %s", osFamily)
 	}
 }
 
-// Description: returns a PackageManager based on OS family
+// Description: returns a package manager that implement the PackageCli interface
 //
 // Notes:
-// - the PM has access to the part of the YAML configuration that relates to the package manager
+// - the manager has access to only to a part of the YAML (that is related to him)
 func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 
-	// 1 - load config file
-	conf, err := getMgrConfig(osFamily, osDistro)
+	// 1 - get local auto cached (embedded) file into a struct
+	cfg, err := filex.LoadYamlIntoStruct[ManagerConfig](yamlCfgGlobal)
 	if err != nil {
 		return nil, err
 	}
@@ -68,21 +69,21 @@ func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 	// 2 - retrun the package manager
 	switch osFamily {
 	case "debian":
-		return &AptPkgManager{Cfg: conf.Apt}, nil
+		return &AptPkgManager{Cfg: cfg.Apt}, nil
 	case "rhel", "fedora":
-		return &DnfPkgManager{Cfg: conf.Dnf}, nil
+		return &DnfPkgManager{Cfg: cfg.Dnf}, nil
 	default:
-		return nil, fmt.Errorf("unsupported OS family: %s", osFamily)
+		return nil, fmt.Errorf("unsupported OS family : %s", osFamily)
 	}
 }
 
-// Description: returns a RepoManager based on OS family
+// Description: returns a repository manager that implement the RepoCli interface
 //
 // Notes:
-// - the PM has access to the part of the YAML configuration that relates to the package manager
-func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
-	// 1 - load config file
-	conf, err := getMgrConfig(osFamily, osDistro)
+// - the manager has access to only to a part of the YAML (that is related to him)
+func GetRepoMgr(osFamily, osDistro string, logger logx.Logger) (RepoCli, error) {
+	// 1 - get local auto cached (embedded) file into a struct
+	cfg, err := filex.LoadYamlIntoStruct[ManagerConfig](yamlCfgGlobal)
 	if err != nil {
 		return nil, err
 	}
@@ -90,9 +91,11 @@ func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
 	// 2 - retrun the package manager
 	switch osFamily {
 	case "debian":
-		return &AptRepoManager{Cfg: conf.Apt}, nil
+		// logger.Debugf("%s:%s: cfg.apt is %v", osFamily, osDistro, cfg.Apt)
+		return &AptRepoManager{Cfg: cfg.Apt}, nil
 	case "rhel", "fedora":
-		return &DnfRepoManager{Cfg: conf.Dnf}, nil
+		// logger.Debugf("%s:%s: cfg.dnf is %v", osFamily, osDistro, cfg.Dnf)
+		return &DnfRepoManager{Cfg: cfg.Dnf}, nil
 	default:
 		return nil, fmt.Errorf("unsupported OS family: %s", osFamily)
 	}
@@ -101,49 +104,6 @@ func GetRepoMgr(osFamily, osDistro string) (RepoCli, error) {
 // -----------------------------------------
 // ------ get YAML file --------------------
 // -----------------------------------------
-
-// ####### of global config #######
-
-// Description: returns the YAML configuration
-//
-// Notes:
-// - The placeholders {{ .XXX }} in the YAML are reolved
-// - TODO: find a better structured data or solution for the resolution
-func getMgrConfig(osFamily, osDistro string) (*ManagerConfig, error) {
-	cacheKey := fmt.Sprintf("%s-%s", osFamily, osDistro)
-
-	cacheMgrMu.Lock()
-	theYaml, found := configMgrCache[cacheKey]
-	cacheMgrMu.Unlock()
-
-	if found {
-		return theYaml, nil
-	}
-
-	// Not in cache → resolve YAML
-	// 1. define the data structure to resolve the YAML placeholders
-	varPlaceholder := map[string]map[string]string{
-		"Os": {
-			"Family": osFamily,
-			"Distro": osDistro,
-		},
-	}
-	// 2 - get resolved YAML into struct
-	theYaml, err := yamlx.LoadTplYamlFileEmbed[ManagerConfig](yamlMgr, varPlaceholder)
-	if err != nil {
-		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
-	}
-
-	// Store in cache
-	cacheMgrMu.Lock()
-	configMgrCache[cacheKey] = theYaml
-	cacheMgrMu.Unlock()
-
-	// handle success
-	return theYaml, nil
-}
-
-// ####### of Repo List #######
 
 // Description: returns the YAML repository db
 //
@@ -171,7 +131,7 @@ func getRepoConfig(repoVersion, pkgType, gpgUrlExt, osDistro string) (*RepoConfi
 		},
 	}
 	// 2 - get resolved YAML into struct
-	theYaml, err := yamlx.LoadTplYamlFileEmbed[RepoConfig](yamlRepo, varPlaceholder)
+	theYaml, err := yamlx.LoadTplYamlFileEmbed[RepoConfig](yamlRepoList, varPlaceholder)
 	if err != nil {
 		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
 	}
@@ -210,7 +170,7 @@ func getRepoContentConfig(repoName, repoUrl, gpgUrl, gpgFilepath string) (*RepoC
 		},
 	}
 	// 2 - get resolved YAML into struct
-	theYaml, err := yamlx.LoadTplYamlFileEmbed[RepoContentConfig](yamlRepoConent, varPlaceholder)
+	theYaml, err := yamlx.LoadTplYamlFileEmbed[RepoContentConfig](yamlCfgRepo, varPlaceholder)
 	if err != nil {
 		return nil, fmt.Errorf("getting YAML config file in package: %w", err)
 	}

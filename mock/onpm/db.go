@@ -8,17 +8,17 @@ import (
 // ------ define file location -------------
 // -----------------------------------------
 
-//go:embed db.mgr.yaml
-var yamlMgr []byte // automatically cache the raw yaml file in this var
+//go:embed db.cfg.global.yaml
+var yamlCfgGlobal []byte // automatically cache the raw yaml file in this var
+
+//go:embed db.cfg.repo.yaml
+var yamlCfgRepo []byte // automatically  cache the raw yaml file in this var
 
 //go:embed db.list.repo.yaml
-var yamlRepo []byte // automatically  cache the raw yaml file in this var
+var yamlRepoList []byte // automatically  cache the raw yaml file in this var
 
 //go:embed db.list.package.yaml
 var yamlPkgList []byte // automatically cache the raw yaml file in this var
-
-//go:embed db.repo.content.yaml
-var yamlRepoConent []byte // automatically  cache the raw yaml file in this var
 
 type MapPack map[string]Pack
 type MapRepo map[string]Repo3

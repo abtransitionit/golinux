@@ -33,8 +33,8 @@ func AddRepo(hostName string, repo Repo2, logger logx.Logger) (string, error) {
 	// 	osDistro = "fedora"
 	// }
 
-	// 2 - get a manager (dnf or apt)
-	repoMgr, err := GetRepoMgr(osFamily, osDistro)
+	// 2 - get a manager (dnf or apt) based on osFamily/osDistro
+	repoMgr, err := GetRepoMgr(osFamily, osDistro, logger)
 	if err != nil {
 		return "", err
 	}

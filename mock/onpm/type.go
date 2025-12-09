@@ -175,8 +175,8 @@ type Pkg2 struct {
 
 type PkgSlice []Pkg2
 type Repo2 struct {
-	Filename string
 	Name     string
+	Filename string
 	Version  string
 }
 
