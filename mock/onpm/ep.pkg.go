@@ -52,7 +52,7 @@ func AddPkg(hostName string, pkgName string, logger logx.Logger) (string, error)
 	if pkgNameFormal == "" {
 		pkgNameFormal = pkgName
 	} else {
-		logger.Debugf("%s:%s > package name overridden: %s", hostName, pkgName, pkgNameFormal)
+		logger.Debugf("%s:%s:%s:%s > package name overridden:%s", hostName, osFamily, osDistro, pkgName, pkgNameFormal)
 	}
 
 	// 3 - get the cli
@@ -61,7 +61,7 @@ func AddPkg(hostName string, pkgName string, logger logx.Logger) (string, error)
 		return "", err
 	}
 	// log
-	logger.Infof("%s > %s:%s > %s", hostName, osFamily, osDistro, cli)
+	// logger.Debugf("%s:%s:%s:%s > cli:%s", hostName, osFamily, osDistro, pkgName, cli)
 
 	// play the cli
 	out, err := run.RunCli(hostName, cli, logger)

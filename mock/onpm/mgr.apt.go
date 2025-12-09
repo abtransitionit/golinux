@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/abtransitionit/gocore/filex"
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/golinux/mock/file"
 	"github.com/abtransitionit/golinux/mock/run"
@@ -63,10 +64,18 @@ func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// 11 - repo:filepath
 	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
 	// 12 - organization:repo:list (whitelist)
-	yamlAsStruct, err := getRepoList(mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, repo.Version, "rhel")
-	if err != nil {
-		return "", fmt.Errorf("getting YAML repo config file: %w", err)
+	varPlaceholder := map[string]map[string]string{
+		"Repo": {
+			"Tag": repo.Version,
+			"Pkg": mgr.Cfg.Pkg.Type,
+			"Gpg": mgr.Cfg.Ext.Gpg.Url,
+		},
 	}
+	yamlAsStruct, err := filex.LoadTplYamlFileEmbed[RepoConfig](yamlRepoList, varPlaceholder)
+	if err != nil {
+		return "", fmt.Errorf("loading repo YAML config file: %w", err)
+	}
+
 	// 13 - gpg:filepath
 	gpgFilepath := filepath.Join(mgr.Cfg.Folder.GpgKey, repo.Filename+mgr.Cfg.Ext.Gpg.File)
 	// 14 - get resolved templated repo file content

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/abtransitionit/gocore/filex"
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/golinux/mock/file"
 	"github.com/abtransitionit/golinux/mock/run"
@@ -64,10 +65,18 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// 11 - repo:filepath
 	repoFilepath := filepath.Join(mgr.Cfg.Folder.Repo, repo.Filename+mgr.Cfg.Ext.Repo)
 	// 12 - organization:repo:list (whitelist)
-	yamlAsStruct, err := getRepoList(mgr.Cfg.Pkg.Type, mgr.Cfg.Ext.Gpg.Url, repo.Version, "rhel")
-	if err != nil {
-		return "", fmt.Errorf("getting YAML repo config file: %w", err)
+	varPlaceholder := map[string]map[string]string{
+		"Repo": {
+			"Tag": repo.Version,
+			"Pkg": mgr.Cfg.Pkg.Type,
+			"Gpg": mgr.Cfg.Ext.Gpg.Url,
+		},
 	}
+	yamlAsStruct, err := filex.LoadTplYamlFileEmbed[RepoConfig](yamlRepoList, varPlaceholder)
+	if err != nil {
+		return "", fmt.Errorf("loading repo YAML config file: %w", err)
+	}
+
 	// logger.Debugf("%s:%s:%s yoyo repoYamlList: %v", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoYamlList)
 	// 13 - get resolved templated repo file content
 	repoFileContent, err := getRepoContentConfig(repo.Name, yamlAsStruct.Repository[repo.Name].Url.Repo, yamlAsStruct.Repository[repo.Name].Url.Gpg, "")
@@ -86,7 +95,6 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// 2 - create repo file - GPG key url is included as a parameter
 	// repoFilepath = fmt.Sprintf("%s%s", repoFilepath, ".test")
 	// logger.Debugf("%s:%s:%s > repo:file:content %s", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoFileContent.Dnf)
-	fmt.Println("%s", repoFileContent.Dnf)
 	logger.Debugf(`%s:%s:%s > saving repo:filepath to >  %s`, hostName, mgr.Cfg.Pkg.Type, repo.Name, repoFilepath)
 	cli := file.SudoCreateFileFromString(repoFilepath, repoFileContent.Dnf)
 	_, err = run.RunCli(hostName, cli, logger)
