@@ -74,28 +74,37 @@ func (mgr *AptRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	if err != nil {
 		return "", fmt.Errorf("getting repo file content: %w", err)
 	}
+
 	// log
 	// logger.Debugf("repo:name >   (%s)   %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Name)
 	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Repo)
 	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlCfg.Repository[repo.Name].Url.Gpg)
-	logger.Debugf(`%s:%s > repo:filepath     >  %s`, hostName, mgr.Cfg.Pkg.Type, repoFilepath)
-	logger.Debugf("%s:%s > repo:gpg:filepath >  %s", hostName, mgr.Cfg.Pkg.Type, gpgFilepath)
 	// logger.Debugf("repo file content : %s", repoFileContent.Apt)
-	fmt.Printf("%s", repoFileContent.Apt)
 
 	// 2 - create repo file - GPG key is saved separately
-	cli = file.SudoCreateFileFromString(repoFilepath+".test", repoFileContent.Apt)
+	// repoFilepath = fmt.Sprintf("%s%s", repoFilepath, ".test")
+	// logger.Debugf("%s:%s:%s > repo:file:content %s", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoFileContent.Apt)
+	logger.Debugf(`%s:%s:%s > saving repo:filepath to >  %s`, hostName, mgr.Cfg.Pkg.Type, repo.Name, repoFilepath)
+	cli = file.SudoCreateFileFromString(repoFilepath, repoFileContent.Apt)
 	_, err = run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
 	}
 	// 2 - create gpg file
-	logger.Debugf("DOING: saving gpg key to /tmp/toto")
-	cli = file.SudoCreateGpgFileFromUrl(repoYamlCfg.Repository[repo.Name].Url.Gpg, gpgFilepath+".test")
-	// cli = file.SudoCreateGpgFileFromUrl(repoYamlCfg.Repository[repo.Name].Url.Repo, gpgFilepath)
+	// gpgFilepath = fmt.Sprintf("%s%s", gpgFilepath, ".test")
+	logger.Debugf("%s:%s:%s > saving repo:gpg:filepath to >  %s", hostName, mgr.Cfg.Pkg.Type, repo.Name, gpgFilepath)
+	cli = file.SudoCreateGpgFileFromUrl(repoYamlCfg.Repository[repo.Name].Url.Gpg, gpgFilepath)
 	_, err = run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
+	}
+
+	// 3 - update the package repository
+	// cli = "sudo dnf update -q -y > /dev/null"
+	cli = "DEBIAN_FRONTEND=noninteractive sudo apt-get update -qq -y > /dev/null"
+	_, err = run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s updating apt repo with cli %s : %w", hostName, cli, err)
 	}
 
 	return "", nil

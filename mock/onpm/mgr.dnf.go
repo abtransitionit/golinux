@@ -68,6 +68,7 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	if err != nil {
 		return "", fmt.Errorf("getting YAML repo config file: %w", err)
 	}
+	logger.Debugf("%s:%s:%s yoyo repoYamlList: %v", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoYamlList)
 	// 13 - get resolved templated repo file content
 	repoFileContent, err := getRepoContentConfig(repo.Name, repoYamlList.Repository[repo.Name].Url.Repo, repoYamlList.Repository[repo.Name].Url.Gpg, "")
 	if err != nil {
@@ -78,16 +79,27 @@ func (mgr *DnfRepoManager) Add(hostName string, repo Repo2, logger logx.Logger) 
 	// logger.Debugf("repo:url:repo (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlList.Repository[repo.Name].Url.Repo)
 	// logger.Debugf("repo:url:gpg  (%s) > %v", mgr.Cfg.Pkg.Type, repoYamlList.Repository[repo.Name].Url.Gpg)
 	// logger.Debugf("repo filecontent : %s", repoFileContent.Dnf)
-	logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilepath)
+	// logger.Debugf("repo:filepath     > (%s) %s", mgr.Cfg.Pkg.Type, repoFilepath)
 	// fmt.Printf("%s", repoFileContent.Dnf)
 	// logger.Debugf("TODO: CreateFileFromStringAsSudo for repo file")
 
 	// 2 - create repo file - GPG key url is included as a parameter
-	cli := file.SudoCreateFileFromString(repoFilepath+".test", repoFileContent.Dnf)
+	// repoFilepath = fmt.Sprintf("%s%s", repoFilepath, ".test")
+	// logger.Debugf("%s:%s:%s > repo:file:content %s", hostName, mgr.Cfg.Pkg.Type, repo.Name, repoFileContent.Dnf)
+	fmt.Println("%s", repoFileContent.Dnf)
+	logger.Debugf(`%s:%s:%s > saving repo:filepath to >  %s`, hostName, mgr.Cfg.Pkg.Type, repo.Name, repoFilepath)
+	cli := file.SudoCreateFileFromString(repoFilepath, repoFileContent.Dnf)
 	_, err = run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s creating repo file with cli %s : %w", hostName, cli, err)
 	}
+	// 3 - update the package repository
+	cli = "sudo dnf update -q -y > /dev/null"
+	_, err = run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s updating package repository with cli %s : %w", hostName, cli, err)
+	}
+
 	return "", nil
 }
 
