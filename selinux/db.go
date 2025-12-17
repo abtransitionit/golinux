@@ -1,4 +1,4 @@
 package selinux
 
 // Selinux
-var confSelinuxFilePath = "/etc/selinux/config"
+var selinuxCfgFilePath = "/etc/selinux/config"
