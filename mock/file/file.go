@@ -104,3 +104,17 @@ func DeleteFileWithSudo(hostName string, nodeName string, fileProperty FilePrope
 	// return "", nil
 	return output, nil
 }
+
+func Create(hostName string, nodeName string, filePath string, logger logx.Logger) (string, error) {
+	// log
+	logger.Infof("%s:%s > create file : %s", hostName, nodeName, filePath)
+	// handle success
+	return "", nil
+}
+
+func AddStringOnce(hostName string, nodeName string, filePath string, logger logx.Logger) (string, error) {
+	// log
+	logger.Infof("%s:%s > Add string to file : %s", hostName, nodeName, filePath)
+	// handle success
+	return "", nil
+}

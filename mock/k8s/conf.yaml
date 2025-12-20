@@ -1,0 +1,35 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+nodeRegistration:
+  ignorePreflightErrors:
+    - NumCPU
+
+---
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+kubernetesVersion: {{ Cluster.Version }}
+networking:
+  podSubnet: {{ Cluster.PodCidr }}
+  serviceSubnet: {{ Cluster.ServiceCidr }}
+
+---
+
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+containerRuntimeEndpoint: {{ CRuntime.SocketName }}
+failSwapOn: false
+
+---
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: JoinConfiguration
+nodeRegistration:    
+  ignorePreflightErrors:
+    - NumCPU
+---
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ResetConfiguration
+cleanupTmpDir: true

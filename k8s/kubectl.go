@@ -16,6 +16,9 @@ func ConfigureKubectlOnCPlane() string {
 	return cli
 }
 
+// 1 - get the initial config from the cplane ([]byte)
+// 2 - install it on the kubectl node (~/.kube/config)
+
 // ssh o1u "cat /etc/kubernetes/admin.conf"  > ~/.kube/config
 // sudo cat /etc/kubernetes/admin.conf > ~/.kube/config
 // chmod 600 ~/.kube/config
