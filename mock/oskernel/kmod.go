@@ -6,7 +6,7 @@ import (
 
 func (module Module) Add(logger logx.Logger) (string, error) {
 	// log
-	logger.Info("Adding Kernel module")
+	logger.Infof("Adding Kernel module: %s", module.Name)
 	// handle success
 	return "", nil
 }

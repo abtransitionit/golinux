@@ -6,7 +6,7 @@ import (
 
 func (param Parameter) Add(logger logx.Logger) (string, error) {
 	// log
-	logger.Info("Adding Kernel parameter")
+	logger.Infof("Adding Kernel parameter %s", param.Name)
 	// handle success
 	return "", nil
 }
