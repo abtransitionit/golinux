@@ -1,0 +1,4 @@
+conf:
+  folder:
+    module: /etc/modules-load.d
+    param: /etc/sysctl.d

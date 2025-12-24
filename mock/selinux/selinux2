@@ -1,0 +1,11 @@
+package selinux
+
+import (
+	"github.com/abtransitionit/gocore/logx"
+)
+
+func ConfigureSelinux(hostName string, logger logx.Logger) (bool, error) {
+	logger.Debugf("%s > Configure Selinux the node", hostName)
+	// handle success
+	return true, nil
+}

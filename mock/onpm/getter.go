@@ -15,13 +15,13 @@ import (
 // ------ define caching parameters --------
 // -----------------------------------------
 
-// Description: used to cache the resolved YAML file for the same couple (osFamily, osDistro)
+// description: used to cache the resolved YAML file for the same couple (osFamily, osDistro)
 var (
 	configMgrCache = make(map[string]*ManagerConfig)
 	cacheMgrMu     sync.Mutex
 )
 
-// Description: used to cache the resolved YAML file for the same couple (osFamily, osDistro)
+// description: used to cache the resolved YAML file for the same couple (osFamily, osDistro)
 var (
 	configRepoCache = make(map[string]*RepoConfig)
 	cacheRepoMu     sync.Mutex
@@ -31,7 +31,7 @@ var (
 // ------ get manager ----------------------
 // -----------------------------------------
 
-// Description: returns a system manager that implement the SysCli interface
+// description: returns a system manager that implement the SysCli interface
 //
 // Notes:
 //
@@ -54,7 +54,7 @@ func GetSysMgr(osFamily, osDistro string) (SysCli, error) {
 	}
 }
 
-// Description: returns a package manager that implement the PackageCli interface
+// description: returns a package manager that implement the PackageCli interface
 //
 // Notes:
 // - the manager has access to only to a part of the YAML (that is related to him)
@@ -77,7 +77,7 @@ func GetPkgMgr(osFamily, osDistro string) (PackageCli, error) {
 	}
 }
 
-// Description: returns a repository manager that implement the RepoCli interface
+// description: returns a repository manager that implement the RepoCli interface
 //
 // Notes:
 // - the manager has access to only to a part of the YAML (that is related to him)
@@ -105,7 +105,7 @@ func GetRepoMgr(osFamily, osDistro string, logger logx.Logger) (RepoCli, error) 
 // ------ get YAML file --------------------
 // -----------------------------------------
 
-// Description: returns the YAML repository db
+// description: returns the YAML repository db
 //
 // Notes:
 // - The placeholders {{ .XXX }} in the YAML are reolved

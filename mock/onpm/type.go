@@ -25,7 +25,7 @@ type RepoCli interface {
 }
 
 // -------------------------------------------------------
-// -------	 struct for Repo File Content YAML -------------
+// -------	 struct for YAML Repo Cfg
 // -------------------------------------------------------
 
 // Description: represents the content of the repository file on the os
@@ -38,10 +38,10 @@ type RepoContentConfig struct {
 }
 
 // -------------------------------------------------------
-// -------------------- struct for Repo YAML List --------
+// -------	 struct for YAML Repo List
 // -------------------------------------------------------
 
-// Description: represents the whole organization's repository db
+// Description: represents the organization's repository db for repos
 //
 // Notes:
 //   - Manage the YAML repo file
@@ -57,10 +57,10 @@ type RepoEntry struct {
 }
 
 // -------------------------------------------------------
-// -------------------- struct for Pkg YAML List ---------
+// -------	 struct for YAML Pkg List
 // -------------------------------------------------------
 
-// Description: represents the whole organization's repository db
+// Description: represents the organization's repository db for packages
 //
 // Notes:
 //   - Manage the YAML repo file
@@ -69,10 +69,10 @@ type PkgYamlList struct {
 }
 
 // -------------------------------------------------------
-// -------------------- struct for Mgr YAML --------------
+// -------	 struct for YAML Mgr Cfg
 // -------------------------------------------------------
 
-// Description: represents the whole YAML configuration file
+// Description: represents the YAML configuration file for the manager
 //
 // Notes:
 //   - Manage the YAML configuration file

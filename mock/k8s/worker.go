@@ -13,7 +13,7 @@ import (
 //
 //   - Worker represents a Kubernetes worker node.
 //   - the node is not reset before being added to the cluster.
-func (worker Worker) Add(joinCli string, logger logx.Logger) (string, error) {
+func (worker *Worker) Add(joinCli string, logger logx.Logger) (string, error) {
 	// func AddWorker(joinCli string) (string, error) {
 
 	// build the CLI
@@ -32,7 +32,7 @@ func (worker Worker) Add(joinCli string, logger logx.Logger) (string, error) {
 //
 //   - Worker represents a Kubernetes worker node.
 //   - the node is being reset before being added to the cluster.
-func (worker Worker) AddWithReset(joinCli string, logger logx.Logger) (string, error) {
+func (worker *Worker) AddWithReset(joinCli string, logger logx.Logger) (string, error) {
 	// func AddWorkerWithReset(joinCli string) (string, error) {
 
 	// build the CLI

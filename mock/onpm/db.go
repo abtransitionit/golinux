@@ -8,7 +8,7 @@ import (
 // ------ define file location -------------
 // -----------------------------------------
 
-//go:embed db.cfg.global.yaml
+//go:embed db.cfg.mgr.yaml
 var yamlCfgGlobal []byte // automatically cache the raw yaml file in this var
 
 //go:embed db.cfg.repo.yaml

@@ -5,7 +5,7 @@ import (
 )
 
 // Description: Reset a node of a cluster
-func (node Node) Reset(logger logx.Logger) (string, error) {
+func (node *Node) Reset(logger logx.Logger) (string, error) {
 	// log
 	logger.Info("Resetting Node with cli: sudo kubeadm reset --force")
 	// handle success
@@ -13,7 +13,7 @@ func (node Node) Reset(logger logx.Logger) (string, error) {
 }
 
 // Description: Initializing a node of a cluster
-func (node Node) Init(logger logx.Logger) (string, error) {
+func (node *Node) Init(logger logx.Logger) (string, error) {
 	// log
 	logger.Info("Initializing Node")
 	// handle success

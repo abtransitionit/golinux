@@ -4,12 +4,9 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-func (param Parameter) Add(logger logx.Logger) (string, error) {
+func (param *Parameter) Add(hostname string, logger logx.Logger) (string, error) {
 	// log
-	logger.Infof("Adding Kernel parameter %s", param.Name)
+	logger.Debugf("%s > Setting Kernel parameter %s to %s", hostname, param.Name, param.Value)
 	// handle success
 	return "", nil
 }
-
-// func AddKParam(phaseName, hostName string, paramList [][]any, logger logx.Logger) (bool, error) {
-// }
