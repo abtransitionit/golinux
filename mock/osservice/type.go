@@ -2,8 +2,12 @@ package osservice
 
 // define types
 type Service struct {
-	Name     string // service name
-	FileName string // service file conf file
+	Name string   // service name
+	File struct { // service conf file
+		Name    string
+		Path    string
+		Content string
+	}
 }
 
 // define slices

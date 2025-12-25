@@ -1,11 +1,19 @@
 package oskernel
 
 // defrine types for YAML
+
+type ConfigYaml struct {
+	Conf *Conf
+}
 type Conf struct {
-	folder struct {
-		module string
-		param  string
+	Folder struct {
+		Module string
+		Param  string
 	}
+}
+type FolderConfig struct {
+	Module string
+	Param  string
 }
 
 // defrine types

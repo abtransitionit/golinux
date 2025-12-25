@@ -9,13 +9,12 @@ import (
 // -----------------------------------------
 // ------ get YAML file --------------------
 // -----------------------------------------
-func GetKernelConf() (*Conf, error) {
+func getKernelConf() (*ConfigYaml, error) {
 	// 1 - get local auto cached (embedded) file into a struct
-	cfg, err := filex.LoadYamlIntoStruct[Conf](yamlCfg)
+	cfg, err := filex.LoadYamlIntoStruct[ConfigYaml](yamlCfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("loading config: %w", err)
 	}
-	fmt.Printf("%v\n", cfg)
 
 	// handle success
 	return cfg, nil

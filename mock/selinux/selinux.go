@@ -22,27 +22,25 @@ func (selinux *Selinux) Configure(hostName string, logger logx.Logger) (string, 
 		return "", nil
 	}
 
-	// Here: osFamily in ["rhel", "fedora"] => DoTheJob
-	// 3 - configure selinux
-	// 31 - runtime configuration
-	// cli = selinux.configureAtRuntime(logger)
-	// if err != nil {
-	// 	return "", err
-	// }
+	// 3 - Here: osFamily in ["rhel", "fedora"] => configure selinux
+	// 31 - at runtime
+	cli := selinux.configureAtRuntime()
+	if err != nil {
+		return "", fmt.Errorf("configring selinux at runtime > %w ", err)
+	}
+	logger.Infof("%s:%s > runtime > %s", hostName, osFamily, cli)
+	// 32 -  at startup
+	cli = selinux.configureAtStartup()
+	if err != nil {
+		return "", fmt.Errorf("configring selinux at startup > %w ", err)
+	}
+	logger.Infof("%s:%s > startup > %s", hostName, osFamily, cli)
 
-	// 32 -  startup configuration
-	// cli = selinux.configureAtStartup(logger)
-	// if err != nil {
-	// 	return "", err
-	// }
-
-	// log
-	logger.Infof("%s:%s > Configuring Selinux called", hostName, osFamily)
 	// handle success
 	return osFamily, nil
 }
 
-func (selinux *Selinux) ConfigureAtRuntime() string {
+func (selinux *Selinux) configureAtRuntime() string {
 	var cmds = []string{
 		"sudo setenforce 0",
 	}
@@ -50,7 +48,7 @@ func (selinux *Selinux) ConfigureAtRuntime() string {
 	return cli
 }
 
-func (selinux *Selinux) ConfigureAtStartup() string {
+func (selinux *Selinux) configureAtStartup() string {
 
 	var cmds = []string{
 		fmt.Sprintf(`sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/' %s`, CfgFilePath),
