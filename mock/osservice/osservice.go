@@ -1,40 +1,39 @@
 package osservice
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/abtransitionit/gocore/logx"
 )
 
-// Description: Enables the service to start at VM boot time
-func (service *Service) Enable(hostName string, logger logx.Logger) (string, error) {
+// Description: Starts the service for the current session (at runtime)
+func (i *Service) Start(hostName string, logger logx.Logger) (string, error) {
 	// log
-	logger.Infof("%s > Enabling OS service: %s", hostName, service.Name)
+	logger.Infof("%s > starting OS service for the current session: %s", hostName, i.Name)
+
+	// cmds := []string{
+	// 	"sudo systemctl daemon-reload",
+	// 	fmt.Sprintf("sudo systemctl enable %s", i.Name),
+	// 	fmt.Sprintf("sudo systemctl start %s", i.Name),
+	// }
+	// cli := strings.Join(cmds, " && ")
+
+	// handle success
+	cli := ""
+	return cli, nil
+}
+
+// Description: enables a service to start after at host reboot (at startup)
+func (i *Service) Enable(hostName string, logger logx.Logger) (string, error) {
+	// log
+	logger.Infof("%s > enabling OS service after a host reboot: %s ", hostName, i.Name)
+
 	// handle success
 	return "", nil
 }
 
-// Description: Starts the service immediately for the current session
-func (service *Service) Start(hostName string, logger logx.Logger) (string, error) {
+// Description: installs a service using its configuration file
+func (i *Service) Install(hostName string, logger logx.Logger) (string, error) {
 	// log
-	logger.Infof("%s > starting OS service: %s", hostName, service.Name)
-
-	cmds := []string{
-		"sudo systemctl daemon-reload",
-		fmt.Sprintf("sudo systemctl enable %s", service.Name),
-		fmt.Sprintf("sudo systemctl start %s", service.Name),
-	}
-	cli := strings.Join(cmds, " && ")
-
-	// handle success
-	return cli, nil
-}
-
-// Description: Install the service
-func (service *Service) Install(hostName string, logger logx.Logger) (string, error) {
-	// log
-	logger.Infof("%s > Installing OS service: %s", hostName, service.Name)
+	logger.Infof("%s > installing OS service: %s", hostName, i.Name)
 
 	// // define cli
 	// var cmds = []string{

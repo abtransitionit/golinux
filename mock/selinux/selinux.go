@@ -8,7 +8,7 @@ import (
 	"github.com/abtransitionit/golinux/mock/property"
 )
 
-func (selinux *Selinux) Configure(hostName string, logger logx.Logger) (string, error) {
+func (i *Selinux) Configure(hostName string, logger logx.Logger) (string, error) {
 
 	// 1 - get host:property
 	osFamily, err := property.GetProperty(logger, hostName, "osFamily")
@@ -23,24 +23,20 @@ func (selinux *Selinux) Configure(hostName string, logger logx.Logger) (string, 
 	}
 
 	// 3 - Here: osFamily in ["rhel", "fedora"] => configure selinux
-	// 31 - at runtime
-	cli := selinux.configureAtRuntime()
-	if err != nil {
-		return "", fmt.Errorf("configring selinux at runtime > %w ", err)
-	}
-	logger.Infof("%s:%s > runtime > %s", hostName, osFamily, cli)
-	// 32 -  at startup
-	cli = selinux.configureAtStartup()
-	if err != nil {
-		return "", fmt.Errorf("configring selinux at startup > %w ", err)
-	}
-	logger.Infof("%s:%s > startup > %s", hostName, osFamily, cli)
+	// 31 - session configure
+	cli := i.configureForSession()
+	logger.Infof("%s:%s > configring selinux for current session > %s", hostName, osFamily, cli)
+
+	// 32 -  startup configure
+	cli = i.configureAfterReboot()
+	logger.Infof("%s:%s > configuring selinux at startup > %s", hostName, osFamily, cli)
 
 	// handle success
-	return osFamily, nil
+	return "", nil
 }
 
-func (selinux *Selinux) configureAtRuntime() string {
+// description: configures selinux for the current session (at runtime)
+func (selinux *Selinux) configureForSession() string {
 	var cmds = []string{
 		"sudo setenforce 0",
 	}
@@ -48,7 +44,8 @@ func (selinux *Selinux) configureAtRuntime() string {
 	return cli
 }
 
-func (selinux *Selinux) configureAtStartup() string {
+// description: configures selinux after a host reboot (at startup)
+func (selinux *Selinux) configureAfterReboot() string {
 
 	var cmds = []string{
 		fmt.Sprintf(`sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/' %s`, CfgFilePath),
