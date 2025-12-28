@@ -1,0 +1,22 @@
+list:
+  cni:
+    url: https://github.com/containernetworking/plugins/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}-plugins-{{ .Cli.Os }}-{{ .Cli.Arch }}-v{{ .Cli.Tag }}.tgz
+  containerd:
+    url:  https://github.com/{{ .Cli.Name }}/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}-{{ .Cli.Tag }}-{{ .Cli.Os }}-{{ .Cli.Arch }}.tar.gz
+  cilium:
+    url:  https://github.com/{{ .Cli.Name }}/{{ .Cli.Name }}-cli/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}-{{ .Cli.Os }}-{{ .Cli.Arch }}.tar.gz
+    doc:
+      - https://github.com/cilium https://github.com/cilium/cilium-cli
+      - https://docs.cilium.io/en/stable/ https://cilium.io/
+  helm:
+    url: https://get.helm.sh/helm-v{{ .Cli.Tag }}-{{ .Cli.Os }}-{{ .Cli.Arch }}.tar.gz
+  kind:
+    url: https://{{ .Cli.Name }}.sigs.k8s.io/dl/{{ .Cli.Tag }}/{{ .Cli.Name }}-{{ .Cli.Os }}-{{ .Cli.Arch }}
+  nerdctl:
+    url:  https://github.com/containerd/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/nerdctl-{{ .Cli.Tag }}-{{ .Cli.Os }}-{{ .Cli.Arch }}.tar.gz
+  rootlesskit:
+    url:  https://github.com/rootless-containers/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}-$UNAME.tar.gz
+  runc:
+    url: https://github.com/opencontainers/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}.{{ .Cli.Arch }}
+  slirp4netns:
+    url:  https://github.com/rootless-containers/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}-$UNAME}

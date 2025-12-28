@@ -7,15 +7,15 @@ import (
 )
 
 // Description: Reset a node of a cluster
-func (node *Node) Reset(logger logx.Logger) (bool, error) {
+func (node *Node) Reset(logger logx.Logger) error {
 	// get cli
 	cli := node.cliForReset()
 
 	// play  cli
-	logger.Infof("%s > will play cli: %s ", node.Name, cli)
+	logger.Infof("%s > Resetting Node with cli: %s ", node.Name, cli)
 
 	// handle success
-	return true, nil
+	return nil
 }
 func (node *Node) cliForReset() string {
 	// define cli
@@ -27,11 +27,3 @@ func (node *Node) cliForReset() string {
 	// handle success
 	return cli
 }
-
-// // Description: Initializing a node of a cluster
-// func (node *Node) Init(logger logx.Logger) (string, error) {
-// 	// log
-// 	logger.Info("Initializing Node")
-// 	// handle success
-// 	return "", nil
-// }

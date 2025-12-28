@@ -181,33 +181,3 @@ type Repo2 struct {
 }
 
 type RepoSlice []Repo2
-
-// // Description: is a light factory for building CliBuilder instances.
-// //
-// // Later steps will give it configuration/loader dependencies (template path, resolver).
-// type CliBuilderFactory struct {
-// 	TplPath string // TplPath optionally holds the path to the templated config file.
-// }
-
-// type Config struct {
-// 	Apt struct {
-// 		Pkg    string `yaml:"pkg"`
-// 		Ext    string `yaml:"ext"`
-// 		Folder struct {
-// 			Repo   string `yaml:"repo"`
-// 			GpgKey string `yaml:"gpgKey"`
-// 		} `yaml:"folder"`
-// 	} `yaml:"apt"`
-
-// 	Dnf struct {
-// 		Pkg    string `yaml:"pkg"`
-// 		Ext    string `yaml:"ext"`
-// 		Folder struct {
-// 			Repo string `yaml:"repo"`
-// 		} `yaml:"folder"`
-// 		Os struct {
-// 			Family string `yaml:"family"`
-// 			Distro string `yaml:"distro"`
-// 		} `yaml:"os"`
-// 	} `yaml:"dnf"`
-// }

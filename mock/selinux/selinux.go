@@ -24,12 +24,12 @@ func (i *Selinux) Configure(hostName string, logger logx.Logger) (string, error)
 
 	// 3 - Here: osFamily in ["rhel", "fedora"] => configure selinux
 	// 31 - session configure
-	cli := i.configureForSession()
-	logger.Infof("%s:%s > configring selinux for current session > %s", hostName, osFamily, cli)
+	// cli := i.configureForSession()
+	logger.Infof("%s:%s > configuring selinux for current session", hostName, osFamily)
 
 	// 32 -  startup configure
-	cli = i.configureAfterReboot()
-	logger.Infof("%s:%s > configuring selinux at startup > %s", hostName, osFamily, cli)
+	// cli = i.configureAfterReboot()
+	logger.Infof("%s:%s > configuring selinux at startup", hostName, osFamily)
 
 	// handle success
 	return "", nil

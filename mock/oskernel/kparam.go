@@ -9,33 +9,31 @@ import (
 )
 
 // description: load a kernel module parameter
-func (s *ParameterSet) Load(hostName string, logger logx.Logger) (string, error) {
+func (s *ParameterSet) Load(hostName string, logger logx.Logger) error {
 
 	// 1 - load
 	// 11 - session load
-	_, err := s.LoadForSession(hostName, logger)
-	if err != nil {
-		return "", fmt.Errorf("loading Kernel module parameters for the current session: %w", err)
+	if err := s.LoadForSession(hostName, logger); err != nil {
+		return fmt.Errorf("loading Kernel module parameters for the current session: %w", err)
 	}
 	// play CLI
 
 	// 12 - startup load
-	_, err = s.LoadAfterReboot(hostName, logger)
-	if err != nil {
-		return "", fmt.Errorf("setting Kernel module parameters loading at startup: %w", err)
+	if err := s.LoadAfterReboot(hostName, logger); err != nil {
+		return fmt.Errorf("setting Kernel module parameters loading at startup: %w", err)
 	}
 	// handle success
-	return "", nil
+	return nil
 }
 
 // description: load a list of kernel module parameter for the current session
-func (s ParameterSet) LoadForSession(hostName string, logger logx.Logger) (string, error) {
+func (s ParameterSet) LoadForSession(hostName string, logger logx.Logger) error {
 
 	// 1 - check if the slice is not empty
 	if len(s.ParameterSlice) == 0 {
-		return "", fmt.Errorf("%s > Module list is empty", hostName)
+		return fmt.Errorf("%s > Module list is empty", hostName)
 	}
-	// 2 - create string from slice
+	// 2 - define cli
 	var cliTmp strings.Builder
 	for _, item := range s.ParameterSlice {
 		cliTmp.WriteString("sysctl -w ")
@@ -49,24 +47,26 @@ func (s ParameterSet) LoadForSession(hostName string, logger logx.Logger) (strin
 	}
 	cli := strings.Join(cmds, " && ")
 
+	// play cli
+	logger.Debugf("%s > play cli: %s", hostName, cli)
+
 	// log
 	logger.Debugf("%s > setting Kernel module parameters for current session", hostName)
 
 	// handle success
-	return cli, nil
+	return nil
 
 }
 
 // description: load a list of kernel module parameter after a host restart
-func (s ParameterSet) LoadAfterReboot(hostName string, logger logx.Logger) (string, error) {
+func (s ParameterSet) LoadAfterReboot(hostName string, logger logx.Logger) error {
 
 	// 1 - get global kernel conf
 	cfg, err := getKernelConf()
 	if err != nil {
-		return "", fmt.Errorf("getting kernel conf: %w", err)
+		return fmt.Errorf("getting kernel conf: %w", err)
 	}
 	// 2 - define var
-
 	kernelParameterFilePath := filepath.Join(cfg.Conf.Folder.Param, s.CfgFileName)
 
 	// log
@@ -92,7 +92,7 @@ func (s ParameterSet) LoadAfterReboot(hostName string, logger logx.Logger) (stri
 	// logger.Debugf("%s: 🅑 persisted kernel parameter(s) in file : %s", vmName, filePath)
 
 	// handle success
-	return "", nil
+	return nil
 }
 
 // // description: load a kernel module parameter

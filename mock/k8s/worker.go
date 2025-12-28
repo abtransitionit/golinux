@@ -13,8 +13,25 @@ import (
 //
 //   - Worker represents a Kubernetes worker node.
 //   - the node is not reset before being added to the cluster.
-func (worker *Worker) Add(joinCli string, logger logx.Logger) (string, error) {
-	// func AddWorker(joinCli string) (string, error) {
+func (worker *Worker) Add(logger logx.Logger) error {
+	// 1 - get join cli
+	joinCli := "todo"
+
+	// 1 - get cli
+	cli := worker.cliForAdd(joinCli)
+	// log
+	logger.Infof("%s > will play cli: %s ", worker.Name, cli)
+	// handle success
+	return nil
+}
+
+// Description: Add a Node (that is a node) to an existing cluster
+//
+// Notes:
+//
+//   - Worker represents a Kubernetes worker node.
+//   - the node is not reset before being added to the cluster.
+func (worker *Worker) cliForAdd(joinCli string) string {
 
 	// build the CLI
 	var clis = []string{
@@ -23,7 +40,7 @@ func (worker *Worker) Add(joinCli string, logger logx.Logger) (string, error) {
 	cli := strings.Join(clis, " && ")
 
 	// return
-	return cli, nil
+	return cli
 }
 
 // Description: Add a Node (that is a node) to an existing cluster

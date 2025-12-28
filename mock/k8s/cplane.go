@@ -15,7 +15,21 @@ import (
 // Notes:
 //
 //   - the control plane is not being reset before being initialized.
-func (cplane *CPlane) Init(clusterParam ClusterParam, logger logx.Logger) (string, error) {
+func (cplane *CPlane) Init(clusterParam ClusterParam, logger logx.Logger) error {
+	// get cli
+	cli, err := cplane.cliForInit(clusterParam, logger)
+	if err != nil {
+		return fmt.Errorf("%s > getting cli: %v", cplane.Name, err)
+	}
+
+	// play  cli
+	logger.Infof("%s > will play cli: %s ", cplane.Name, cli)
+
+	// handle success
+	return nil
+}
+
+func (cplane *CPlane) cliForInit(clusterParam ClusterParam, logger logx.Logger) (string, error) {
 
 	// get the resolved configuration file as byte[]
 	fullConfigAsbyte, err := getFullClusterConf(yamlCfg, clusterParam, logger)
