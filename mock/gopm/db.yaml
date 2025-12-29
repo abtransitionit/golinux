@@ -16,6 +16,7 @@ list:
     type: tgz
   kind:
     url: https://{{ .Cli.Name }}.sigs.k8s.io/dl/{{ .Cli.Tag }}/{{ .Cli.Name }}-{{ .Os.Type }}-{{ .Os.Arch }}
+    type: exe
   nerdctl:
     url:  https://github.com/containerd/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/nerdctl-{{ .Cli.Tag }}-{{ .Os.Type }}-{{ .Os.Arch }}.tar.gz
     type: tgz
@@ -24,5 +25,7 @@ list:
     type: tgz
   runc:
     url: https://github.com/opencontainers/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}.{{ .Os.Arch }}
+    type: exe
   slirp4netns:
     url:  https://github.com/rootless-containers/{{ .Cli.Name }}/releases/download/v{{ .Cli.Tag }}/{{ .Cli.Name }}-{{ .Os.Uname }}
+    type: exe

@@ -7,26 +7,40 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-func CopyArtifactToDest(hostName string, artifact string, dst string, artifactType string, logger logx.Logger) error {
+func CopyArtifactToDest(hostName string, artifactPath string, dstFullPath string, artifactType string, logger logx.Logger) error {
 	// get cli
-	cli := cliForCopyArtifact(artifact, dst, artifactType)
+	cli, err := cliForCopyArtifact(artifactPath, dstFullPath, artifactType)
+	if err != nil {
+		return err
+	}
 	// // play cli
 	// if out, err := run.RunCli(hostName, cli, logger); err != nil {
 	// 	return fmt.Errorf("%s > downloading file from url %s > err > %w > out:%s", hostName, url, err, out)
 	// }
 	// log
-	logger.Debugf("%s > copy %s to %s (cli: %.15s)", hostName, artifact, dst, cli)
+	logger.Debugf("%s >%s ", hostName, cli)
 	// handle success
 	return nil
 }
 
-func cliForCopyArtifact(artefact, dst, artefactType string) string {
-	// define cli
-	var clis = []string{
-		fmt.Sprintf(`do the job with %s, %s, %s`, artefact, dst, artefactType),
+func cliForCopyArtifact(artefact, dst, artefactType string) (string, error) {
+	var clis []string
+
+	switch artefactType {
+	case "exe":
+		clis = []string{
+			fmt.Sprintf(`sudo copy exe %s to %s`, artefact, dst),
+		}
+	case "tgz":
+		clis = []string{
+			fmt.Sprintf(`sudo copy tgz %s to %s`, artefact, dst),
+		}
+	default:
+		return "", fmt.Errorf("not supported artefact type: %s (artefact: %s)", artefactType, artefact)
 	}
+
+	// define cli
 	cli := strings.Join(clis, " && ")
 
-	// handle success
-	return cli
+	return cli, nil
 }

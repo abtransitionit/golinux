@@ -2,6 +2,7 @@ package gopm
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/gocore/mock/yamlx"
@@ -10,7 +11,7 @@ import (
 )
 
 // description: install a cli
-func (i *Cli) Install(hostName string, logger logx.Logger) error {
+func (i *Cli) Install(hostName, folderPath string, logger logx.Logger) error {
 
 	// 1 - get the yaml
 	YamlStruct, err := getYaml(hostName)
@@ -41,13 +42,13 @@ func (i *Cli) Install(hostName string, logger logx.Logger) error {
 		return fmt.Errorf("donwloading url %s: %w", i.Url, err)
 	}
 	// 5 - copy the host artifact temp file to the final destination on the host
-	var artifactFinalDst = "/usr/local/bin"
-	if err := file.CopyArtifactToDest(hostName, artifactFullPath, artifactFinalDst, i.Type, logger); err != nil {
-		return fmt.Errorf("donwloading url %s: %w", i.Url, err)
+	dstFilePath := filepath.Join(folderPath, i.Name)
+	if err := file.CopyArtifactToDest(hostName, artifactFullPath, dstFilePath, i.Type, logger); err != nil {
+		return fmt.Errorf("copying file %s to %s: %w", artifactFullPath, dstFilePath, err)
 	}
 
 	// log
-	logger.Debugf("%s > copy %s to %s", hostName, artifactFullPath, artifactFinalDst)
+	// logger.Debugf("%s > copy %s to %s", hostName, artifactFullPath, folderPath)
 
 	// logger.Infof("%s > will do cli: %s", hostName, cli)
 	// 5 - detect the donwload file type - ie. tar.gz, zip, exe, ...
@@ -92,7 +93,8 @@ func (i *Cli) setUrl(hostName string, rawCli Cli, logger logx.Logger) error {
 	// 2 - define  placeholder
 	varPlaceholder := map[string]map[string]string{
 		"Cli": {
-			"Tag": i.Version,
+			"Tag":  i.Version,
+			"Name": i.Name,
 		},
 		"Os": {
 			"Type":  osType,
