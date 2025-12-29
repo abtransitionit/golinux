@@ -32,14 +32,23 @@ func (i *Cli) Install(hostName string, logger logx.Logger) error {
 		return fmt.Errorf("setting cli url: %w", err)
 	}
 
-	// 4 - donwload the file on the host from the url
-	if err := file.DownloadArtifact(hostName, i.Url, i.Name, i.Type, logger); err != nil {
+	// log
+	logger.Debugf("%s > install %s:%s from url %s", hostName, i.Name, i.Version, i.Url)
+
+	// 4 - donwload the artifact on a host temp file from the url
+	var artifactFullPath string
+	if artifactFullPath, err = file.DownloadArtifact(hostName, i.Url, i.Name, i.Type, logger); err != nil {
 		return fmt.Errorf("donwloading url %s: %w", i.Url, err)
 	}
-	// log
-	logger.Infof("%s > install %s:%s from url %s", hostName, i.Name, i.Version, i.Url)
+	// 5 - copy the host artifact temp file to the final destination on the host
+	var artifactFinalDst = "/usr/local/bin"
+	if err := file.CopyArtifactToDest(hostName, artifactFullPath, artifactFinalDst, i.Type, logger); err != nil {
+		return fmt.Errorf("donwloading url %s: %w", i.Url, err)
+	}
 
 	// log
+	logger.Debugf("%s > copy %s to %s", hostName, artifactFullPath, artifactFinalDst)
+
 	// logger.Infof("%s > will do cli: %s", hostName, cli)
 	// 5 - detect the donwload file type - ie. tar.gz, zip, exe, ...
 	// 6 - move the file on the host
