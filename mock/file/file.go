@@ -9,6 +9,7 @@ import (
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
+// description: sudo copy a file from source to destination using if different orn if not exists on dest
 func CopyFileWithSudo(hostName string, nodeName string, fileProperty FileProperty, logger logx.Logger) (string, error) {
 	// define var
 	var dstFile string
