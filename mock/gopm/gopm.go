@@ -4,32 +4,109 @@ import (
 	"fmt"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/gocore/mock/yamlx"
+	"github.com/abtransitionit/golinux/mock/file"
 	"github.com/abtransitionit/golinux/mock/property"
 )
 
+// description: install a cli
 func (i *Cli) Install(hostName string, logger logx.Logger) error {
-	// define var
-	var osFamily, osDistro string
-	var err error
-	// 1 - get host:property
-	osFamily, err = property.GetProperty(logger, hostName, "osFamily")
+
+	// 1 - get the yaml
+	YamlStruct, err := getYaml(hostName)
 	if err != nil {
+		return fmt.Errorf("%s > %w", hostName, err)
+	}
+
+	// 2 - get the raw cli
+	rawCli, err := i.getRawCli(hostName, YamlStruct)
+	if err != nil {
+		return fmt.Errorf("getting raw url: %w", err)
+	}
+	// 3 - set the cli:url
+	if err = i.setUrl(hostName, rawCli, logger); err != nil {
+		return fmt.Errorf("setting cli url: %w", err)
+	}
+	// 3 - set the cli:type
+	if err = i.setType(hostName, rawCli, logger); err != nil {
+		return fmt.Errorf("setting cli url: %w", err)
+	}
+
+	// 4 - donwload the file on the host from the url
+	if err := file.DownloadArtifact(hostName, i.Url, i.Name, i.Type, logger); err != nil {
+		return fmt.Errorf("donwloading url %s: %w", i.Url, err)
+	}
+	// log
+	logger.Infof("%s > install %s:%s from url %s", hostName, i.Name, i.Version, i.Url)
+
+	// log
+	// logger.Infof("%s > will do cli: %s", hostName, cli)
+	// 5 - detect the donwload file type - ie. tar.gz, zip, exe, ...
+	// 6 - move the file on the host
+
+	// handle success
+	return nil
+}
+
+// description: get the raw url of a cli from the yaml
+func (i *Cli) getRawCli(hostName string, yaml *MapYaml) (Cli, error) {
+
+	// 2 - look up the requested RAWCLI by name
+	cli, ok := yaml.List[i.Name]
+	if !ok {
+		return Cli{}, fmt.Errorf("%s > CLI %q not found in YAML", hostName, i.Name)
+	}
+	// handle success
+	return cli, nil
+
+}
+
+// description: set the url of a cli from the raw url
+func (i *Cli) setUrl(hostName string, rawCli Cli, logger logx.Logger) error {
+	// define var
+	var osType, osArch, uname string
+	var err error
+	var resolvedUrl []byte
+	tpl := []byte(rawCli.Url)
+
+	// 1 - get host:property
+	if osType, err = property.GetProperty(logger, hostName, "osType"); err != nil {
 		return err
 	}
-	osDistro, err = property.GetProperty(logger, hostName, "osDistro")
-	if err != nil {
+	if osArch, err = property.GetProperty(logger, hostName, "osArch"); err != nil {
+		return err
+	}
+	if uname, err = property.GetProperty(logger, hostName, "uname"); err != nil {
 		return err
 	}
 
-	// log
-	logger.Infof("%s:%s:%s > install %s:%s from url", hostName, osFamily, osDistro, i.Name, i.Version)
-	// get the CLI from the YAML file
-	cli, err := GetCliFromYaml(osFamily, osDistro, i.Name)
-	if err != nil {
-		return fmt.Errorf("%s:%s:%s > %w", hostName, osFamily, osDistro, err)
+	// 2 - define  placeholder
+	varPlaceholder := map[string]map[string]string{
+		"Cli": {
+			"Tag": i.Version,
+		},
+		"Os": {
+			"Type":  osType,
+			"Arch":  osArch,
+			"Uname": uname,
+		},
 	}
-	// run the install
-	fmt.Printf("%v\n", cli)
+	// 3 - resolve url
+	if resolvedUrl, err = yamlx.ResolveTplConfig(tpl, varPlaceholder); err != nil {
+		return fmt.Errorf("template resolve failed: %v", err)
+	}
+
+	// 4 - set url
+	i.Url = string(resolvedUrl)
+
+	// handle success
+	return nil
+}
+func (i *Cli) setType(hostName string, rawCli Cli, logger logx.Logger) error {
+	// define var
+
+	// 4 - set type
+	i.Type = rawCli.Type
 
 	// handle success
 	return nil

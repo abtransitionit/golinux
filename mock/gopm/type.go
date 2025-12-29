@@ -2,7 +2,8 @@ package gopm
 
 // define types
 type Cli struct {
-	Name    string
+	Name    string // custom name
+	Type    string // ie. tgz, zip, exe
 	Version string
 	Url     string
 	Doc     []string
@@ -28,6 +29,6 @@ func GetCli(cli Cli) *Cli {
 // Notes:
 //   - Manage the YAML repo file
 //   - denotes the whitelist
-type CliYaml struct {
+type MapYaml struct {
 	List map[string]Cli
 }

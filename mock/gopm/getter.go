@@ -6,26 +6,48 @@ import (
 	"github.com/abtransitionit/gocore/filex"
 )
 
+func getYaml(hostName string) (*MapYaml, error) {
+	// 1 - get local auto cached (embedded) file into a struct
+	yamlAsStruct, err := filex.LoadYamlIntoStruct[MapYaml](yamlList)
+	if err != nil {
+		return nil, fmt.Errorf("%s > loading config: %w", hostName, err)
+	}
+	// handle success
+	return yamlAsStruct, nil
+}
+
 // description: returns the cli info from the DB
 //
 // Notes:
 // - the info are VM specific
-func GetCliFromYaml(osFamily, osDistro, cliName string) (*Cli, error) {
-	// 1 - get local auto cached (embedded) file into a struct
-	yamlFile, err := filex.LoadYamlIntoStruct[CliYaml](yamlList)
-	if err != nil {
-		return nil, fmt.Errorf("loading config: %w", err)
-	}
+// func GeRawtUrlFromYaml(cliName string) (string, error) {
+// 	// // 1 - get local auto cached (embedded) file into a struct
+// 	// yamlFile, err := filex.LoadYamlIntoStruct[CliYaml](yamlList)
+// 	// if err != nil {
+// 	// 	return "", fmt.Errorf("loading config: %w", err)
+// 	// }
+// 	yamlAsStruct, err := getYaml(cliName)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	// 2 - look up the requested CLI by name
-	cli, ok := yamlFile.List[cliName]
-	if !ok {
-		return nil, fmt.Errorf("CLI %q not found in YAML", cliName)
-	}
+// 	// 2 - look up the requested RAWCLI by name
+// 	cli, ok := yamlAsStruct.List[cliName]
+// 	if !ok {
+// 		return "", fmt.Errorf("CLI %q not found in YAML", cliName)
+// 	}
+// 	// handle success
+// 	return cli.Url, nil
+// }
 
-	// handle success
-	return &cli, nil
-}
+// // 3 - resolve the cli:url
+
+// cli.Url, err = ResolveURL(nil, cli, osFamily, osDistro, "")
+// if err != nil {
+// 	return nil, err
+// }
+
+// handle success
 
 // // 2 - retrun the package manager
 // switch osFamily {
