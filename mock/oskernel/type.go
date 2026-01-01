@@ -1,7 +1,6 @@
 package oskernel
 
 // defrine types for YAML
-
 type ConfigYaml struct {
 	Conf *Conf
 }

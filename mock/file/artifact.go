@@ -42,7 +42,8 @@ func cliForCopyArtifact(artifactPath, dstArtifact, artifactType string, logger l
 		// log
 		clis = []string{
 			// fmt.Sprintf(`nbFolder=\$(tar -tzf %q | awk -F/ 'NF>1 {print \$1"/"}' | sort -u | wc -l)`, src),
-			fmt.Sprintf(`folderDepth=1`),
+			// fmt.Sprintf(`folderDepth=1`),
+			fmt.Sprintf(`folderDepth=\$(tar -tzf %s | head -1 | awk -F/ '{print NF-1}')`, src),
 			fmt.Sprintf(`sudo mkdir -p %s`, dst),
 			fmt.Sprintf(`sudo tar -xvzf %s -C %s --strip-components=\$folderDepth`, src, dst),
 			`echo nbFolder=\${nbFolder}`,
