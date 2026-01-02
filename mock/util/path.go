@@ -4,15 +4,17 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-// description: build and return a sequence of paths from a root folder
+// description: build and return a sequence of path from a root folder
 //
 // Notes:
 //
 // - the sequence is separated by the char':'
-func getTreePath(logger logx.Logger, rootFolder string) error {
+func GetTreePath(rootFolder string, logger logx.Logger) (string, error) {
+	// define var
+	path := ""
 	// log
 	logger.Debugf("getTreePath called with rootFolder: %s", rootFolder)
 	// handle success
-	return nil
+	return path, nil
 
 }

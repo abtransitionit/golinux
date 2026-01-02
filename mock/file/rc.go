@@ -7,6 +7,7 @@ import (
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/golinux/mock/run"
+	"github.com/abtransitionit/golinux/mock/util"
 )
 
 func ForceCreateRcFile(hostName, nodeName, customRcFileName string, logger logx.Logger) error {
@@ -14,7 +15,7 @@ func ForceCreateRcFile(hostName, nodeName, customRcFileName string, logger logx.
 	i := GetFile(customRcFileName, "~", "")
 
 	// 12 - operate
-	if err := i.ForceCreateRcFile(hostName, nodeName, logger); err != nil {
+	if err := i.ForceCreateRc(hostName, nodeName, logger); err != nil {
 		return fmt.Errorf("creating rc file %s > %w", i.FullPath, err)
 	}
 
@@ -22,7 +23,7 @@ func ForceCreateRcFile(hostName, nodeName, customRcFileName string, logger logx.
 }
 
 // description: create a new empty RC file even if it exists
-func (i *File) ForceCreateRcFile(hostName string, nodeName string, logger logx.Logger) error {
+func (i *File) ForceCreateRc(hostName string, nodeName string, logger logx.Logger) error {
 
 	// 1 - get cli
 	cli := i.cliToCreateEmptyFile(true)
@@ -55,6 +56,13 @@ func (i *File) CreateRcFile(hostName string, nodeName string, logger logx.Logger
 
 func RcAddPath(hostName, nodeName, folderRootPath, customRcFileName string, logger logx.Logger) error {
 	// log
+	logger.Debugf("%s:%s : create tree path from %s ", hostName, nodeName, folderRootPath)
+	_, err := util.GetTreePath(folderRootPath, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s : getting tree path from %s > %w", hostName, nodeName, folderRootPath, err)
+	}
+	// log
+	logger.Debugf("%s:%s : add the result path to user cusom rc file named %s", hostName, nodeName, folderRootPath, customRcFileName)
 	// handle success
 	return nil
 }
