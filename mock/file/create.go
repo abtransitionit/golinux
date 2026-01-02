@@ -2,6 +2,7 @@ package file
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
@@ -37,26 +38,20 @@ func (i *File) ForceCreateRcFile(hostName string, nodeName string, logger logx.L
 	// 1 - get cli
 	cli := i.cliToCreateEmptyFile(true)
 
-	// 2 - play CLI - that return tshe created file name
+	// 2 - play CLI - that return the created file name
 	CreatedFilePath, err := run.RunCli(nodeName, cli, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s > creating rc file %s > %w", hostName, nodeName, i.FullPath, err)
 	}
 
-	// log
-	logger.Debugf("%s:%s > created rc file: %s", hostName, nodeName, CreatedFilePath)
-	logger.Debugf("%s:%s > will had this line `. %s` to the user's rc file", hostName, nodeName, CreatedFilePath)
-
-	// 3 - get instance
-	rcStdFile := GetFile(".profile", "~", "")
-	logger.Debugf("%s:%s > will had this line to the file %s", hostName, nodeName, rcStdFile.FullPath)
+	// 3 - get user std rc file from it
+	rcStdFile := GetFile("", "", filepath.Dir(CreatedFilePath)+"/.profile")
 
 	// // 4 - operate
-	// content := fmt.Sprintf("source %s", CreatedFilePath)
-	// rcStdFile.AddStringOnce(hostName, nodeName, content, logger)
+	content := fmt.Sprintf("source %s", strings.TrimSpace(CreatedFilePath))
+	rcStdFile.AddStringOnce(hostName, nodeName, content, logger)
 	// log
-	logger.Infof("%s:%s > ad a line to user's rc file: %s", hostName, nodeName, CreatedFilePath)
-	// logger.Infof("%s:%s > ad a line to user's rc file: %s", hostName, nodeName, rcStdFile.FullPath)
+	logger.Infof("%s:%s > added a line to user's rc file: %s", hostName, nodeName, rcStdFile.FullPath)
 
 	// get cli
 	// play cli

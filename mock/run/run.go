@@ -42,10 +42,11 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error) {
 
 	// 1 - define CLI - Build the SSH command: ssh <vm> "<cli>"
-	sshCmd := fmt.Sprintf("ssh %s \"%s\"", hostName, cde)
+	sshCmd := fmt.Sprintf("ssh %s %q", hostName, cde)
 	cli := exec.Command("sh", "-c", sshCmd)
 
 	// log
+	// logger.Infof("SSH CMD = %s", sshCmd)
 	// logger.Debugf("executed remote CLI: %s > %s", vm, cli)
 
 	// 2 - run CLI
