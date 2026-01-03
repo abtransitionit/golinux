@@ -14,7 +14,6 @@ func (i *File) AddStringOnce(hostName, nodeName, content string, logger logx.Log
 	// log
 	// get cli
 	cli := i.cliToEnsureLineExists(content)
-	// logger.Infof("%s:%s > Add string %s to file : %s", hostName, nodeName, content, i.FullPath)
 	logger.Infof("%s:%s > play cli : %s", hostName, nodeName, cli)
 	// play cli
 	_, err := run.RunCli(nodeName, cli, logger)
@@ -27,7 +26,7 @@ func (i *File) AddStringOnce(hostName, nodeName, content string, logger logx.Log
 
 func (i *File) cliToEnsureLineExists(line string) string {
 	var cmds = []string{
-		fmt.Sprintf(`grep -qxF %q %q || echo %q >> %q`, line, i.FullPath, line, i.FullPath),
+		fmt.Sprintf(`grep -qxF %q %s || echo %q >> %s`, strings.TrimSpace(line), i.FullPath, strings.TrimSpace(line), i.FullPath),
 	}
 
 	cli := strings.Join(cmds, " && ")

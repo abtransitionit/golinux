@@ -2,12 +2,28 @@ package property
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	cproperty "github.com/abtransitionit/gocore/mock/property"
 	"github.com/abtransitionit/golinux/mock/run"
 	"github.com/opencontainers/selinux/go-selinux"
 )
+
+func getEnvar(params ...string) (string, error) {
+	// get parameter
+	if len(params) < 1 {
+		return "", fmt.Errorf("envar name required")
+	}
+	envarName := params[0]
+	// get
+	result := os.Getenv(envarName)
+	if strings.TrimSpace(result) == "" {
+		return "", fmt.Errorf("environment variable %s is not set", envarName)
+	}
+	// handle success
+	return result, nil
+}
 
 func isServiceEnabled(params ...string) (string, error) {
 	// get parameter

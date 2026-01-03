@@ -5,13 +5,12 @@ import (
 )
 
 var PropertyMap = map[string]FnPropertyHandler{
-	"path": cproperty.GetPath,
-	// "envar":           getEnvar,
+	"path":  cproperty.GetPath,
+	"envar": getEnvar,
 	// "cgroupVersion":   getCgroupVersion,
 	"cpu":             cproperty.GetCpu,
 	"ram":             cproperty.GetRam,
-	"uname":           getOsArch2, // code change from original
-	"uuid":            getUuid,    // code change from original
+	"uuid":            getUuid, // code change from original
 	"osDistro":        cproperty.GetOsDistro,
 	"osType":          cproperty.GetOsType,   // e.g. linux, windows, darwin
 	"osFamily":        cproperty.GetOsFamily, // linux:rhel, debian; windows:windows; mac:Worstation
@@ -19,6 +18,7 @@ var PropertyMap = map[string]FnPropertyHandler{
 	"osUser":          cproperty.GetOsUser,
 	"osVersion":       cproperty.GetOsVersion,
 	"osArch":          cproperty.GetOsArch, // e.g. arm64, amd64
+	"uname":           getOsArch2,          // code change from original
 	"pathTree":        getPathTree,
 	"rcFilePath":      getRcFilePath,
 	"selinuxStatus":   getSelinuxStatus,

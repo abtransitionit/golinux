@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/property"
 	"github.com/abtransitionit/golinux/mock/run"
 	"github.com/abtransitionit/golinux/mock/util"
 )
@@ -35,11 +36,14 @@ func (i *File) ForceCreateRc(hostName string, nodeName string, logger logx.Logge
 	}
 
 	// 3 - get user std rc file from it
-	rcStdFile := GetFile("", "", filepath.Dir(CreatedFilePath)+"/.profile")
+	// rcStdFile := GetFile("", "", filepath.Dir(CreatedFilePath)+"/.profile")
+	rcStdFile := GetFile(".profile", filepath.Dir(CreatedFilePath), "")
 
 	// // 4 - operate
 	content := fmt.Sprintf("source %s", strings.TrimSpace(CreatedFilePath))
-	rcStdFile.AddStringOnce(hostName, nodeName, content, logger)
+	if err := rcStdFile.AddStringOnce(hostName, nodeName, content, logger); err != nil {
+		return fmt.Errorf("%s:%s > adding line to file %s > %w", hostName, nodeName, rcStdFile.FullPath, err)
+	}
 	// log
 	logger.Infof("%s:%s > added a line to user's rc file: %s", hostName, nodeName, rcStdFile.FullPath)
 
@@ -55,14 +59,44 @@ func (i *File) CreateRcFile(hostName string, nodeName string, logger logx.Logger
 }
 
 func RcAddPath(hostName, nodeName, folderRootPath, customRcFileName string, logger logx.Logger) error {
-	// log
-	logger.Debugf("%s:%s : create tree path from %s ", hostName, nodeName, folderRootPath)
-	_, err := util.GetTreePath(folderRootPath, logger)
-	if err != nil {
+	var (
+		treePath string
+		path     string
+		newPath  string
+		err      error
+	)
+
+	// 1 - get tree path
+	if treePath, err = property.GetProperty(logger, nodeName, "pathTree", folderRootPath); err != nil {
 		return fmt.Errorf("%s:%s : getting tree path from %s > %w", hostName, nodeName, folderRootPath, err)
 	}
+
+	// 2 - get PATH envar
+	if path, err = property.GetProperty(logger, nodeName, "envar", "PATH"); err != nil {
+		return fmt.Errorf("%s:%s : getting tree path from %s > %w", hostName, nodeName, folderRootPath, err)
+	}
+
+	// 3 - get new PATH
+	cli := util.CliToFusionString(path, treePath, ":")
+	if newPath, err = run.RunCli(nodeName, cli, logger); err != nil {
+		return fmt.Errorf("%s:%s : creating new PATH from %s and %s > %w", hostName, nodeName, path, treePath, err)
+	}
+
+	// 4 - persist this new PATH into the user's custom RC file
+	// 41 - get an instance
+	i := GetFile(customRcFileName, "~", "")
+
+	content := fmt.Sprintf(`export PATH=%s`, newPath)
+	if err := i.AddStringOnce(hostName, nodeName, content, logger); err != nil {
+		return fmt.Errorf("%s:%s > adding line to file %s > %w", hostName, nodeName, i.FullPath, err)
+	}
+
 	// log
-	logger.Debugf("%s:%s : add the result path to user cusom rc file named %s", hostName, nodeName, folderRootPath, customRcFileName)
+	logger.Debugf("%s:%s : persisted new path (%s) to user's custom rc file: %s", hostName, nodeName, newPath, i.FullPath)
+	// logger.Debugf("%s:%s : builded tree path: %s", hostName, nodeName, treePath)
+	// logger.Debugf("%s:%s : got path: %s", hostName, nodeName, path)
+	// logger.Debugf("%s:%s : add the result path to user cusom rc file named %s", hostName, nodeName, folderRootPath, customRcFileName)
+
 	// handle success
 	return nil
 }
