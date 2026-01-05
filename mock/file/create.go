@@ -1,6 +1,7 @@
 package file
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 )
@@ -15,6 +16,14 @@ func SudoCreateFileFromString(filePath, content string) string {
 	cli := strings.Join(cmds, " && ")
 
 	return cli
+}
+
+func SudoCreateFileFromStringBase64(filePath, content string) string {
+	// Encode content to Base64
+	encoded := base64.StdEncoding.EncodeToString([]byte(content))
+	// Decode on the remote side and write to file
+	cmd := fmt.Sprintf("echo %s | base64 -d | sudo tee %q > /dev/null", encoded, filePath)
+	return cmd
 }
 
 func SudoCreateGpgFileFromUrl(url string, filePath string) string {
