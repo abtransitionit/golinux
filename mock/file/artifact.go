@@ -99,8 +99,8 @@ func cliForDownload(url, prefix, extension string) string {
 func (i *Artifact) cliToDownload() string {
 	// define cli
 	var clis = []string{
-		fmt.Sprintf(`tmp=\\$(mktemp /tmp/%s-XXXXXX)`, i.Name),
-		`touch \\$tmp`,
+		fmt.Sprintf(`tmp=$(mktemp /tmp/%s-XXXXXX)`, i.Name),
+		`touch "\\$tmp"`,
 		// fmt.Sprintf(`mv $tmp $tmp.%s`, i.Type),
 		// fmt.Sprintf(`curl -fL %s -o $tmp &> /dev/null`, i.Url),
 		// `echo $tmp`,
