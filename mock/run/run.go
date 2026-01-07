@@ -23,8 +23,11 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 	// 1 - define CLI
 	cli := exec.Command("sh", "-c", cde)
 
-	// log
-	// logger.Debugf("executed local CLI > %s ", cli)
+	// if logger != nil {
+	// 	logger.Debugf("local: command executed > %s", cli.String())
+	// } else {
+	// 	fmt.Printf("local: command executed > %s\n", cli.String())
+	// }
 
 	// 2 - run CLI
 	output, err := cli.CombinedOutput()
@@ -42,12 +45,14 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error) {
 
 	// 1 - define CLI - Build the SSH command: ssh <vm> "<cli>"
-	sshCmd := fmt.Sprintf("ssh %s %q", hostName, cde)
+	sshCmd := fmt.Sprintf("ssh %s '%s'", hostName, cde)
 	cli := exec.Command("sh", "-c", sshCmd)
 
-	// log
-	// logger.Infof("SSH CMD = %s", sshCmd)
-	// logger.Debugf("%s: executed cli from local: %s", hostName, cli)
+	// if logger != nil {
+	// 	logger.Debugf("%s: remote command executed > %s", hostName, cli.String())
+	// } else {
+	// 	fmt.Printf("%s: remote command executed > %s\n", hostName, cli.String())
+	// }
 
 	// 2 - run CLI
 	output, err := cli.CombinedOutput()

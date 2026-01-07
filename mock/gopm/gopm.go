@@ -2,6 +2,7 @@ package gopm
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/gocore/mock/yamlx"
@@ -28,28 +29,23 @@ func (i *Cli) Install(hostName, folderPath string, logger logx.Logger) error {
 		return fmt.Errorf("setting cli url: %w", err)
 	}
 	// 3 - set the cli:type
-	if err = i.setType(hostName, rawCli, logger); err != nil {
+	if err = i.setType(rawCli); err != nil {
 		return fmt.Errorf("setting cli url: %w", err)
 	}
 
 	// 4 - donwload the artifact pointed by the url on a host temp file
-	// 41 - get instance of artifact
+	// 41 - get instance and operate
 	artifact := file.GetArtifact(i.Name, i.Url, i.Type)
-	// artifactFullPath, err = file.DownloadArtifact(hostName, i.Url, i.Name, i.Type, logger)
 	if _, err = artifact.Download(hostName, logger); err != nil {
 		return fmt.Errorf("%s > donwloading url %s: %w", hostName, i.Url, err)
 	}
-	// // 5 - copy the host artifact temp file to the final destination on the host
-	// dstFilePath := filepath.Join(folderPath, i.Name)
-	// if err := file.CopyArtifactToDest(hostName, artifactFullPath, dstFilePath, i.Type, logger); err != nil {
-	// 	return fmt.Errorf("copying file %s to %s: %w", artifactFullPath, dstFilePath, err)
-	// }
 
-	// log
-	// logger.Debugf("%s > copy %s to %s", hostName, artifactFullPath, folderPath)
-	// logger.Infof("%s > will do cli: %s", hostName, cli)
-	// 5 - detect the donwload file type - ie. tar.gz, zip, exe, ...
-	// 6 - move the file on the host
+	// TODO: update code to replace function call by a call to a method of artifact or file
+	// 5 - copy the host artifact temp file to the final destination on the host
+	dstFilePath := filepath.Join(folderPath, i.Name)
+	if err := file.CopyArtifactToDest(hostName, artifact.FullPath, dstFilePath, i.Type, logger); err != nil {
+		return fmt.Errorf("copying file %s to %s: %w", artifact.FullPath, dstFilePath, err)
+	}
 
 	// handle success
 	logger.Debugf("%s:%s:%s > installed from url %s", hostName, i.Name, i.Version, i.Url)
@@ -111,9 +107,7 @@ func (i *Cli) setUrl(hostName string, rawCli Cli, logger logx.Logger) error {
 	// handle success
 	return nil
 }
-func (i *Cli) setType(hostName string, rawCli Cli, logger logx.Logger) error {
-	// define var
-
+func (i *Cli) setType(rawCli Cli) error {
 	// 4 - set type
 	i.Type = rawCli.Type
 

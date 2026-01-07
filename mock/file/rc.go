@@ -75,6 +75,7 @@ func RcAddPath(hostName, nodeName, folderRootPath, customRcFileName string, logg
 	if path, err = property.GetProperty(logger, nodeName, "envar", "PATH"); err != nil {
 		return fmt.Errorf("%s:%s : getting tree path from %s > %w", hostName, nodeName, folderRootPath, err)
 	}
+	logger.Debugf("%s:%s : current PATH is %s", hostName, nodeName, path)
 
 	// 3 - get new PATH
 	cli := util.CliToFusionString(path, treePath, ":")
@@ -93,9 +94,6 @@ func RcAddPath(hostName, nodeName, folderRootPath, customRcFileName string, logg
 
 	// log
 	logger.Debugf("%s:%s : persisted new path (%s) to user's custom rc file: %s", hostName, nodeName, newPath, i.FullPath)
-	// logger.Debugf("%s:%s : builded tree path: %s", hostName, nodeName, treePath)
-	// logger.Debugf("%s:%s : got path: %s", hostName, nodeName, path)
-	// logger.Debugf("%s:%s : add the result path to user cusom rc file named %s", hostName, nodeName, folderRootPath, customRcFileName)
 
 	// handle success
 	return nil

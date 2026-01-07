@@ -11,7 +11,7 @@ func SudoCreateFileFromString(filePath, content string) string {
 	// escapedContent := strings.ReplaceAll(content, `'`, `'\''`)
 	// Wrap in single quotes and use printf to preserve newlines
 	var cmds = []string{
-		fmt.Sprintf("printf '%s' | sudo tee %q > /dev/null", content, filePath),
+		fmt.Sprintf(`printf "%s" | sudo tee %q > /dev/null`, content, filePath),
 	}
 	cli := strings.Join(cmds, " && ")
 
@@ -22,14 +22,14 @@ func SudoCreateFileFromStringBase64(filePath, content string) string {
 	// Encode content to Base64
 	encoded := base64.StdEncoding.EncodeToString([]byte(content))
 	// Decode on the remote side and write to file
-	cmd := fmt.Sprintf("echo %s | base64 -d | sudo tee %q > /dev/null", encoded, filePath)
+	cmd := fmt.Sprintf(`echo %s | base64 -d | sudo tee %q > /dev/null`, encoded, filePath)
 	return cmd
 }
 
 func SudoCreateGpgFileFromUrl(url string, filePath string) string {
 	var cmds = []string{
 		// fmt.Sprintf(`sudo install -d -m 0755  $(dirname %s)`, filePath),
-		"set -o pipefail",
+		`set -o pipefail`,
 		fmt.Sprintf(`curl -fsSL %s | gpg --dearmor | sudo tee %s`, url, filePath),
 		fmt.Sprintf(`sudo chmod 0644  %s`, filePath),
 	}
