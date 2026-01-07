@@ -159,17 +159,13 @@ func RebootIfNeeded(hostName string, logger logx.Logger) (string, error) {
 
 	if strings.TrimSpace(needReboot) == "true" {
 		// 2 - log
-		logger.Debugf("%s > %s:%s > kVersion: %s, need reboot: %s > rebooting", hostName, osFamily, osDistro, osKernelVersion, needReboot)
-		// 3 - definé CLI
-		cli := "sudo systemctl reboot"
-		logger.Debugf("%s > %s:%s > will do %s", hostName, osFamily, osDistro, cli)
-		// 4 - run CLI
-		out, err := run.RunCli(hostName, cli, logger)
+		logger.Debugf("%s:%s:%s > kVersion: %s. Rebooting", hostName, osFamily, osDistro, osKernelVersion, needReboot)
+		// 3 - get play and play it
+		out, err := run.RunCli(hostName, "sudo systemctl reboot", logger)
 		if err != nil {
 			return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
 		}
 	}
-
 	// handle success
 	return "", nil
 }

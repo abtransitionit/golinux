@@ -101,22 +101,19 @@ func UpdateOs(hostName string, logger logx.Logger) (string, error) {
 		return "", err
 	}
 
-	// 3 - do the job
+	// 3 - get cli
 	cli, err := sysMgr.Update(hostName, osDistro, logger)
 	if err != nil {
-		return "", fmt.Errorf("%s > %s:%s > updating the OS with cli : %s> %v", hostName, osFamily, osDistro, cli, err)
+		return "", fmt.Errorf("%s:%s:%s > updating the OS with cli : %s> %v", hostName, osFamily, osDistro, cli, err)
 	}
-
-	// log
-	// logger.Debugf("%s > %s:%s > yo %s", hostName, osFamily, osDistro, cli)
-	// 4 - run CLI
+	// 4 - play cli
 	out, err := run.RunCli(hostName, cli, logger)
 	if err != nil {
-		return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
+		return "", fmt.Errorf("%s:%s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)
 	}
 
 	// handle success
-	logger.Infof("%s > %s:%s > updated OS successfully with %s", hostName, osFamily, osDistro, cli)
+	logger.Infof("%s:%s:%s > updated OS successfully", hostName, osFamily, osDistro)
 	return "", nil
 }
 func NeedReboot(hostName string, logger logx.Logger) (string, error) {
@@ -141,7 +138,7 @@ func NeedReboot(hostName string, logger logx.Logger) (string, error) {
 	// log
 	logger.Infof("%s > %s:%s > %s", hostName, osFamily, osDistro, cli)
 
-	// 4 - run CLI
+	// 4 - play cli
 	out, err := run.RunCli(hostName, cli, logger)
 	if err != nil {
 		return "", fmt.Errorf("%s > %s:%s > %w > out:%s", hostName, osFamily, osDistro, err, out)

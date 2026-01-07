@@ -9,7 +9,7 @@ import (
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
-// description: sudo copy a file from source to destination using if different orn if not exists on dest
+// description: sudo copy a file from source to destination if different or if not exists on dest
 func CopyFileWithSudo(hostName string, nodeName string, fileProperty FileProperty, logger logx.Logger) (string, error) {
 	// define var
 	var dstFile string
@@ -25,15 +25,13 @@ func CopyFileWithSudo(hostName string, nodeName string, fileProperty FilePropert
 	}
 	// 2 - logic - copy file only if different
 	// 21 - get the SHA of the source file
-	cli := "sha256sum " + fileProperty.Src
-	shaSrc, err := run.RunCli(hostName, cli, nil)
+	shaSrc, err := run.RunCli(hostName, "sha256sum "+fileProperty.Src, nil)
 	if err != nil {
 		return "", err
 	}
 
-	// 22 - get the SHA of the destination file if exists alese difine a default value (needed for comparison)
-	cli = "sha256sum " + dstFile
-	shaDst, err := run.RunCli(nodeName, cli, nil)
+	// 22 - get the SHA of the destination file if exists else difine a default value (needed for comparison)
+	shaDst, err := run.RunCli(nodeName, "sha256sum "+dstFile, nil)
 	if err != nil {
 		shaDst = fmt.Sprintf("11111 %s", dstFile)
 	}
@@ -57,7 +55,7 @@ func CopyFileWithSudo(hostName string, nodeName string, fileProperty FilePropert
 			fmt.Sprintf(`ssh %s 'sudo chmod %s %s'`, nodeName, fileChmod, dstFile),
 		)
 	}
-	cli = strings.Join(cmds, " && ")
+	cli := strings.Join(cmds, " && ")
 
 	// log
 	// logger.Infof("%s/%s > sudo copy to %s : %v", hostName, nodeName, dstType, cli)
