@@ -18,6 +18,10 @@ type ClusterParam struct {
 	ServiceCidr  string
 	CrSocketName string
 }
+type Kubectl struct {
+	CplaneNdeName   string
+	InstallNodeName string
+}
 
 // define slices
 type NodeSlice []Node
@@ -36,6 +40,13 @@ func GetCplane(name string) *CPlane {
 func GetWorker(name string) *Worker {
 	return &Worker{
 		Name: name,
+	}
+}
+
+func GetKubectl(cplaneNodeName string, installNodeName string) *Kubectl {
+	return &Kubectl{
+		CplaneNdeName:   cplaneNodeName,
+		InstallNodeName: installNodeName,
 	}
 }
 

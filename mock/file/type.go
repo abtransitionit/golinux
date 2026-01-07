@@ -10,12 +10,19 @@ type FileProperty struct {
 	Dst   string // filePath or folderPath
 	Chmod string // optional
 }
+type Artifact struct {
+	Name     string // generic name: eg. "helm", "cilium", ...
+	Url      string // eg. "https://...."
+	Type     string // eg. "tar.gz", "zip", "exe", ...
+	FullPath string // full path after download: eg. /tmp/helm-abe43b.tgz
+}
 type File struct {
 	Name     string // filename
 	Path     string // filePath
 	FullPath string // full path = Path + Name
 }
 
+// define getters
 // description: creates a File either from (name + path) or from fullFilePath
 func GetFile(fileName, filePath, fullFilePath string) *File {
 
@@ -40,6 +47,15 @@ func GetFile(fileName, filePath, fullFilePath string) *File {
 	}
 
 	return nil
+}
+
+// define getters
+func GetArtifact(name, url string, artifactType string) *Artifact {
+	return &Artifact{
+		Name: name,
+		Url:  url,
+		Type: artifactType,
+	}
 }
 
 // // decription: returns a File pointing to "$HOME/.profile"

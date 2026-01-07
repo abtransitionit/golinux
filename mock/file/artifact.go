@@ -58,3 +58,53 @@ func cliForCopyArtifact(artifactPath, dstArtifact, artifactType string, logger l
 
 	return cli, nil
 }
+
+func (i *Artifact) Download(hostName string, logger logx.Logger) (string, error) {
+	// get cli and play it
+	cli := i.cliToDownload()
+	logger.Debugf("%s > executed cli is : %s", hostName, cli)
+	artifactFullPath, err := run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s > downloading artifact from url %s > %w ", hostName, i.Url, err)
+	}
+	// set artifact full path
+	i.FullPath = strings.TrimSpace(artifactFullPath)
+	// handle success
+	return artifactFullPath, nil
+}
+func DownloadArtifact(hostName string, url string, prefix string, extension string, logger logx.Logger) (string, error) {
+	// get cli and play it
+	cli := cliForDownload(url, prefix, extension)
+	// play cli
+	artifactFullPath, err := run.RunCli(hostName, cli, logger)
+	if err != nil {
+		return "", fmt.Errorf("%s > downloading file from url %s > err > %w > out:%s", hostName, url, err, artifactFullPath)
+	}
+	// handle success
+	return artifactFullPath, nil
+}
+
+func cliForDownload(url, prefix, extension string) string {
+	// define cli
+	var clis = []string{
+		fmt.Sprintf(`tmp=\$(mktemp /tmp/%s-XXXXXX.%s)`, prefix, extension),
+		fmt.Sprintf(`curl -fL %q -o "\$tmp" &> /dev/null`, url),
+		`echo "\$tmp"`,
+	}
+	cli := strings.Join(clis, " && ")
+
+	// handle success
+	return cli
+}
+func (i *Artifact) cliToDownload() string {
+	// define cli
+	var clis = []string{
+		fmt.Sprintf(`tmp=$(mktemp /tmp/%s-XXXXXX.%s)`, i.Name, i.Type),
+		fmt.Sprintf(`curl -fL %q -o "$tmp" &> /dev/null`, i.Url),
+		`echo "$tmp"`,
+	}
+	cli := strings.Join(clis, " && ")
+
+	// handle success
+	return cli
+}

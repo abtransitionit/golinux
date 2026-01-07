@@ -2,7 +2,6 @@ package gopm
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/gocore/mock/yamlx"
@@ -24,7 +23,7 @@ func (i *Cli) Install(hostName, folderPath string, logger logx.Logger) error {
 	if err != nil {
 		return fmt.Errorf("getting raw url: %w", err)
 	}
-	// 3 - set the cli:url
+	// 3 - set the cli:resolved url
 	if err = i.setUrl(hostName, rawCli, logger); err != nil {
 		return fmt.Errorf("setting cli url: %w", err)
 	}
@@ -33,28 +32,27 @@ func (i *Cli) Install(hostName, folderPath string, logger logx.Logger) error {
 		return fmt.Errorf("setting cli url: %w", err)
 	}
 
-	// log
-	logger.Debugf("%s > install %s:%s from url %s", hostName, i.Name, i.Version, i.Url)
-
-	// 4 - donwload the artifact on a host temp file from the url
-	var artifactFullPath string
-	if artifactFullPath, err = file.DownloadArtifact(hostName, i.Url, i.Name, i.Type, logger); err != nil {
-		return fmt.Errorf("donwloading url %s: %w", i.Url, err)
+	// 4 - donwload the artifact pointed by the url on a host temp file
+	// 41 - get instance of artifact
+	artifact := file.GetArtifact(i.Name, i.Url, i.Type)
+	// artifactFullPath, err = file.DownloadArtifact(hostName, i.Url, i.Name, i.Type, logger)
+	if _, err = artifact.Download(hostName, logger); err != nil {
+		return fmt.Errorf("%s > donwloading url %s: %w", hostName, i.Url, err)
 	}
-	// 5 - copy the host artifact temp file to the final destination on the host
-	dstFilePath := filepath.Join(folderPath, i.Name)
-	if err := file.CopyArtifactToDest(hostName, artifactFullPath, dstFilePath, i.Type, logger); err != nil {
-		return fmt.Errorf("copying file %s to %s: %w", artifactFullPath, dstFilePath, err)
-	}
+	// // 5 - copy the host artifact temp file to the final destination on the host
+	// dstFilePath := filepath.Join(folderPath, i.Name)
+	// if err := file.CopyArtifactToDest(hostName, artifactFullPath, dstFilePath, i.Type, logger); err != nil {
+	// 	return fmt.Errorf("copying file %s to %s: %w", artifactFullPath, dstFilePath, err)
+	// }
 
 	// log
 	// logger.Debugf("%s > copy %s to %s", hostName, artifactFullPath, folderPath)
-
 	// logger.Infof("%s > will do cli: %s", hostName, cli)
 	// 5 - detect the donwload file type - ie. tar.gz, zip, exe, ...
 	// 6 - move the file on the host
 
 	// handle success
+	logger.Debugf("%s:%s:%s > installed from url %s", hostName, i.Name, i.Version, i.Url)
 	return nil
 }
 

@@ -32,7 +32,6 @@ type ModuleSlice []Module
 type ParameterSlice []Parameter
 
 // defrine sets
-
 type ModuleSet struct {
 	ModuleSlice []Module
 	CfgFileName string

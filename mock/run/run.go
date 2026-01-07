@@ -47,7 +47,7 @@ func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error
 
 	// log
 	// logger.Infof("SSH CMD = %s", sshCmd)
-	// logger.Debugf("executed remote CLI: %s > %s", vm, cli)
+	// logger.Debugf("%s: executed cli from local: %s", hostName, cli)
 
 	// 2 - run CLI
 	output, err := cli.CombinedOutput()
