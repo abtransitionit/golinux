@@ -9,38 +9,32 @@ import (
 )
 
 func (i *Repo) Add(hostName, helmNode string, logger logx.Logger) error {
-	// 1 - get the yaml
+	// 1 - get the yaml file into a var/struct
 	YamlStruct, err := getYaml(hostName)
 	if err != nil {
 		return fmt.Errorf("%s > %w", hostName, err)
 	}
+
 	// 2 - get the repo from the yaml
-	repo, err := i.getYamlRepo(hostName, YamlStruct, logger)
+	repo, err := i.getYamlRepo(hostName, YamlStruct)
 	if err != nil {
-		return fmt.Errorf("%s:%s > getting repo: %w", hostName, helmNode, err)
+		return fmt.Errorf("%s:%s > getting repo: maybe it is not in the whitelist:%w", hostName, helmNode, err)
 	}
 
-	// log
-	logger.Debugf("%s:%s > repo is %+v", hostName, helmNode, repo)
-	// 3 - set the URL from the yaml
+	// 3 - set instance:property from the yaml data
 	i.Url = repo.Url
 
-	// log
-	logger.Debugf("%s:%s > instance url is %s", hostName, helmNode, i.Url)
-
 	// 1 - get and play cli
-	i.cliToAdd()
-	logger.Debugf("CLI  > %s", i.cliToAdd())
 	if _, err := run.RunCli(helmNode, i.cliToAdd(), logger); err != nil {
 		return err
 	}
 	// handle success
-	logger.Debugf("%s:%s:%s > added helm repo", hostName, i.Name, helmNode)
+	logger.Debugf("%s:%s:%s > added helm repo", hostName, helmNode, i.Name)
 	return nil
 }
 
 // description: get the raw url of a cli from the yaml
-func (i *Repo) getYamlRepo(hostName string, yaml *MapYaml, logger logx.Logger) (Repo, error) {
+func (i *Repo) getYamlRepo(hostName string, yaml *MapYaml) (Repo, error) {
 
 	// 2 - look up the requested Repo by name
 	repo, ok := yaml.List[i.Name]
