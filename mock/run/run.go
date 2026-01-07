@@ -48,11 +48,11 @@ func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error
 	sshCmd := fmt.Sprintf("ssh %s '%s'", hostName, cde)
 	cli := exec.Command("sh", "-c", sshCmd)
 
-	// if logger != nil {
-	// 	logger.Debugf("%s: remote command executed > %s", hostName, cli.String())
-	// } else {
-	// 	fmt.Printf("%s: remote command executed > %s\n", hostName, cli.String())
-	// }
+	if logger != nil {
+		logger.Debugf("%s: remote command executed > %s", hostName, cli.String())
+	} else {
+		fmt.Printf("%s: remote command executed > %s\n", hostName, cli.String())
+	}
 
 	// 2 - run CLI
 	output, err := cli.CombinedOutput()

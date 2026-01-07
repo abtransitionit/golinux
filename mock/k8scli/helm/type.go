@@ -15,7 +15,6 @@ type RepoSlice []Repo
 func GetRepo(i Repo) *Repo {
 	return &Repo{
 		Name: i.Name,
-		Url:  i.Url,
 	}
 }
 
@@ -23,7 +22,7 @@ func GetRepo(i Repo) *Repo {
 // -------	 struct for YAML Repo List
 // -------------------------------------------------------
 
-// Description: represents the organization's repository db for helm Repo(s)
+// Description: represents the organization's db for helm Repo(s)
 //
 // Notes:
 //   - Manage the YAML repo file

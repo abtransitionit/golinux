@@ -1,0 +1,27 @@
+package helm
+
+import (
+	"strings"
+
+	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/run"
+)
+
+func (i *Repo) Add(hostName, helmNode string, logger logx.Logger) error {
+	// 1 - get and play cli
+	if _, err := run.RunCli(hostName, i.cliToAdd(), logger); err != nil {
+		return err
+	}
+	// handle success
+	logger.Debugf("%s:%s > started OS service for the current session", hostName, i.Name)
+	return nil
+}
+
+func (i *Repo) cliToAdd() string {
+	var cmds = []string{
+		// fmt.Sprintf("helm repo add %s %s", i.Name, i.URL),
+		// "helm repo update",
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}

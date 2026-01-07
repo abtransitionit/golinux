@@ -3,7 +3,8 @@ package helm
 import (
 	"fmt"
 
-	"github.com/abtransitionit/gocore/filex"
+	// "github.com/abtransitionit/gocore/filex"
+	"github.com/abtransitionit/gocore/mock/filex"
 )
 
 // -----------------------------------------
