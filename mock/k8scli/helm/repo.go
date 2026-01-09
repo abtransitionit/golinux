@@ -10,14 +10,8 @@ import (
 
 func (i *Repo) Add(hostName, helmHost string, logger logx.Logger) error {
 
-	// 2 - get the yaml file into a var/struct
-	YamlStruct, err := GetYamlRepo(hostName)
-	if err != nil {
-		return fmt.Errorf("%s > getting the yaml > %w", hostName, err)
-	}
-
 	// 2 - get the repo instance from the yaml
-	repo, err := i.getYamlRepo(hostName, YamlStruct)
+	repo, err := i.getRepoFromYaml(hostName)
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting repo: maybe it is not in the whitelist:%w", hostName, helmHost, err)
 	}
@@ -34,8 +28,14 @@ func (i *Repo) Add(hostName, helmHost string, logger logx.Logger) error {
 	return nil
 }
 
-// description: get the raw url of a cli from the yaml
-func (i *Repo) getYamlRepo(hostName string, yaml *MapYaml) (Repo, error) {
+// description: get a repo in the yaml
+func (i *Repo) getRepoFromYaml(hostName string) (Repo, error) {
+
+	// 2 - get the yaml file into a var/struct
+	yaml, err := GetYamlRepo(hostName)
+	if err != nil {
+		return Repo{}, fmt.Errorf("%s > getting the yaml > %w", hostName, err)
+	}
 
 	// 2 - look up the requested Repo by name
 	repo, ok := yaml.List[i.Name]
@@ -101,7 +101,7 @@ func (i *Repo) ListChart(hostName, helmHost string, logger logx.Logger) (string,
 		return "", fmt.Errorf("%s:%s > listing helm chart in the repos > %w", hostName, helmHost, err)
 	}
 	// handle success
-	logger.Debugf("%s:%s > listed all charts of repo : %s", hostName, i.Name, helmHost)
+	logger.Debugf("%s:%s:%s > list of charts", hostName, helmHost, i.Name)
 	return out, nil
 }
 

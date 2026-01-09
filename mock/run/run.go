@@ -17,12 +17,6 @@ func RunCli(hostName, cli string, logger logx.Logger) (string, error) {
 	}
 	return RunOnRemote(hostName, cli, logger)
 }
-func RunCliQuery(hostName, cli string, logger logx.Logger) (string, error) {
-	if hostName == "local" {
-		return RunOnLocal(cli, logger)
-	}
-	return RunOnRemote(hostName, cli, logger)
-}
 
 // Description: executes a CLI locally and returns its output as a string
 func RunOnLocal(cde string, logger logx.Logger) (string, error) {
@@ -72,25 +66,27 @@ func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error
 	return string(output), nil
 }
 
-// ExecuteCli executes a CLI command locally and returns its output as a string.
-// func ExecuteCli(cli string, logger logx.Logger) (string, error) {
-// 	// Split command into name and args (simple approach, works for basic commands)
-// 	parts := strings.Fields(cli)
-// 	if len(parts) == 0 {
-// 		return "", nil
-// 	}
+func RunCliQuery(hostName, cli string, logger logx.Logger) (string, error) {
+	if hostName == "local" {
+		return RunOnLocal(cli, logger)
+	}
+	return RunOnRemote(hostName, cli, logger)
+}
 
-// 	cmd := exec.Command(parts[0], parts[1:]...)
-// 	var out bytes.Buffer
-// 	var stderr bytes.Buffer
-// 	cmd.Stdout = &out
-// 	cmd.Stderr = &stderr
+func ExecuteCliQuery(cli string, logger logx.Logger, isLocal bool, remoteHost string) (string, error) {
+	var output string
+	var err error
 
-// 	err := cmd.Run()
-// 	if err != nil {
-// 		return "", fmt.Errorf("%v: %s", err, stderr.String())
-// 	}
+	// 1. Determine execution environment and run the command
+	if isLocal {
+		logger.Debugf("running on local: %s", cli)
+		output, err = RunCli("local", cli, logger)
+	} else {
+		output, err = RunCli(remoteHost, cli, logger)
+	}
 
-// 	// Trim whitespace and return
-// 	return strings.TrimSpace(out.String()), nil
-// }
+	if err != nil {
+		return output, fmt.Errorf("failed to run command: %s: %w", cli, err)
+	}
+	return output, nil
+}

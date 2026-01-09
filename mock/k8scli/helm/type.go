@@ -1,11 +1,24 @@
 package helm
 
 // define types
+type Release struct {
+	Name      string // eg. kbe-cilium, kbe-kdashb
+	Cluster   string // the targeteted k8s cluster
+	Namespace string // the targeteted k8s namespace
+	Chart     *Chart // the chart used
+}
 type Repo struct {
 	Name string // eg. cilium, kdashb
 	Desc string
 	Url  string
 	Doc  []string
+}
+type Chart struct {
+	Name    string //ie. RepoName/ChartName or /tmp/chart/ChartName
+	Qname   string //is qualified or not ie. RepoName/ChartName or /tmp/chart/ChartName
+	Version string
+	Desc    string
+	Repo    *Repo
 }
 
 // defrine slices
@@ -13,23 +26,22 @@ type RepoSlice []Repo
 
 // define getters
 func GetRepo(name, url string) *Repo {
-	r := &Repo{Name: name}
+	i := &Repo{Name: name}
 	if url != "" {
-		r.Url = url
+		i.Url = url
 	}
-	return r
+	return i
 }
-
-// func GetRepo(i Repo) *Repo {
-// 	return &Repo{
-// 		Name: i.Name,
-// 	}
-// }
-// func GetRepoByName(name string) *Repo {
-// 	return &Repo{
-// 		Name: name,
-// 	}
-// }
+func GetChart(name, qName, version string) *Chart {
+	i := &Chart{Qname: qName}
+	if name != "" {
+		i.Name = name
+	}
+	if version != "" {
+		i.Version = version
+	}
+	return i
+}
 
 // -------------------------------------------------------
 // -------	 struct for YAML
