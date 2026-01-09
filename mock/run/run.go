@@ -17,6 +17,12 @@ func RunCli(hostName, cli string, logger logx.Logger) (string, error) {
 	}
 	return RunOnRemote(hostName, cli, logger)
 }
+func RunCliQuery(hostName, cli string, logger logx.Logger) (string, error) {
+	if hostName == "local" {
+		return RunOnLocal(cli, logger)
+	}
+	return RunOnRemote(hostName, cli, logger)
+}
 
 // Description: executes a CLI locally and returns its output as a string
 func RunOnLocal(cde string, logger logx.Logger) (string, error) {

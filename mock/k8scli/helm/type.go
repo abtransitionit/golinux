@@ -12,23 +12,49 @@ type Repo struct {
 type RepoSlice []Repo
 
 // define getters
-func GetRepo(i Repo) *Repo {
-	return &Repo{
-		Name: i.Name,
+func GetRepo(name, url string) *Repo {
+	r := &Repo{Name: name}
+	if url != "" {
+		r.Url = url
 	}
+	return r
 }
+
+// func GetRepo(i Repo) *Repo {
+// 	return &Repo{
+// 		Name: i.Name,
+// 	}
+// }
+// func GetRepoByName(name string) *Repo {
+// 	return &Repo{
+// 		Name: name,
+// 	}
+// }
+
+// -------------------------------------------------------
+// -------	 struct for YAML
+// -------------------------------------------------------
 
 // -------------------------------------------------------
 // -------	 struct for YAML Repo List
 // -------------------------------------------------------
-
-// Description: represents the organization's db for helm Repo(s)
-//
-// Notes:
-//   - Manage the YAML repo file
 //   - denotes the whitelist
 type MapYaml struct {
 	List map[string]Repo
+}
+
+// -------------------------------------------------------
+// -------	 struct for YAML Conf
+// -------------------------------------------------------
+//   - denotes helm node
+
+type Cfg struct {
+	Conf *Conf
+}
+type Conf struct {
+	Helm struct {
+		Host string
+	}
 }
 
 // type HelmRepo struct {

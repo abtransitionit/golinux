@@ -10,3 +10,5 @@ import (
 
 //go:embed db.repo.yaml
 var yamlListRepo []byte // automatically cache the raw yaml file in this var
+//go:embed db.conf.yaml
+var yamlConf []byte // automatically cache the raw yaml file in this var
