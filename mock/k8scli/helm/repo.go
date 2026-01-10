@@ -10,16 +10,16 @@ import (
 
 func (i *Repo) Add(hostName, helmHost string, logger logx.Logger) error {
 
-	// 2 - get the repo instance from the yaml
+	// 1 - lookup this repo into the yaml
 	repo, err := i.getRepoFromYaml(hostName)
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting repo: maybe it is not in the whitelist:%w", hostName, helmHost, err)
 	}
 
-	// 3 - set instance:property from the yaml data
+	// 2 - set an instance property extracted from the yaml
 	i.Url = repo.Url
 
-	// 1 - get and play cli
+	// 3 - get and play cli
 	if _, err := run.RunCli(helmHost, i.cliToAdd(), logger); err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (i *Repo) getRepoFromYaml(hostName string) (Repo, error) {
 }
 
 // description: get the printable string of the whitelist yaml
-func (i *Repo) GetWhitelist(hostName string) (string, error) {
+func (repoService) GetWhitelist(hostName string) (string, error) {
 	// 1 - get the yaml file into a var/struct
 	YamlStruct, err := GetYamlRepo(hostName)
 	if err != nil {
@@ -58,9 +58,9 @@ func (i *Repo) GetWhitelist(hostName string) (string, error) {
 	return YamlStruct.ConvertToString(), nil
 }
 
-func (i *Repo) List(hostName string, helmHost string, logger logx.Logger) (string, error) {
+func (repoService) List(hostName string, helmHost string, logger logx.Logger) (string, error) {
 	// 1 - get and play cli
-	out, err := run.RunCli(helmHost, i.cliToList(), logger)
+	out, err := run.RunCli(helmHost, RepoSvc.cliToList(), logger)
 	if err != nil {
 		return "", fmt.Errorf("%s:%s > listing helm repos > %w", hostName, helmHost, err)
 	}
@@ -138,7 +138,7 @@ func (i *Repo) cliToDeleteAll() string {
 }
 
 // Returns the cli to list all repositories
-func (i *Repo) cliToList() string {
+func (repoService) cliToList() string {
 	var cmds = []string{
 		`. ~/.profile`,
 		`helm repo list`,

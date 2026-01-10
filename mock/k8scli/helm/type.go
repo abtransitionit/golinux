@@ -21,6 +21,14 @@ type Chart struct {
 	Repo    *Repo
 }
 
+// define stateless services
+type repoService struct{}
+type releaseService struct{}
+
+// define fake instances of each stateless services
+var RepoSvc = repoService{}
+var ReleaseSvc = releaseService{}
+
 // defrine slices
 type RepoSlice []Repo
 

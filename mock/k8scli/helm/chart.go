@@ -85,14 +85,3 @@ func (i *Chart) cliToViewReadme() string {
 	cli := strings.Join(cmds, " && ")
 	return cli
 }
-
-// display chart metadata - chart.yaml
-// helm show chart $chartName/$RepoName
-
-// display chart metadata - values.yaml
-// helm show values $chartName/$RepoName
-
-// var releaseValueShortDesc = "Display user defined values about a relase"
-// 	Example: `
-// 	xxx kbe-cilicium  kube-system
-// cli := fmt.Sprintf(`helm get values %s -n %s`, args[0], args[1])
