@@ -57,6 +57,12 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 		return fmt.Errorf("%s:%s:%s > chart version %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
 
+	// 2 - install
+	_, err = run.RunCli(helmHost, i.cliToInstall(), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > installing helm release from chart %s > %w", hostName, helmHost, i.Name, i.CQName, err)
+	}
+
 	// handle success
 	logger.Debugf("%s:%s:%s > installed helm release from chart %s", hostName, helmHost, i.Name, i.CQName)
 	return nil
@@ -97,7 +103,14 @@ func (releaseService) cliToList() string {
 func (i *Release) cliToInstall() string {
 	var cmds = []string{
 		`. ~/.profile`,
-		fmt.Sprintf(`helm install %s %s --namespace %s --version %s`, i.Name, i.CQName, i.Namespace, i.Version),
+		fmt.Sprintf(`
+		helm install %s %s --atomic --wait --namespace %s %s %s 
+		`,
+			i.Name,
+			i.CQName,
+			i.Namespace,
+			i.versionFlag(),
+			i.valueFlag()),
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli
@@ -123,4 +136,19 @@ func (i *Release) cliToCheckExistence() string {
 		),
 	}
 	return strings.Join(cmds, " && ")
+}
+
+// description : allows to install a release that do not have a value file
+func (i *Release) valueFlag() string {
+	if i.ValueFile != "" {
+		return fmt.Sprintf("-f %s", i.ValueFile)
+	}
+	return ""
+}
+
+func (i *Release) versionFlag() string {
+	if i.Version != "" {
+		return fmt.Sprintf("--version %s", i.Version)
+	}
+	return ""
 }

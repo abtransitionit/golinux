@@ -8,13 +8,13 @@ import (
 	"github.com/abtransitionit/gocore/run"
 )
 
-func (i *Release) valueFlag() string {
+func (i *Release) valueFlag2() string {
 	if i.ValueFile != "" {
 		return fmt.Sprintf("-f %s", i.ValueFile)
 	}
 	return ""
 }
-func (i *Release) versionFlag() string {
+func (i *Release) versionFlag2() string {
 	if i.Version != "" {
 		return fmt.Sprintf("--version %s", i.Version)
 	}
@@ -51,9 +51,9 @@ func (i *Release) cliDryCreate() (string, error) {
 			`,
 			i.Name,
 			i.CQName,
-			i.versionFlag(),
+			i.versionFlag2(),
 			i.Namespace,
-			i.valueFlag()),
+			i.valueFlag2()),
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli, nil
