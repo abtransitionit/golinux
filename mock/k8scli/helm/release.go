@@ -15,8 +15,10 @@ import (
 func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 
 	// 1 - check this chart exist
+
 	// 11 - create a chart instance
 	chart := GetChart(i.Name, i.CQName, i.Version)
+
 	// 12 - check the chart existence
 	out, err := chart.Exists(hostName, helmHost, logger)
 	if err != nil {
@@ -24,7 +26,8 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	} else if out != true {
 		return fmt.Errorf("%s:%s:%s > chart %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
-	// 12 - check the chart version exists
+
+	// 13 - check the chart version existence
 	out, err = chart.VersionExists(hostName, helmHost, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > checking chart version existence > %w", hostName, helmHost, chart.QName, err) // maybe it is not in the whitelist:%w", hostName, helmHost, err)
@@ -35,10 +38,6 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	// handle success
 	logger.Debugf("%s:%s:%s > installed helm release from chart %s", hostName, helmHost, i.Name, i.CQName)
 	return nil
-}
-
-func (i *Release) getChartFromRelease(hostName, helmHost string, logger logx.Logger) (*Chart, error) {
-	return nil, nil
 }
 
 func (releaseService) List(hostName string, helmHost string, logger logx.Logger) (string, error) {
@@ -52,6 +51,14 @@ func (releaseService) List(hostName string, helmHost string, logger logx.Logger)
 }
 
 func (releaseService) cliToList() string {
+	var cmds = []string{
+		`. ~/.profile`,
+		"helm list -A", //  list releases in all namespace
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}
+func (releaseService) cliToInstall() string {
 	var cmds = []string{
 		`. ~/.profile`,
 		"helm list -A", //  list releases in all namespace
