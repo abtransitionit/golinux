@@ -107,7 +107,7 @@ func (i *Repo) ListChart(hostName, helmHost string, logger logx.Logger) (string,
 
 func (i *Repo) cliToAdd() string {
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		fmt.Sprintf(`helm repo add %s %s`, i.Name, i.Url),
 		`helm repo update`,
 	}
@@ -118,7 +118,7 @@ func (i *Repo) cliToAdd() string {
 
 func (i *Repo) cliToDelete() string {
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		fmt.Sprintf(`helm repo remove %s`, i.Name),
 	}
 	cli := strings.Join(cmds, " && ")
@@ -140,7 +140,7 @@ func (i *Repo) cliToDeleteAll() string {
 // Returns the cli to list all repositories
 func (repoService) cliToList() string {
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		`helm repo list`,
 	}
 	cli := strings.Join(cmds, " && ")
@@ -150,7 +150,7 @@ func (repoService) cliToList() string {
 // Returns the cli to list the chart in a repo
 func (i *Repo) cliToListChart() string {
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		fmt.Sprintf(`helm search repo %s`, i.Name),
 	}
 	cli := strings.Join(cmds, " && ")
