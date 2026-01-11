@@ -6,6 +6,7 @@ type Release struct {
 	CQName    string // the chart qualified name. eg. RepoName/ChartName or /tmp/chart/ChartName
 	Version   string // the version of the chart
 	Namespace string // the targeteted k8s namespace
+	ValueFile string // TODO : in test
 	// Cluster   string // the targeteted k8s cluster
 }
 type Repo struct {
