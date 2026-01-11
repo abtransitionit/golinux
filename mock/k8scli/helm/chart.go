@@ -85,7 +85,7 @@ func (i *Chart) ListRes(hostName, helmHost string, logger logx.Logger) (string, 
 func (i *Chart) cliToListResKind() string {
 
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		fmt.Sprintf(`echo -e "Res Kind\tNb" && helm template %s | yq -r '.kind' | sort | uniq -c | awk "{print \$2 \"\t\" \$1}"`, i.QName),
 	}
 	cli := strings.Join(cmds, " && ")
@@ -94,7 +94,7 @@ func (i *Chart) cliToListResKind() string {
 func (i *Chart) cliToListRes() string {
 
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		fmt.Sprintf(`echo -e "Res Kind\tName\tNamespace" && helm template %s | yq -r ". | select(.kind) | [.kind, .metadata.name, .metadata.namespace] | @tsv" | sort | awk "{print \$1 \"\t\" \$2 \"\t\" \$3}"`, i.QName),
 	}
 	cli := strings.Join(cmds, " && ")
@@ -103,7 +103,7 @@ func (i *Chart) cliToListRes() string {
 func (i *Chart) cliToViewReadme() string {
 
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		fmt.Sprintf(`tmp=$(mktemp /tmp/%s-XXXXXX)`, i.Name),
 		fmt.Sprintf(`helm show readme %s > $tmp`, i.QName),
 		`echo $tmp`,
@@ -114,7 +114,7 @@ func (i *Chart) cliToViewReadme() string {
 func (i *Chart) cliToCheckExistence() string {
 
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		// fmt.Sprintf(`helm show chart %s >/dev/null `, i.QName),
 		fmt.Sprintf(`helm show chart %s >/dev/null 2>&1 && echo "true" || echo "false"`, i.QName),
 	}
@@ -124,7 +124,7 @@ func (i *Chart) cliToCheckExistence() string {
 func (i *Chart) cliToCheckVersionExistence() string {
 
 	var cmds = []string{
-		`. ~/.profile`,
+		// `. ~/.profile`,
 		// fmt.Sprintf(`helm show chart %s >/dev/null `, i.QName),
 		fmt.Sprintf(`helm show chart --version %s %s >/dev/null 2>&1 && echo "true" || echo "false"`, i.Version, i.QName),
 	}
