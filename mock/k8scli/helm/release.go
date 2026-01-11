@@ -14,14 +14,26 @@ import (
 // - it create a sets of K8s resources (svc, deploy, ingress, etc) from the chart
 func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 
-	// 1 - lookup this release's chart (does this chart exists ?)
-	_, err := i.getChartFromRelease(hostName, helmHost, logger)
+	// 1 - check this chart exist
+	// 11 - create a chart instance
+	chart := GetChart(i.Name, i.CQName, i.Version)
+	// 12 - check the chart existence
+	out, err := chart.Exists(hostName, helmHost, logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s > getting chart: maybe it is not in the helm whitelist or the release has bad config:%w", hostName, helmHost, err) // maybe it is not in the whitelist:%w", hostName, helmHost, err)
+		return fmt.Errorf("%s:%s:%s > checking chart existence > %w", hostName, helmHost, chart.QName, err) // maybe it is not in the whitelist:%w", hostName, helmHost, err)
+	} else if out != true {
+		return fmt.Errorf("%s:%s:%s > chart %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
+	}
+	// 12 - check the chart version exists
+	out, err = chart.VersionExists(hostName, helmHost, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > checking chart version existence > %w", hostName, helmHost, chart.QName, err) // maybe it is not in the whitelist:%w", hostName, helmHost, err)
+	} else if out != true {
+		return fmt.Errorf("%s:%s:%s > chart version %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
 
 	// handle success
-	logger.Debugf("%s:%s:%s > installed helm release", hostName, helmHost, i.Name)
+	logger.Debugf("%s:%s:%s > installed helm release from chart %s", hostName, helmHost, i.Name, i.CQName)
 	return nil
 }
 

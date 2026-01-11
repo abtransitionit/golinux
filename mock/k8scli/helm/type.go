@@ -3,9 +3,10 @@ package helm
 // define types
 type Release struct {
 	Name      string // eg. kbe-cilium, kbe-kdashb
-	Cluster   string // the targeteted k8s cluster
+	CQName    string // the chart qualified name. eg. RepoName/ChartName or /tmp/chart/ChartName
+	Version   string // the version of the chart
 	Namespace string // the targeteted k8s namespace
-	Chart     *Chart // the chart used
+	// Cluster   string // the targeteted k8s cluster
 }
 type Repo struct {
 	Name string // eg. cilium, kdashb
@@ -14,23 +15,23 @@ type Repo struct {
 	Doc  []string
 }
 type Chart struct {
-	Name    string //ie. RepoName/ChartName or /tmp/chart/ChartName
-	Qname   string //is qualified or not ie. RepoName/ChartName or /tmp/chart/ChartName
+	QName   string // is qualified or not ie. RepoName/ChartName or /tmp/chart/ChartName
+	Name    string // ie. ChartName or /tmp/chart/ChartName
 	Version string
 	Desc    string
 	Repo    *Repo
 }
 
-// define stateless services
+// define stateless services with their fake instances
 type repoService struct{}
 type releaseService struct{}
 
-// define fake instances of each stateless services
 var RepoSvc = repoService{}
 var ReleaseSvc = releaseService{}
 
 // defrine slices
 type RepoSlice []Repo
+type ReleaseSlice []Release
 
 // define getters
 func GetRepo(name, url string) *Repo {
@@ -41,12 +42,28 @@ func GetRepo(name, url string) *Repo {
 	return i
 }
 func GetChart(name, qName, version string) *Chart {
-	i := &Chart{Qname: qName}
+	i := &Chart{QName: qName}
 	if name != "" {
 		i.Name = name
 	}
 	if version != "" {
 		i.Version = version
+	}
+	return i
+}
+func GetRelease(name, cqName, version, namespace string) *Release {
+	i := &Release{}
+	if name != "" {
+		i.Name = name
+	}
+	if version != "" {
+		i.Version = version
+	}
+	if cqName != "" {
+		i.CQName = cqName
+	}
+	if namespace != "" {
+		i.Namespace = namespace
 	}
 	return i
 }
