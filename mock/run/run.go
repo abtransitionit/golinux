@@ -43,9 +43,18 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 
 // Description: executes a CLI remotely via SSH and returns its output as a string
 func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error) {
+	// // step: Base64 encode the input to handle complex quoting and special characters.
+	// cliEncoded := base64.StdEncoding.EncodeToString([]byte(cli))
+
+	// // step: Now that the VM is reachable, define the full SSH command to run.
+	// command := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5 %s "echo '%s' | base64 --decode | $SHELL -l"`, vmName, cliEncoded)
+
+	// // step: Run the command.
+	// output, err := RunCliLocal(command)
 
 	// 1 - define CLI - Build the SSH command: ssh <vm> "<cli>"
-	sshCmd := fmt.Sprintf("ssh %s '%s'", hostName, cde)
+	// cliEncoded := base64.StdEncoding.EncodeToString([]byte(cde))
+	sshCmd := fmt.Sprintf(`ssh %s '%s'`, hostName, cde)
 	cli := exec.Command("sh", "-c", sshCmd)
 
 	// if logger != nil {
