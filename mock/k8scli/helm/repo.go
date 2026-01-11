@@ -81,7 +81,7 @@ func (i *Repo) Delete(hostName, helmHost string, logger logx.Logger) (string, er
 	// 1 - get and play cli
 	output, err := run.RunCli(helmHost, i.cliToDelete(), logger)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%s:%s:%s > deleting helm rpo from the helm client > %w", hostName, helmHost, i.Name, err)
 	}
 	// handle success
 	logger.Debugf("%s:%s > deleted helm repo: %s", hostName, helmHost, i.Name)
