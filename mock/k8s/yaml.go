@@ -40,29 +40,3 @@ func getFullClusterConf(embeddedTplFile []byte, clusterParam ClusterParam, logge
 	// handle success
 	return yamlCfgRenderAsByte, nil
 }
-
-// type ClusterVars struct {
-// 	Version     string
-// 	PodCidr     string
-// 	ServiceCidr string
-// }
-
-// type CRuntimeVars struct {
-// 	SocketName string
-// }
-
-// type TemplateVars struct {
-// 	Cluster  ClusterVars
-// 	CRuntime CRuntimeVars
-// }
-
-// varPlaceHolder := TemplateVars{
-// 	Cluster: ClusterVars{
-// 		Version:     clusterParam.K8sVersion,
-// 		PodCidr:     clusterParam.PodCidr,
-// 		ServiceCidr: clusterParam.ServiceCidr,
-// 	},
-// 	CRuntime: CRuntimeVars{
-// 		SocketName: clusterParam.CrSocketName,
-// 	},
-// }

@@ -49,7 +49,7 @@ func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error
 	cliEncoded := base64.StdEncoding.EncodeToString([]byte(cde))
 	// 2 - define the SSH command
 	// sshCmd := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5%s "echo '%s' | base64 --decode | $SHELL -l"`, hostName, cliEncoded)
-	sshCmd := fmt.Sprintf(`ssh %s "echo '%s' | base64 --decode | $SHELL -l"`, hostName, cliEncoded)
+	sshCmd := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5s %s "echo '%s' | base64 --decode | $SHELL -l"`, hostName, cliEncoded)
 	// 3 - define Local command that launch the SSH command
 	cli := exec.Command("sh", "-c", sshCmd)
 

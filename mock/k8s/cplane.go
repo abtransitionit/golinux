@@ -35,7 +35,7 @@ func (i *CPlane) Init(clusterParam ClusterParam, logger logx.Logger) error {
 	logger.Debug("--- END ---")
 
 	// get and play cli
-	out, err := run.RunCli(i.Name, i.cliForInit(fullConfigAsbyte), logger)
+	out, err := run.RunCli(i.Name, i.cliToInit(fullConfigAsbyte), logger)
 	if err != nil {
 		return fmt.Errorf("%s > initializing node > %w", i.Name, err)
 	}
@@ -56,7 +56,7 @@ func (i *CPlane) Init(clusterParam ClusterParam, logger logx.Logger) error {
 	return nil
 }
 
-func (i *CPlane) cliForInit(ClusterConfAsByte []byte) string {
+func (i *CPlane) cliToInit(ClusterConfAsByte []byte) string {
 
 	// build the CLI
 	encoded := base64.StdEncoding.EncodeToString(ClusterConfAsByte)

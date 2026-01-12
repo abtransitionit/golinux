@@ -2,11 +2,12 @@ package helm
 
 // define types
 type Release struct {
-	Name      string // eg. kbe-cilium, kbe-kdashb
-	CQName    string // the chart qualified name. eg. RepoName/ChartName or /tmp/chart/ChartName
-	Version   string // the version of the chart
-	Namespace string // the targeteted k8s namespace
-	ValueFile string // TODO : in test
+	Name      string            // eg. kbe-cilium, kbe-kdashb
+	CQName    string            // the chart qualified name. eg. RepoName/ChartName or /tmp/chart/ChartName
+	Version   string            // the version of the chart
+	Namespace string            // the targeteted k8s namespace
+	ValueFile string            // TODO : in test
+	Param     map[string]string // list of placeholders
 	// Cluster   string // the targeteted k8s cluster
 }
 type Repo struct {
@@ -52,7 +53,7 @@ func GetChart(name, qName, version string) *Chart {
 	}
 	return i
 }
-func GetRelease(name, cqName, version, namespace string) *Release {
+func GetRelease(name, cqName, version, namespace string, param map[string]string) *Release {
 	i := &Release{}
 	if name != "" {
 		i.Name = name
@@ -65,6 +66,9 @@ func GetRelease(name, cqName, version, namespace string) *Release {
 	}
 	if namespace != "" {
 		i.Namespace = namespace
+	}
+	if len(param) > 0 {
+		i.Param = param
 	}
 	return i
 }

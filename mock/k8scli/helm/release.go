@@ -1,10 +1,14 @@
 package helm
 
 import (
+	"bufio"
+	"bytes"
+	"encoding/base64"
 	"fmt"
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/k8sapp/cilium"
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
@@ -44,7 +48,7 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	// 12 - check the chart existence
 	out, err := chart.Exists(hostName, helmHost, logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s:%s > checking chart existence > %w", hostName, helmHost, chart.QName, err) // maybe it is not in the whitelist:%w", hostName, helmHost, err)
+		return fmt.Errorf("%s:%s:%s > checking chart existence > %w", hostName, helmHost, chart.QName, err)
 	} else if out != true {
 		return fmt.Errorf("%s:%s:%s > chart %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
@@ -52,19 +56,66 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	// 13 - check the chart version existence
 	out, err = chart.VersionExists(hostName, helmHost, logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s:%s > checking chart version existence > %w", hostName, helmHost, chart.QName, err) // maybe it is not in the whitelist:%w", hostName, helmHost, err)
+		return fmt.Errorf("%s:%s:%s > checking chart version existence > %w", hostName, helmHost, chart.QName, err)
 	} else if out != true {
 		return fmt.Errorf("%s:%s:%s > chart version %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
 
-	// 2 - install
-	_, err = run.RunCli(helmHost, i.cliToInstall(), logger)
+	// 2 - TODO: this cilium specific and shoub be place elsewhere
+	// 21 - get the ApiServerIp
+	cli := `kubectl config view --minify | yq -r '.clusters[0].cluster.server' | tr -d '/' | cut -d: -f2`
+	output, err := run.RunCli(helmHost, cli, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > getting k8s cluster api server ip > %w", hostName, helmHost, i.Name, err)
+	}
+
+	// 22 - define var placeholder for this chart/release
+	varPlaceHolder := map[string]map[string]string{
+		"Cluster": {
+			"PodCidr":     strings.TrimSpace(i.Param["podcidr"]),
+			"ApiServerIp": strings.TrimSpace(output),
+		},
+	}
+	logger.Debugf("varPlaceHolder >  %+v", varPlaceHolder)
+	// 23 - get the resolved value file as byte[]
+	cfgAsbyte, err := cilium.GetValueFile(cilium.YamlCfg, varPlaceHolder, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
+	}
+
+	// log
+	logger.Debug("--- BEGIN:Rendered Value file  ---")
+	scanner := bufio.NewScanner(bytes.NewReader(cfgAsbyte))
+	for scanner.Scan() {
+		logger.Debug(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		logger.Warnf("error while logging rendered kubeadm config: %v", err)
+	}
+	logger.Debug("--- END ---")
+
+	// 3 - install
+	// 31 - build cli
+	encoded := base64.StdEncoding.EncodeToString(cfgAsbyte)
+	var cmds = []string{
+		fmt.Sprintf(
+			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --namespace %s %s -f -`,
+			encoded,
+			i.Name,
+			i.CQName,
+			i.Namespace,
+			i.versionFlag()),
+	}
+	cli = strings.Join(cmds, " && ")
+	// 32 - play cli
+	_, err = run.RunCli(helmHost, cli, logger)
+	// _, err = run.RunCli(helmHost, i.cliToInstall(), logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > installing helm release from chart %s > %w", hostName, helmHost, i.Name, i.CQName, err)
 	}
 
 	// handle success
-	logger.Debugf("%s:%s:%s > installed helm release from chart %s", hostName, helmHost, i.Name, i.CQName)
+	logger.Debugf("%s:%s:%s > installed helm release from chart %s:%s", hostName, helmHost, i.Name, i.CQName, i.Version)
 	return nil
 }
 
@@ -102,9 +153,8 @@ func (releaseService) cliToList() string {
 }
 func (i *Release) cliToInstall() string {
 	var cmds = []string{
-		`. ~/.profile`,
 		fmt.Sprintf(`
-		helm install %s %s --atomic --wait --namespace %s %s %s 
+		helm install %s %s --atomic --wait --namespace %s %s -f %s 
 		`,
 			i.Name,
 			i.CQName,
