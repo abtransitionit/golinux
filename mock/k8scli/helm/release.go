@@ -12,6 +12,49 @@ import (
 	"github.com/abtransitionit/golinux/mock/run"
 )
 
+func (i *Release) InstallIngressCilium(hostName, helmHost string, logger logx.Logger) error {
+
+	// 1 - check the release exists
+	out, err := i.Exists(hostName, helmHost, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > checking release existence > %w", hostName, helmHost, i.Name, err)
+	} else if out != true {
+		return fmt.Errorf("%s:%s:%s > release does not exist in the k8s cluster", hostName, helmHost, i.Name)
+	}
+
+	// 2 - TODO: this cilium specific and shoub be place elsewhere
+	// 21 - get the ApiServerIp
+	cli := `kubectl config view --minify | yq -r '.clusters[0].cluster.server' | tr -d '/' | cut -d: -f2`
+	output, err := run.RunCli(helmHost, cli, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > getting k8s cluster api server ip > %w", hostName, helmHost, i.Name, err)
+	}
+
+	// 22 - define var placeholder for this chart/release
+	varPlaceHolder := map[string]map[string]string{
+		"Cluster": {
+			"PodCidr":     strings.TrimSpace(i.Param["podcidr"]),
+			"ApiServerIp": strings.TrimSpace(output),
+		},
+	}
+	logger.Debugf("varPlaceHolder >  %+v", varPlaceHolder)
+	// 23 - get the resolved value file as byte[]
+	cfgAsbyte, err := cilium.GetValueFile(cilium.YamlBasicCfg, varPlaceHolder, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
+	}
+
+	// get and play cli
+	_, err = run.RunCli(helmHost, i.cliToUpgrade(cfgAsbyte), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > upgrading helm cilium release with cilium ingress > %w", hostName, helmHost, i.Name, err)
+	}
+
+	// handle success
+	logger.Debugf("%s:%s:%s > upgraded the helm cilium release with cilium ingress", hostName, helmHost, i.Name)
+	return nil
+}
+
 // description: delete a helm release from a K8s cluster
 func (i *Release) Delete(hostName, helmHost string, logger logx.Logger) error {
 
@@ -20,7 +63,7 @@ func (i *Release) Delete(hostName, helmHost string, logger logx.Logger) error {
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > checking release existence > %w", hostName, helmHost, i.Name, err)
 	} else if out != true {
-		return fmt.Errorf("%s:%s:%s > releasez does not exist in the k8s cluster", hostName, helmHost, i.Name)
+		return fmt.Errorf("%s:%s:%s > release does not exist in the k8s cluster: %s", hostName, helmHost, i.Name, out)
 	}
 
 	// 2 - get and play cli - delete the release
@@ -78,7 +121,7 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	}
 	logger.Debugf("varPlaceHolder >  %+v", varPlaceHolder)
 	// 23 - get the resolved value file as byte[]
-	cfgAsbyte, err := cilium.GetValueFile(cilium.YamlCfg, varPlaceHolder, logger)
+	cfgAsbyte, err := cilium.GetValueFile(cilium.YamlAllCfg, varPlaceHolder, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
 	}
@@ -156,7 +199,7 @@ func (i *Release) cliToInstall(cfg []byte) string {
 	encoded := base64.StdEncoding.EncodeToString(cfg)
 	var cmds = []string{
 		fmt.Sprintf(
-			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --namespace %s %s -f -`,
+			`printf '%s' | base64 -d | helm upgrade %s %s --atomic --wait --namespace %s %s -f -`,
 			encoded,
 			i.Name,
 			i.Chart.QName,
@@ -165,6 +208,42 @@ func (i *Release) cliToInstall(cfg []byte) string {
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli
+}
+func (i *Release) cliToAddUpgradeReuse(cfgAsbyte []byte) string {
+	// encode config
+	encoded := base64.StdEncoding.EncodeToString(cfgAsbyte)
+
+	// build cli safely
+	var cmds = []string{
+		fmt.Sprintf(
+			`printf '%s' | base64 -d | helm upgrade %s %s --reuse-values --atomic --wait --namespace %s -f -`,
+			encoded,
+			i.Name,
+			i.Chart.QName,
+			i.Namespace),
+	}
+
+	cli := strings.Join(cmds, " && ")
+	return cli
+
+}
+func (i *Release) cliToUpgrade(cfgAsbyte []byte) string {
+	// encode config
+	encoded := base64.StdEncoding.EncodeToString(cfgAsbyte)
+
+	// build cli safely
+	var cmds = []string{
+		fmt.Sprintf(
+			`printf "%s" | base64 -d | helm upgrade %s %s  --atomic --wait --namespace %s -f -`,
+			encoded,
+			i.Name,
+			i.Chart.QName,
+			i.Namespace),
+	}
+
+	cli := strings.Join(cmds, " && ")
+	return cli
+
 }
 
 func (i *Release) cliToDelete() string {
@@ -179,7 +258,6 @@ func (i *Release) cliToDelete() string {
 func (i *Release) cliToCheckExistence() string {
 
 	var cmds = []string{
-		`. ~/.profile`,
 		fmt.Sprintf(
 			`helm status %s --namespace %s >/dev/null 2>&1 && echo "true" || echo "false"`,
 			i.Name,
@@ -196,7 +274,6 @@ func (i *Release) valueFlag() string {
 	}
 	return ""
 }
-
 func (i *Release) versionFlag() string {
 	if i.Chart.Version != "" {
 		return fmt.Sprintf("--version %s", i.Chart.Version)

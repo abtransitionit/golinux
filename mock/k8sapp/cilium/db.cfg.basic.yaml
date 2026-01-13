@@ -19,16 +19,6 @@ ipam:
       - {{.Cluster.PodCidr}}
     clusterPoolIPv4MaskSize: 24
 
-# make cilium the ingress controller
-## required
-l7Proxy: true
-envoy:
-  enabled: true# # Use cilium as ingress controller
-## enable
-ingressController:
-  enabled: true
-  default: true
-
 # # Runtime integration
 # containerRuntime:
 #   integration: crio

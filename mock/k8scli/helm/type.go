@@ -30,7 +30,6 @@ type Chart struct {
 	Name    string // ie. ChartName or /tmp/chart/ChartName
 	Version string
 	Desc    string
-	Repo    *Repo
 }
 
 // define stateless services with their fake instances
@@ -63,7 +62,9 @@ func GetChart(name, qName, version string) *Chart {
 	return i
 }
 func GetRelease(name, chartQName, chartVersion, namespace string, param map[string]string) *Release {
-	i := &Release{}
+	i := &Release{
+		Chart: &Chart{},
+	}
 	if name != "" {
 		i.Name = name
 	}
