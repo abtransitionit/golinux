@@ -9,7 +9,7 @@ import (
 
 func (podService) List(hostName, helmHost string, logger logx.Logger) (string, error) {
 	// get and play cli
-	result, err := run.RunCli(helmHost, NodeSvc.cliToList(), logger)
+	result, err := run.RunCli(helmHost, PodSvc.cliToList(), logger)
 	if err != nil {
 		return "", err
 	}
@@ -20,7 +20,7 @@ func (podService) List(hostName, helmHost string, logger logx.Logger) (string, e
 
 func (podService) cliToList() string {
 	var cmds = []string{
-		`kubectl get pods -Ao wide`,
+		`kubectl get pods -Ao wide | awk '{print $1,$2,$4,$7, $8}' | column -t`,
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli
