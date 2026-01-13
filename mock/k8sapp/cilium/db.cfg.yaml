@@ -1,6 +1,6 @@
 # cilium-values.yaml
 
-# Disable kube-proxy replacement for simplicity
+# Disable kube-proxy replacement for simplicity - Recommended for modern clusters
 kubeProxyReplacement: true # other choice: disable
 
 k8sServiceHost: {{.Cluster.ApiServerIp}}
@@ -18,6 +18,16 @@ ipam:
     clusterPoolIPv4PodCIDRList:
       - {{.Cluster.PodCidr}}
     clusterPoolIPv4MaskSize: 24
+
+# make cilium the ingress controller
+## required
+l7Proxy: true
+envoy:
+  enabled: true# # Use cilium as ingress controller
+## enable
+ingressController:
+  enabled: true
+  default: true
 
 # # Runtime integration
 # containerRuntime:

@@ -43,7 +43,7 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check this chart exist
 
 	// 11 - create a chart instance
-	chart := GetChart(i.Name, i.CQName, i.Version)
+	chart := GetChart(i.Name, i.Chart.QName, i.Chart.Version)
 
 	// 12 - check the chart existence
 	out, err := chart.Exists(hostName, helmHost, logger)
@@ -96,26 +96,13 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 
 	// 3 - install
 	// 31 - build cli
-	encoded := base64.StdEncoding.EncodeToString(cfgAsbyte)
-	var cmds = []string{
-		fmt.Sprintf(
-			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --namespace %s %s -f -`,
-			encoded,
-			i.Name,
-			i.CQName,
-			i.Namespace,
-			i.versionFlag()),
-	}
-	cli = strings.Join(cmds, " && ")
-	// 32 - play cli
-	_, err = run.RunCli(helmHost, cli, logger)
-	// _, err = run.RunCli(helmHost, i.cliToInstall(), logger)
+	_, err = run.RunCli(helmHost, i.cliToInstall(cfgAsbyte), logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s:%s > installing helm release from chart %s > %w", hostName, helmHost, i.Name, i.CQName, err)
+		return fmt.Errorf("%s:%s:%s > installing helm release from chart %s > %w", hostName, helmHost, i.Name, i.Chart.QName, err)
 	}
 
 	// handle success
-	logger.Debugf("%s:%s:%s > installed helm release from chart %s:%s", hostName, helmHost, i.Name, i.CQName, i.Version)
+	logger.Debugf("%s:%s:%s > installed helm release from chart %s:%s", hostName, helmHost, i.Name, i.Chart.QName, i.Chart.Version)
 	return nil
 }
 
@@ -151,16 +138,30 @@ func (releaseService) cliToList() string {
 	cli := strings.Join(cmds, " && ")
 	return cli
 }
-func (i *Release) cliToInstall() string {
+func (i *Release) cliToInstallV0() string {
 	var cmds = []string{
 		fmt.Sprintf(`
 		helm install %s %s --atomic --wait --namespace %s %s -f %s 
 		`,
 			i.Name,
-			i.CQName,
+			i.Chart.QName,
 			i.Namespace,
 			i.versionFlag(),
 			i.valueFlag()),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}
+func (i *Release) cliToInstall(cfg []byte) string {
+	encoded := base64.StdEncoding.EncodeToString(cfg)
+	var cmds = []string{
+		fmt.Sprintf(
+			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --namespace %s %s -f -`,
+			encoded,
+			i.Name,
+			i.Chart.QName,
+			i.Namespace,
+			i.versionFlag()),
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli
@@ -197,8 +198,8 @@ func (i *Release) valueFlag() string {
 }
 
 func (i *Release) versionFlag() string {
-	if i.Version != "" {
-		return fmt.Sprintf("--version %s", i.Version)
+	if i.Chart.Version != "" {
+		return fmt.Sprintf("--version %s", i.Chart.Version)
 	}
 	return ""
 }

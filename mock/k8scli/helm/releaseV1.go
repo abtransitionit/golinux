@@ -15,8 +15,8 @@ func (i *Release) valueFlag2() string {
 	return ""
 }
 func (i *Release) versionFlag2() string {
-	if i.Version != "" {
-		return fmt.Sprintf("--version %s", i.Version)
+	if i.Chart.Version != "" {
+		return fmt.Sprintf("--version %s", i.Chart.Version)
 	}
 	return ""
 }
@@ -33,7 +33,7 @@ func (i *Release) cliCreate() (string, error) {
 			helm install %s %s --atomic --wait %s --namespace %s %s
 			`,
 			i.Name,
-			i.CQName,
+			i.Chart.QName,
 			i.versionFlag(),
 			i.Namespace,
 			i.valueFlag()),
@@ -50,7 +50,7 @@ func (i *Release) cliDryCreate() (string, error) {
 			helm install %s %s --debug --dry-run=server %s --namespace %s %s
 			`,
 			i.Name,
-			i.CQName,
+			i.Chart.QName,
 			i.versionFlag2(),
 			i.Namespace,
 			i.valueFlag2()),

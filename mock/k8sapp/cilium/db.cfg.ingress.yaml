@@ -1,0 +1,15 @@
+# make cilium the ingress controller
+## required
+l7Proxy: true
+envoy:
+  enabled: true# # Use cilium as ingress controller
+## enable
+ingressController:
+  enabled: true
+  default: true
+
+
+# helm upgrade cilium cilium/cilium \
+#   -n kube-system \
+#   -f cilium-ingress-values.yaml \
+#   --reuse-values
