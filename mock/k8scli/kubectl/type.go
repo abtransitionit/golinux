@@ -1,28 +1,27 @@
 package kubectl
 
 // -------------------------------------------------------
-// -------	 statefull services
+// -------	 generic k8s resource
 // -------------------------------------------------------
-type Node struct {
-	Name string // eg. o1u, o2a
+type ResType string
+
+const (
+	ResNode ResType = "node"
+	ResPod  ResType = "pod"
+	ResNS   ResType = "ns"
+	ResCM   ResType = "cm"
+	ResSA   ResType = "sa"
+)
+
+func (t ResType) String() string {
+	return string(t)
 }
-type Pod struct {
+
+type Resource struct {
 	Name string
+	Type ResType // node, pod, ns, cm, sa
+	Ns   string
 }
-type Namespace struct {
-	Name string // eg. kube-system, default
-}
-
-// -------------------------------------------------------
-// -------	 stateless services with their fake instances
-// -------------------------------------------------------
-type nodeService struct{}
-type podService struct{}
-type namespaceService struct{}
-
-var NodeSvc = nodeService{}
-var PodSvc = podService{}
-var NamespaceSvc = namespaceService{}
 
 // -------------------------------------------------------
 // -------	 struct for YAML
@@ -37,3 +36,52 @@ type Conf struct {
 		Host string
 	}
 }
+
+// -------------------------------------------------------
+// -------	 statefull services
+// -------------------------------------------------------
+// type Node struct {
+// 	Type string // set to node
+// 	Name string // eg. o1u, o2a
+// 	Ns   string // eg. kube-system, default
+// }
+// type Pod struct {
+// 	Type string // set to pod
+// 	Name string
+// 	Ns   string // eg. kube-system, default
+// }
+// type Namespace struct {
+// 	Type string // set to ns
+// 	Name string // eg. kube-system, default
+// }
+// type ConfigMap struct {
+// 	Type string // set to cm
+// 	Name string // eg. kube-system, default
+// }
+// type ServiceAccount struct {
+// 	Type string // set to sa
+// 	Name string
+// 	Ns   string // eg. kube-system, default
+// }
+
+// -------------------------------------------------------
+// -------	 stateless services it fake instance
+// -------------------------------------------------------
+// type resService struct{}
+
+// type nodeService struct{}
+
+// type podService struct{}
+// type nsService struct{}
+
+// type saService struct{}
+// type cmService struct{}
+
+// var NodeSvc = nodeService{}
+
+// var PodSvc = podService{}
+// var NsSvc = nsService{}
+
+// var SaSvc = saService{}
+// var CmSvc = cmService{}
+// var resSvc = resService{}

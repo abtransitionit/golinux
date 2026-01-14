@@ -199,7 +199,7 @@ func (i *Release) cliToInstall(cfg []byte) string {
 	encoded := base64.StdEncoding.EncodeToString(cfg)
 	var cmds = []string{
 		fmt.Sprintf(
-			`printf '%s' | base64 -d | helm upgrade %s %s --atomic --wait --namespace %s %s -f -`,
+			`printf '%s' | base64 -d | helm upgrade %s %s --atomic --wait --timeout 10m --namespace %s %s -f -`,
 			encoded,
 			i.Name,
 			i.Chart.QName,
