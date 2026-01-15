@@ -31,7 +31,9 @@ func CliToList(resType ResType) string {
 	case ResSA:
 		return `kubectl get sa -Ao wide`
 	case ResCM:
-		return `kubectl get cm -Ao wide`
+		return `kubectl get crd -Ao wide`
+	case ResCRD:
+		return `kubectl get crd -Ao wide`
 	default:
 		panic("unsupported resource type: " + resType)
 	}

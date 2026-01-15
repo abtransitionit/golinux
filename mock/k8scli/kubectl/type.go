@@ -10,6 +10,7 @@ const (
 	ResPod  ResType = "pod"
 	ResNS   ResType = "ns"
 	ResCM   ResType = "cm"
+	ResCRD  ResType = "crd"
 	ResSA   ResType = "sa"
 )
 
