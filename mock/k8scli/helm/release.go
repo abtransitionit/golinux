@@ -121,7 +121,7 @@ func (i *Release) Install(hostName, helmHost string, logger logx.Logger) error {
 	}
 	logger.Debugf("varPlaceHolder >  %+v", varPlaceHolder)
 	// 23 - get the resolved value file as byte[]
-	cfgAsbyte, err := cilium.GetValueFile(cilium.YamlAllCfg, varPlaceHolder, logger)
+	cfgAsbyte, err := cilium.GetValueFile(cilium.YamlBasicCfg, varPlaceHolder, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
 	}
@@ -199,7 +199,7 @@ func (i *Release) cliToInstall(cfg []byte) string {
 	encoded := base64.StdEncoding.EncodeToString(cfg)
 	var cmds = []string{
 		fmt.Sprintf(
-			`printf '%s' | base64 -d | helm upgrade %s %s --atomic --wait --timeout 10m --namespace %s %s -f -`,
+			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --timeout 10m --namespace %s %s -f -`,
 			encoded,
 			i.Name,
 			i.Chart.QName,

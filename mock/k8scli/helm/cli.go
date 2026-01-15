@@ -88,7 +88,8 @@ func (i *Resource) CliToDelete() string {
 	switch i.Type {
 	case ResRelease:
 		var cmds = []string{
-			fmt.Sprintf(`helm uninstall %s     -n %s  --force --keep-history=false`, i.Name, i.Namespace),
+			fmt.Sprintf(`helm uninstall %s     -n %s`, i.Name, i.Namespace),
+			// fmt.Sprintf(`helm uninstall %s     -n %s  --keep-history=false`, i.Name, i.Namespace),
 			fmt.Sprintf(`kubectl delete secret -n %s -l owner=helm,name=%s`, i.Namespace, i.Name),
 			fmt.Sprintf(`kubectl delete all    -n %s -l owner=helm,name=%s`, i.Namespace, i.Name),
 		}
@@ -166,10 +167,12 @@ func (i *Resource) ActionToListPermit() (string, error) {
 	return YamlStruct.ConvertToString(), nil
 }
 func (i *Resource) ActionToInstall() (string, error) {
-	// 1 - check
+	// 1 check
+	// 11 - check resource type
 	if i.Type != ResRelease {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
+	// 12 - TODO:check - all info are in the instance: i.Name, i.Namespace, i.QName
 	// 2 - get the yaml file into a var/struct
 	YamlStruct, err := GetYamlRepo()
 	if err != nil {
