@@ -32,9 +32,9 @@ func (i *Repo) Add(hostName, helmHost string, logger logx.Logger) error {
 func (i *Repo) getRepoFromYaml(hostName string) (Repo, error) {
 
 	// 2 - get the yaml file into a var/struct
-	yaml, err := GetYamlRepo(hostName)
+	yaml, err := GetYamlRepo()
 	if err != nil {
-		return Repo{}, fmt.Errorf("%s > getting the yaml > %w", hostName, err)
+		return Repo{}, fmt.Errorf("getting the yaml > %w", hostName, err)
 	}
 
 	// 2 - look up the requested Repo by name
@@ -50,7 +50,7 @@ func (i *Repo) getRepoFromYaml(hostName string) (Repo, error) {
 // description: get the printable string of the whitelist yaml
 func (repoService) GetWhitelist(hostName string) (string, error) {
 	// 1 - get the yaml file into a var/struct
-	YamlStruct, err := GetYamlRepo(hostName)
+	YamlStruct, err := GetYamlRepo()
 	if err != nil {
 		return "", fmt.Errorf("%s > getting the yaml > %w", hostName, err)
 	}
@@ -88,44 +88,6 @@ func (i *Repo) Delete(hostName, helmHost string, logger logx.Logger) (string, er
 	return output, nil
 }
 
-func (i *Repo) ListChart(hostName, helmHost string, logger logx.Logger) (string, error) {
-	// 1 - get host
-	helmHost, err := GetHelmHost(hostName)
-	if err != nil {
-		return "", fmt.Errorf("%s > getting helm host > %w", hostName, err)
-	}
-
-	// 1 - get and play cli
-	out, err := run.RunCli(helmHost, i.cliToListChart(), logger)
-	if err != nil {
-		return "", fmt.Errorf("%s:%s > listing helm chart in the repos > %w", hostName, helmHost, err)
-	}
-	// handle success
-	logger.Debugf("%s:%s:%s > list of charts", hostName, helmHost, i.Name)
-	return out, nil
-}
-
-func (i *Repo) cliToAdd() string {
-	var cmds = []string{
-		// `. ~/.profile`,
-		fmt.Sprintf(`helm repo add %s %s`, i.Name, i.Url),
-		`helm repo update`,
-	}
-	cli := strings.Join(cmds, " && ")
-	return cli
-
-}
-
-func (i *Repo) cliToDelete() string {
-	var cmds = []string{
-		// `. ~/.profile`,
-		fmt.Sprintf(`helm repo remove %s`, i.Name),
-	}
-	cli := strings.Join(cmds, " && ")
-	return cli
-
-}
-
 func (i *Repo) cliToDeleteAll() string {
 	var cmds = []string{
 		`rm -rf ~/.config/helm/repositories.yaml`,
@@ -135,24 +97,4 @@ func (i *Repo) cliToDeleteAll() string {
 	cli := strings.Join(cmds, " && ")
 	return cli
 
-}
-
-// Returns the cli to list all repositories
-func (repoService) cliToList() string {
-	var cmds = []string{
-		// `. ~/.profile`,
-		`helm repo list`,
-	}
-	cli := strings.Join(cmds, " && ")
-	return cli
-}
-
-// Returns the cli to list the chart in a repo
-func (i *Repo) cliToListChart() string {
-	var cmds = []string{
-		// `. ~/.profile`,
-		fmt.Sprintf(`helm search repo %s`, i.Name),
-	}
-	cli := strings.Join(cmds, " && ")
-	return cli
 }

@@ -12,11 +12,20 @@ import (
 // ------ get YAML file into a var     -----
 // -----------------------------------------
 
-func GetYamlRepo(hostName string) (*MapYaml, error) {
+//	func GetYamlRepo(hostName string) (*MapYaml, error) {
+//		// 1 - get local auto cached (embedded) file into a struct
+//		mapYaml, err := filex.LoadYamlIntoStruct[MapYaml](yamlListRepo)
+//		if err != nil {
+//			return nil, fmt.Errorf("%s > loading yaml: %w", hostName, err)
+//		}
+//		// handle success
+//		return mapYaml, nil
+//	}
+func GetYamlRepo() (*MapYaml, error) {
 	// 1 - get local auto cached (embedded) file into a struct
 	mapYaml, err := filex.LoadYamlIntoStruct[MapYaml](yamlListRepo)
 	if err != nil {
-		return nil, fmt.Errorf("%s > loading yaml: %w", hostName, err)
+		return nil, fmt.Errorf("loading yaml: %w", err)
 	}
 	// handle success
 	return mapYaml, nil

@@ -1,16 +1,36 @@
 package helm
 
+// -------------------------------------------------------
+// -------	 generic k8s resource
+// -------------------------------------------------------
+type ResType string
+
+const (
+	ResRepo    ResType = "repo"
+	ResChart   ResType = "chart"
+	ResRelease ResType = "release"
+)
+
+func (t ResType) String() string {
+	return string(t)
+}
+
+type Resource struct {
+	Name      string
+	Type      ResType
+	Namespace string // release only
+	Repo      string // chart only
+	Url       string // repo only
+	QName     string // chart only
+	Revision  string // release only
+}
+
+// -------------------------------------------------------
+// -------	 the old way
+// -------------------------------------------------------
+
 // define types
-//
-//	type Release struct {
-//		Name      string            // eg. kbe-cilium, kbe-kdashb
-//		CQName    string            // the chart qualified name. eg. RepoName/ChartName or /tmp/chart/ChartName
-//		Version   string            // the version of the chart
-//		Namespace string            // the targeteted k8s namespace
-//		ValueFile string            // TODO : in test
-//		Param     map[string]string // list of placeholders
-//		// Cluster   string // the targeteted k8s cluster
-//	}
+
 type Release struct {
 	Name      string            // eg. kbe-cilium, kbe-kdashb
 	Chart     *Chart            // the chart qualified name. eg. RepoName/ChartName or /tmp/chart/ChartName

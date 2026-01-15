@@ -9,6 +9,9 @@ import (
 func (i Resource) Describe(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.CliToDesc(), logger)
 }
+func (i Resource) GetYaml(hostName, helmHost string, logger logx.Logger) (string, error) {
+	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.CliToGetYaml(), logger)
+}
 func (i Resource) ListEvent(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.CliToListEvent(), logger)
 }
@@ -56,5 +59,21 @@ func (i Resource) CliToDesc() string {
 		return fmt.Sprintf(`kubectl describe sa %s -n %s`, i.Name, i.Ns)
 	default:
 		panic("unsupported resource type: " + i.Type)
+	}
+}
+func (i Resource) CliToGetYaml() string {
+	switch i.Type {
+	case ResNode:
+		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)
+	case ResPod:
+		return fmt.Sprintf("kubectl get pod %s -n %s -o yaml", i.Name, i.Ns)
+	case ResNS:
+		return fmt.Sprintf("kubectl get ns %s -o yaml", i.Name)
+	case ResCM:
+		return fmt.Sprintf("kubectl get cm %s -n %s -o yaml", i.Name, i.Ns)
+	case ResSA:
+		return fmt.Sprintf("kubectl get sa %s -n %s -o yaml", i.Name, i.Ns)
+	default:
+		panic("unsupported resource type: " + string(i.Type))
 	}
 }
