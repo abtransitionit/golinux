@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -180,4 +181,34 @@ func (i *Resource) ActionToInstall() (string, error) {
 	}
 	// handle success
 	return YamlStruct.ConvertToString(), nil
+}
+
+func (i *Resource) cliToInstall(cfg []byte) string {
+	// 1 check
+	if i.Type != ResRelease {
+		panic("resource type not supported for this cli: %s" + i.Type)
+	}
+	encoded := base64.StdEncoding.EncodeToString(cfg)
+	var cmds = []string{
+		fmt.Sprintf(
+			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --timeout 10m --namespace %s %s -f -`,
+			encoded,
+			i.Name,
+			i.QName,
+			i.Namespace,
+			i.versionFlag()),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}
+
+func (i *Resource) versionFlag() string {
+	// 1 check
+	if i.Type != ResRelease {
+		panic("resource type not supported for this cli: %s" + i.Type)
+	}
+	if i.Version != "" {
+		return fmt.Sprintf("--version %s", i.Version)
+	}
+	return ""
 }

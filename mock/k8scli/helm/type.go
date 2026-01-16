@@ -18,11 +18,12 @@ func (t ResType) String() string {
 type Resource struct {
 	Name      string
 	Type      ResType
-	Namespace string // release only
-	Repo      string // chart only
 	Url       string // repo only
-	QName     string // chart only
+	Repo      string // chart only
+	QName     string // chart only - eg. cilium/cilium;
+	Namespace string // release only
 	Revision  string // release only
+	Version   string // release only - version of the chart to install if any
 }
 
 // -------------------------------------------------------
