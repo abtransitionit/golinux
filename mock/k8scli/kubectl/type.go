@@ -6,12 +6,13 @@ package kubectl
 type ResType string
 
 const (
-	ResNode ResType = "node"
-	ResPod  ResType = "pod"
-	ResNS   ResType = "ns"
-	ResCM   ResType = "cm"
-	ResCRD  ResType = "crd"
-	ResSA   ResType = "sa"
+	ResNode       ResType = "node"
+	ResPod        ResType = "pod"
+	ResNS         ResType = "ns"
+	ResCM         ResType = "cm"
+	ResCRD        ResType = "crd"
+	ResSA         ResType = "sa"
+	RestApiServer ResType = "api"
 )
 
 func (t ResType) String() string {

@@ -6,9 +6,10 @@ package helm
 type ResType string
 
 const (
-	ResRepo    ResType = "repo"
-	ResChart   ResType = "chart"
-	ResRelease ResType = "release"
+	ResRepo         ResType = "repo"
+	ResChart        ResType = "chart"
+	ResChartVersion ResType = "chartVersion"
+	ResRelease      ResType = "release"
 )
 
 func (t ResType) String() string {
@@ -18,12 +19,14 @@ func (t ResType) String() string {
 type Resource struct {
 	Name      string
 	Type      ResType
-	Url       string // repo only
-	Repo      string // chart only
-	QName     string // chart only - eg. cilium/cilium;
-	Namespace string // release only
-	Revision  string // release only
-	Version   string // release only - version of the chart to install if any
+	Url       string            // repo only
+	Repo      string            // chart only
+	QName     string            // chart only - eg. cilium/cilium;
+	Namespace string            // release only
+	Revision  string            // release only
+	Version   string            // release and chart only - version of the chart to install if any
+	Param     map[string]string // release only
+	ValueFile []byte            // release only
 }
 
 // -------------------------------------------------------

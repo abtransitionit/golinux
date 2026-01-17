@@ -7,20 +7,23 @@ import (
 )
 
 func (i Resource) Describe(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.CliToDesc(), logger)
+	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.cliToDesc(), logger)
 }
 func (i Resource) GetYaml(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.CliToGetYaml(), logger)
+	return runKubectl(hostName, helmHost, "got yaml for "+i.Type.String(), i.cliToGetYaml(), logger)
 }
 func (i Resource) ListEvent(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.CliToListEvent(), logger)
+	return runKubectl(hostName, helmHost, "listed event for "+i.Type.String(), i.cliToListEvent(), logger)
+}
+func (i Resource) GetIp(hostName, helmHost string, logger logx.Logger) (string, error) {
+	return runKubectl(hostName, helmHost, "got ip for "+i.Type.String(), i.cliToGetIp(), logger)
 }
 
 func List(resType ResType, hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "listed "+resType.String(), CliToList(resType), logger)
+	return runKubectl(hostName, helmHost, "listed "+resType.String(), cliToList(resType), logger)
 }
 
-func CliToList(resType ResType) string {
+func cliToList(resType ResType) string {
 	switch resType {
 	case ResNS:
 		return `kubectl get namespaces`
@@ -38,7 +41,7 @@ func CliToList(resType ResType) string {
 		panic("unsupported resource type: " + resType)
 	}
 }
-func (i Resource) CliToListEvent() string {
+func (i Resource) cliToListEvent() string {
 	switch i.Type {
 	case ResPod:
 		return fmt.Sprintf(`kubectl get events -n %s --field-selector involvedObject.name=%s`, i.Ns, i.Name)
@@ -46,8 +49,16 @@ func (i Resource) CliToListEvent() string {
 		panic("unsupported resource type: " + i.Type)
 	}
 }
+func (i Resource) cliToGetIp() string {
+	switch i.Type {
+	case RestApiServer:
+		return `kubectl config view --minify | yq -r '.clusters[0].cluster.server' | tr -d '/' | cut -d: -f2`
+	default:
+		panic("unsupported resource type: " + i.Type)
+	}
+}
 
-func (i Resource) CliToDesc() string {
+func (i Resource) cliToDesc() string {
 	switch i.Type {
 	case ResNode:
 		return fmt.Sprintf(`kubectl describe node %s`, i.Name)
@@ -63,7 +74,7 @@ func (i Resource) CliToDesc() string {
 		panic("unsupported resource type: " + i.Type)
 	}
 }
-func (i Resource) CliToGetYaml() string {
+func (i Resource) cliToGetYaml() string {
 	switch i.Type {
 	case ResNode:
 		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)

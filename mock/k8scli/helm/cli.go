@@ -1,12 +1,19 @@
 package helm
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/golinux/mock/k8sapp/cilium"
 )
+
+func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) error {
+	return i.ActionToInstall(hostName, helmHost, logger)
+}
 
 func (i *Resource) Detail(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToDetail(), logger)
@@ -41,9 +48,6 @@ func (i *Resource) Add(hostName, helmHost string, logger logx.Logger) (string, e
 
 func (i *Resource) ListPermit(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return i.ActionToListPermit()
-}
-func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return i.ActionToInstall()
 }
 
 func (i *Resource) CliToDetail() string {
@@ -167,27 +171,84 @@ func (i *Resource) ActionToListPermit() (string, error) {
 	// handle success
 	return YamlStruct.ConvertToString(), nil
 }
-func (i *Resource) ActionToInstall() (string, error) {
-	// 1 check
-	// 11 - check resource type
+func (i *Resource) ActionToInstall(hostName, helmHost string, logger logx.Logger) error {
+	// 1 - check
 	if i.Type != ResRelease {
-		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
-	// 12 - TODO:check - all info are in the instance: i.Name, i.Namespace, i.QName
-	// 2 - get the yaml file into a var/struct
-	YamlStruct, err := GetYamlRepo()
+	// 2 - check chart exist
+	// 21 - get instance and operate
+	chart := Resource{Type: ResChart, QName: i.QName, Version: i.Version}
+	out, err := play(hostName, helmHost, "listed "+i.Type.String(), chart.cliToCheckExistence(), logger)
+	outBool := map[string]bool{"true": true, "false": false}[strings.TrimSpace(out)]
 	if err != nil {
-		return "", fmt.Errorf("getting the yaml > %w", err)
+		return fmt.Errorf("%s:%s:%s > checking chart existence > %w", hostName, helmHost, chart.QName, err)
+	} else if outBool != true {
+		return fmt.Errorf("%s:%s:%s > chart %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
+	}
+	// 22 - check the chart version exists
+	chartVersion := Resource{Type: ResChartVersion, QName: i.QName, Version: i.Version}
+	out, err = play(hostName, helmHost, "listed "+i.Type.String(), chartVersion.cliToCheckExistence(), logger)
+	outBool = map[string]bool{"true": true, "false": false}[strings.TrimSpace(out)]
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > checking chart version existence > %w", hostName, helmHost, chart.QName, err)
+	} else if outBool != true {
+		return fmt.Errorf("%s:%s:%s > chart version %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
+	}
+	// 3 - Get value file
+	cfgAsbyte, err := i.GetValueFile(logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
+	}
+	// cfgAsbyte, err := cilium.GetValueFile(i.Param, logger)
+	// if err != nil {
+	// 	return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
+	// }
+
+	// log
+	logger.Debug("--- BEGIN:Rendered Value file  ---")
+	scanner := bufio.NewScanner(bytes.NewReader(cfgAsbyte))
+	for scanner.Scan() {
+		logger.Debug(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		logger.Warnf("error while logging rendered kubeadm config: %v", err)
+	}
+	logger.Debug("--- END ---")
+
+	// 4 - install
+	// 41 - get instance and operate
+	release := Resource{Type: ResRelease, QName: i.QName, Version: i.Version, Name: i.Name, Namespace: i.Namespace}
+	out, err = play(hostName, helmHost, "listed "+i.Type.String(), release.cliToInstall(cfgAsbyte), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > installing helm release from chart %s > %w", hostName, helmHost, i.Name, i.QName, err)
 	}
 	// handle success
-	return YamlStruct.ConvertToString(), nil
+	logger.Debugf("%s:%s:%s > installed helm release from chart %s:%s", hostName, helmHost, i.Name, i.QName, i.Version)
+	return nil
+}
+
+func (i Resource) GetValueFile(logger logx.Logger) ([]byte, error) {
+	// 1 - check
+	if i.Type != ResRelease {
+		return nil, fmt.Errorf("not a release resource")
+	}
+	// 2 - get
+	switch {
+	case strings.Contains(i.Name, "cilium"):
+		return cilium.GetValueFile(i.Param, logger)
+
+	default:
+		return nil, fmt.Errorf("no value provider for release %s", i.Name)
+	}
 }
 
 func (i *Resource) cliToInstall(cfg []byte) string {
-	// 1 check
+	// 1 - check
 	if i.Type != ResRelease {
 		panic("resource type not supported for this cli: %s" + i.Type)
 	}
+	// 2 - build
 	encoded := base64.StdEncoding.EncodeToString(cfg)
 	var cmds = []string{
 		fmt.Sprintf(
@@ -203,12 +264,25 @@ func (i *Resource) cliToInstall(cfg []byte) string {
 }
 
 func (i *Resource) versionFlag() string {
-	// 1 check
+	// 1 - check
 	if i.Type != ResRelease {
 		panic("resource type not supported for this cli: %s" + i.Type)
 	}
+	// 2 - build
 	if i.Version != "" {
 		return fmt.Sprintf("--version %s", i.Version)
 	}
 	return ""
+}
+
+func (i *Resource) cliToCheckExistence() string {
+	switch i.Type {
+	case ResChart:
+		return fmt.Sprintf(`helm show chart %s >/dev/null 2>&1 && echo "true" || echo "false"`, i.QName)
+	case ResChartVersion:
+		return fmt.Sprintf(`helm show chart --version %s %s >/dev/null 2>&1 && echo "true" || echo "false"`, i.Version, i.QName)
+
+	default:
+		panic("unsupported resource type for this action: " + i.Type)
+	}
 }
