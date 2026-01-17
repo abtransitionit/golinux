@@ -77,7 +77,8 @@ func (i Resource) cliToDesc() string {
 func (i Resource) cliToGetYaml() string {
 	switch i.Type {
 	case ResNode:
-		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)
+		return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
+		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
 	case ResPod:
 		return fmt.Sprintf("kubectl get pod %s -n %s -o yaml", i.Name, i.Ns)
 	case ResNS:

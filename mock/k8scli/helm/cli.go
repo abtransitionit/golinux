@@ -22,7 +22,12 @@ func (i *Resource) Describe(hostName, helmHost string, logger logx.Logger) (stri
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToDescribe(), logger)
 }
 func (i *Resource) GetReadme(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToGetReadme(), logger)
+	out, err := play(hostName, helmHost, "", i.CliToGetReadme(), logger)
+	if err != nil {
+		return "", err
+	}
+	msg := fmt.Sprintf(`ssh %s "cat %s" | tee %[2]s > /dev/null; code %[2]s`, strings.TrimSpace(helmHost), strings.TrimSpace(out))
+	return msg, nil
 }
 func (i *Resource) ListResName(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToListResName(), logger)

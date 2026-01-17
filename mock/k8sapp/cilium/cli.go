@@ -1,6 +1,7 @@
 package cilium
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
@@ -11,7 +12,9 @@ func (ciliumService) GetStatus(hostName, helmHost string, logger logx.Logger) (s
 	if err != nil {
 		return "", err
 	}
-	return play(hostName, helmHost, out+" got status", CilumSvc.cliToGetStatus(), logger)
+	msg := fmt.Sprintf(`ssh %s "cat %s" | tee %[2]s > /dev/null; code %[2]s`, strings.TrimSpace(helmHost), strings.TrimSpace(out))
+	fmt.Println(msg)
+	return play(hostName, helmHost, " got status", CilumSvc.cliToGetStatus(), logger)
 }
 
 func (ciliumService) cliToGetStatus() string {
@@ -25,7 +28,7 @@ func (ciliumService) cliToGetFeatureStatus() string {
 	var cmds = []string{
 		`tmp=$(mktemp /tmp/cilium-feature-XXX.md)`,
 		`cilium features status -o markdown > $tmp`,
-		`echo "generate feature status in $tmp"`,
+		`echo "$tmp"`,
 	}
 	cli := strings.Join(cmds, " && ")
 	return cli
