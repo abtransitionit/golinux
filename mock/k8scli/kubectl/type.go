@@ -13,6 +13,9 @@ const (
 	ResCRD        ResType = "crd"
 	ResSA         ResType = "sa"
 	RestApiServer ResType = "api"
+	ResSC         ResType = "sc"
+	ResPvc        ResType = "pvc" // related to SC
+	ResRes        ResType = "res" // api-resources
 )
 
 func (t ResType) String() string {
@@ -24,6 +27,9 @@ type Resource struct {
 	Type ResType // node, pod, ns, cm, sa
 	Ns   string
 }
+
+// define slice
+type SliceResource []Resource
 
 // -------------------------------------------------------
 // -------	 struct for YAML

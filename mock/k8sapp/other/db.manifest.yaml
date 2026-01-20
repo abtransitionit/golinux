@@ -1,0 +1,33 @@
+list:
+  lpp:
+    name: calico
+    desc: The Rancher Local Path Provisioner.
+    url:  https://docs.tigera.io/calico/charts
+  bitnami:
+    name: bitnami
+    desc: The bitnami  Helm repository
+    url:  https://charts.bitnami.com/bitnami
+  cilium:
+    name: cilium
+    desc: The cilium  Helm repository
+    url:  https://helm.cilium.io/
+    doc:  
+      - https://github.com/cilium
+      - https://github.com/cilium/cilium-cli 
+      - https://docs.cilium.io/en/stable/ https://cilium.io/
+  kdashb:
+    name: kdashb
+    desc: The standard kubernetes dashboard Helm repository
+    url:  https://kubernetes.github.io/dashboard/
+    doc:
+      - https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+      - https://github.com/kubernetes/dashboard
+  ingressNginx:
+    name: ingressNginx
+    desc: The nginx ingress controler Helm repository
+    url:  https://kubernetes.github.io/ingress-nginx
+    doc:
+      - https://github.com/kubernetes/ingress-nginx
+      - https://kubernetes.github.io/ingress-nginx/deploy/
+      - https://github.com/kubernetes/ingress-nginx/blob/main/README.md
+

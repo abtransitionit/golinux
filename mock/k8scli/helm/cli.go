@@ -29,6 +29,10 @@ func (i *Resource) GetReadme(hostName, helmHost string, logger logx.Logger) (str
 	msg := fmt.Sprintf(`ssh %s "cat %s" | tee %[2]s > /dev/null; code %[2]s`, strings.TrimSpace(helmHost), strings.TrimSpace(out))
 	return msg, nil
 }
+
+//	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
+//		return i.getFromYaml(hostName)
+//	}
 func (i *Resource) ListResName(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToListResName(), logger)
 }
@@ -48,11 +52,12 @@ func (i *Resource) Delete(hostName, helmHost string, logger logx.Logger) (string
 	return play(hostName, helmHost, "deleted "+i.Type.String(), i.CliToDelete(), logger)
 }
 func (i *Resource) Add(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
+	return i.ActionToAdd(hostName, helmHost, logger)
+	// return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
 }
 
-func (i *Resource) ListPermit(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return i.ActionToListPermit()
+func (i *Resource) ListAuth(hostName, helmHost string, logger logx.Logger) (string, error) {
+	return i.ActionToListAuth()
 }
 
 func (i *Resource) CliToDetail() string {
@@ -163,7 +168,7 @@ func (i *Resource) CliToAdd() string {
 		panic("unsupported resource type for this action: " + i.Type)
 	}
 }
-func (i *Resource) ActionToListPermit() (string, error) {
+func (i *Resource) ActionToListAuth() (string, error) {
 	// 1 - check
 	if i.Type != ResRepo {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
@@ -175,6 +180,22 @@ func (i *Resource) ActionToListPermit() (string, error) {
 	}
 	// handle success
 	return YamlStruct.ConvertToString(), nil
+}
+func (i *Resource) ActionToAdd(hostName, helmHost string, logger logx.Logger) (string, error) {
+	// 1 - check
+	if i.Type != ResRepo {
+		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	// 1 - lookup this repo into the yaml
+	repo, err := i.getFromYaml(hostName)
+	if err != nil {
+		return "", fmt.Errorf("%s:%s > getting repo: maybe it is not in the whitelist:%w", hostName, helmHost, err)
+	}
+
+	// 2 - set an instance property extracted from the yaml
+	i.Url = repo.Url
+
+	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
 }
 func (i *Resource) ActionToInstall(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check

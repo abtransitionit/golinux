@@ -6,25 +6,56 @@ import (
 	"github.com/abtransitionit/gocore/logx"
 )
 
-func (i Resource) Describe(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "described "+i.Type.String(), i.cliToDesc(), logger)
+func (i *Resource) Describe(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "described "+i.Type.String(), i.cliToDesc(), logger)
 }
-func (i Resource) GetYaml(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "got yaml for "+i.Type.String(), i.cliToGetYaml(), logger)
+func (i *Resource) Create(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	logger.Debugf("%s:%s > CLI %s", hostName, kubectlHost, i.cliToCreate())
+	return play(hostName, kubectlHost, "created "+i.Type.String(), i.cliToCreate(), logger)
 }
-func (i Resource) ListEvent(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "listed event for "+i.Type.String(), i.cliToListEvent(), logger)
+func (i *Resource) GetYaml(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "got yaml for "+i.Type.String(), i.cliToGetYaml(), logger)
 }
-func (i Resource) GetIp(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "got ip for "+i.Type.String(), i.cliToGetIp(), logger)
+func (i *Resource) ListEvent(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "listed event for "+i.Type.String(), i.cliToListEvent(), logger)
+}
+func (i *Resource) GetIp(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "got ip for "+i.Type.String(), i.cliToGetIp(), logger)
 }
 
-func List(resType ResType, hostName, helmHost string, logger logx.Logger) (string, error) {
-	return runKubectl(hostName, helmHost, "listed "+resType.String(), cliToList(resType), logger)
+func List(resType ResType, hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "listed "+resType.String(), cliToList(resType), logger)
+}
+func ListNoNs(resType ResType, hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "listed "+resType.String(), cliToListNoNs(resType), logger)
+}
+func ListNs(resType ResType, hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	return play(hostName, kubectlHost, "listed "+resType.String(), cliToListNs(resType), logger)
+}
+
+func cliToListNoNs(resType ResType) string {
+	switch resType {
+	case ResRes:
+		return `kubectl api-resources --namespaced=false  | sort `
+	default:
+		panic("unsupported resource type: " + resType)
+	}
+}
+func cliToListNs(resType ResType) string {
+	switch resType {
+	case ResRes:
+		return `kubectl api-resources --namespaced=true  | sort`
+	default:
+		panic("unsupported resource type: " + resType)
+	}
 }
 
 func cliToList(resType ResType) string {
 	switch resType {
+	case ResRes:
+		return `kubectl api-resources | sort`
+	case ResSC:
+		return `kubectl get sc`
 	case ResNS:
 		return `kubectl get namespaces`
 	case ResNode:
@@ -34,14 +65,14 @@ func cliToList(resType ResType) string {
 	case ResSA:
 		return `kubectl get sa -Ao wide`
 	case ResCM:
-		return `kubectl get crd -Ao wide`
+		return `kubectl get cm -Ao wide`
 	case ResCRD:
 		return `kubectl get crd -Ao wide`
 	default:
 		panic("unsupported resource type: " + resType)
 	}
 }
-func (i Resource) cliToListEvent() string {
+func (i *Resource) cliToListEvent() string {
 	switch i.Type {
 	case ResPod:
 		return fmt.Sprintf(`kubectl get events -n %s --field-selector involvedObject.name=%s`, i.Ns, i.Name)
@@ -49,7 +80,7 @@ func (i Resource) cliToListEvent() string {
 		panic("unsupported resource type: " + i.Type)
 	}
 }
-func (i Resource) cliToGetIp() string {
+func (i *Resource) cliToGetIp() string {
 	switch i.Type {
 	case RestApiServer:
 		return `kubectl config view --minify | yq -r '.clusters[0].cluster.server' | tr -d '/' | cut -d: -f2`
@@ -58,8 +89,12 @@ func (i Resource) cliToGetIp() string {
 	}
 }
 
-func (i Resource) cliToDesc() string {
+func (i *Resource) cliToDesc() string {
 	switch i.Type {
+	case ResRes:
+		return fmt.Sprintf(`kubectl explain %s`, i.Name)
+	case ResSC:
+		return fmt.Sprintf(`kubectl describe sc %s`, i.Name)
 	case ResNode:
 		return fmt.Sprintf(`kubectl describe node %s`, i.Name)
 	case ResPod:
@@ -74,10 +109,21 @@ func (i Resource) cliToDesc() string {
 		panic("unsupported resource type: " + i.Type)
 	}
 }
-func (i Resource) cliToGetYaml() string {
+func (i *Resource) cliToCreate() string {
 	switch i.Type {
+	case ResNS:
+		return fmt.Sprintf(`kubectl create namespace %s`, i.Name)
+	default:
+		panic("unsupported resource type: " + i.Type)
+	}
+}
+func (i *Resource) cliToGetYaml() string {
+	switch i.Type {
+	case ResSC:
+		return fmt.Sprintf("kubectl get sc %s -o yaml", i.Name)
+		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
 	case ResNode:
-		return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
+		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)
 		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
 	case ResPod:
 		return fmt.Sprintf("kubectl get pod %s -n %s -o yaml", i.Name, i.Ns)

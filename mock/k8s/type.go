@@ -4,6 +4,9 @@ package k8s
 type Node struct {
 	Name string // cluster node name
 }
+type Pvc struct {
+	Name string // cluster node name
+}
 
 type Worker struct {
 	Name string // cluster node name
