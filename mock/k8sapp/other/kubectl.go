@@ -1,4 +1,4 @@
-package kubectl
+package other
 
 import (
 	"github.com/abtransitionit/gocore/logx"

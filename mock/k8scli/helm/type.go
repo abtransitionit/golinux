@@ -10,6 +10,7 @@ const (
 	ResChart        ResType = "chart"
 	ResChartVersion ResType = "chartVersion"
 	ResRelease      ResType = "release"
+	ResHelm         ResType = "helm"
 )
 
 func (t ResType) String() string {
@@ -59,9 +60,11 @@ type Chart struct {
 // define stateless services with their fake instances
 type repoService struct{}
 type releaseService struct{}
+type helmService struct{}
 
 var RepoSvc = repoService{}
 var ReleaseSvc = releaseService{}
+var HelmSvc = helmService{}
 
 // defrine slices
 type RepoSlice []Repo

@@ -64,7 +64,3 @@ func (i *MapYaml) ConvertToString() string {
 
 	return sb.String()
 }
-
-// for _, r := range yamlListRepo {
-// 	sb.WriteString(fmt.Sprintf("%s\t%s\t%s\n", r.Name, r.Desc, r.Url))
-// }

@@ -33,6 +33,10 @@ func (i *Resource) GetReadme(hostName, helmHost string, logger logx.Logger) (str
 //	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
 //		return i.getFromYaml(hostName)
 //	}
+//
+//	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
+//		return i.getFromYaml(hostName)
+//	}
 func (i *Resource) ListResName(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToListResName(), logger)
 }
@@ -53,11 +57,13 @@ func (i *Resource) Delete(hostName, helmHost string, logger logx.Logger) (string
 }
 func (i *Resource) Add(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return i.ActionToAdd(hostName, helmHost, logger)
-	// return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
 }
 
 func (i *Resource) ListAuth(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return i.ActionToListAuth()
+}
+func (i *Resource) GetEnv(hostName, helmHost string, logger logx.Logger) (string, error) {
+	return play(hostName, helmHost, "got env ", i.CliToGetEnv(), logger)
 }
 
 func (i *Resource) CliToDetail() string {
@@ -186,15 +192,16 @@ func (i *Resource) ActionToAdd(hostName, helmHost string, logger logx.Logger) (s
 	if i.Type != ResRepo {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
-	// 1 - lookup this repo into the yaml
+	// 2 - lookup this repo into the yaml
 	repo, err := i.getFromYaml(hostName)
 	if err != nil {
 		return "", fmt.Errorf("%s:%s > getting repo: maybe it is not in the whitelist:%w", hostName, helmHost, err)
 	}
 
-	// 2 - set an instance property extracted from the yaml
+	// 3 - set an instance property extracted from the yaml
 	i.Url = repo.Url
 
+	// 4 - get and play cli
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
 }
 func (i *Resource) ActionToInstall(hostName, helmHost string, logger logx.Logger) error {
@@ -308,6 +315,16 @@ func (i *Resource) cliToCheckExistence() string {
 	case ResChartVersion:
 		return fmt.Sprintf(`helm show chart --version %s %s >/dev/null 2>&1 && echo "true" || echo "false"`, i.Version, i.QName)
 
+	default:
+		panic("unsupported resource type for this action: " + i.Type)
+	}
+}
+
+// TODO
+func (i *Resource) CliToGetEnv() string {
+	switch i.Type {
+	case ResHelm:
+		return `helm env`
 	default:
 		panic("unsupported resource type for this action: " + i.Type)
 	}
