@@ -59,7 +59,7 @@ func (i *Resource) cliToListResKind() string {
 	if i.Type != ResManifest {
 		panic("unsupported resource type: " + i.Type)
 	}
-	return fmt.Sprintf(`echo -e "Res Kind\tNb" && kubectl apply -f %s --dry-run=server -o yaml | yq -r '.items[].kind' | sort | uniq -c | awk {print \$2 \"\t\" \$1}"`, i.Url)
+	return fmt.Sprintf(`echo -e "Res Kind\tNb" && kubectl apply -f %s --dry-run=server -o yaml | yq -r '.items[].kind' | sort | uniq -c | awk "{print \$2 \"\t\" \$1}"`, i.Url)
 }
 
 func (i *Resource) CliToListResName() string {
