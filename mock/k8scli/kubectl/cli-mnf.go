@@ -23,7 +23,7 @@ func (i *Resource) Apply(hostName, kubectlHost string, logger logx.Logger) (stri
 	// return play(hostName, kubectlHost, "applied manifest "+i.Name, i.cliToApply(), logger)
 }
 func (i *Resource) Delete(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	return play(hostName, kubectlHost, "applied manifest "+i.Name, i.cliToDelete(), logger)
+	return play(hostName, kubectlHost, "deleted manifest "+i.Name, i.cliToDelete(), logger)
 }
 
 func (i *Resource) actionToListAuth() (string, error) {
@@ -45,7 +45,7 @@ func (i *Resource) cliToDelete() string {
 	if i.Type != ResManifest {
 		panic("unsupported resource type: " + i.Type)
 	}
-	return fmt.Sprintf(`kubectl delete -f %s`, i.Url)
+	return fmt.Sprintf(`kubectl delete -f %s --ignore-not-found`, i.Url)
 }
 func (i *Resource) cliToApply() string {
 	// check
@@ -54,18 +54,19 @@ func (i *Resource) cliToApply() string {
 	}
 	return fmt.Sprintf(`kubectl apply -f %s`, i.Url)
 }
+
 func (i *Resource) cliToListResKind() string {
 	// check
 	if i.Type != ResManifest {
 		panic("unsupported resource type: " + i.Type)
 	}
-	return fmt.Sprintf(`echo -e "Res Kind\tNb" && kubectl apply -f %s --dry-run=server -o yaml | yq -r '.items[].kind' | sort | uniq -c | awk "{print \$2 \"\t\" \$1}"`, i.Url)
+	return fmt.Sprintf(`echo -e "Res Kind\tNb" && kubectl apply -f %s --dry-run=server -o yaml | yq -r '.items[].kind' | sort | uniq -c | awk '{print $2 "\t" $1}'`, i.Url)
 }
 
 func (i *Resource) CliToListResName() string {
 	switch i.Type {
 	case ResManifest:
-		return fmt.Sprintf(`echo -e "Res Kind\tName\tNamespace" && kubectl apply -f %s --dry-run=server -o yaml | yq -r ".items[]  | [.kind, .metadata.name, .metadata.namespace] | @tsv" | sort | awk "{print \$1 \"\t\" \$2 \"\t\" \$3}"`, i.Url)
+		return fmt.Sprintf(`echo -e "Res Kind\tName\tNamespace" && kubectl apply -f %s --dry-run=server -o yaml | yq -r ".items[]  | [.kind, .metadata.name, .metadata.namespace] | @tsv" | sort | awk '{print $1 "\t" $2 "\t" $3}'`, i.Url)
 	default:
 		panic("unsupported resource type for this action: " + i.Type)
 	}

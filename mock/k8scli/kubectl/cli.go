@@ -7,7 +7,7 @@ import (
 )
 
 func (i *Resource) Describe(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	return play(hostName, kubectlHost, "described "+i.Type.String(), i.cliToDesc(), logger)
+	return play(hostName, kubectlHost, "described "+i.Type.String(), i.cliToDescribe(), logger)
 }
 func (i *Resource) Create(hostName, kubectlHost string, logger logx.Logger) (string, error) {
 	logger.Debugf("%s:%s > CLI %s", hostName, kubectlHost, i.cliToCreate())
@@ -89,8 +89,10 @@ func (i *Resource) cliToGetIp() string {
 	}
 }
 
-func (i *Resource) cliToDesc() string {
+func (i *Resource) cliToDescribe() string {
 	switch i.Type {
+	case ResManifest:
+		return fmt.Sprintf(`kubectl get -f %s --ignore-not-found`, i.Url)
 	case ResRes:
 		return fmt.Sprintf(`kubectl explain %s`, i.Name)
 	case ResSC:

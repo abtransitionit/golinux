@@ -1,7 +1,0 @@
-list:
-  lpp:
-    name: lpp
-    desc: The Rancher Local Path Provisioner.
-    url:  https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-    doc:
-      - https://github.com/rancher/local-path-provisioner
