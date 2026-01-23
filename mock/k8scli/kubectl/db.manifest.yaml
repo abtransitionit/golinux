@@ -5,3 +5,9 @@ list:
     url:  https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
     doc:
       - https://github.com/rancher/local-path-provisioner
+  clpp:
+    name: clpp
+    desc: A custom Local Path Provisioner based on the fork of the Rancher LPP.
+    url:  https://raw.githubusercontent.com/abtransitionit/rancher-lpp/clpp/deploy/local-path-storage.yaml
+    doc:
+      - https://github.com/abtransitionit/rancher-lpp/tree/clpp
