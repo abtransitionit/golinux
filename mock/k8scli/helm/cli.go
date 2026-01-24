@@ -147,7 +147,7 @@ func (i *Resource) CliToGetReadme() string {
 func (i *Resource) CliToListResKind() string {
 	switch i.Type {
 	case ResChart:
-		return fmt.Sprintf(`echo -e "Res Kind\tNb" && helm template %s | yq -r '.kind' | sort | uniq -c | awk "{print \$2 \"\t\" \$1}"`, i.QName)
+		return fmt.Sprintf(`echo -e "Res Kind\tNb" && helm template %s | yq -r '.kind' | sort | uniq -c | awk '{print $2 "\t" $1}'`, i.QName)
 	default:
 		panic("unsupported resource type for this action: " + i.Type)
 	}

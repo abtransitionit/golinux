@@ -41,7 +41,7 @@ func getPlaceholder(param map[string]string, logger logx.Logger) (varPlaceHolder
 	}
 
 	// 22 - get ApiServerIp
-	i := kubectl.Resource{Type: kubectl.RestApiServer}
+	i := kubectl.Resource{Type: kubectl.ResApiServer}
 	apiServerIp, err := i.GetIp("local", helmHost, logger)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)

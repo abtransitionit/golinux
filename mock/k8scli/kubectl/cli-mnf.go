@@ -22,9 +22,6 @@ func (i *Resource) Apply(hostName, kubectlHost string, logger logx.Logger) (stri
 	return i.ActionTopply(hostName, kubectlHost, logger)
 	// return play(hostName, kubectlHost, "applied manifest "+i.Name, i.cliToApply(), logger)
 }
-func (i *Resource) Delete(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	return play(hostName, kubectlHost, "deleted manifest "+i.Name, i.cliToDelete(), logger)
-}
 
 func (i *Resource) actionToListAuth() (string, error) {
 	// 1 - check
@@ -40,13 +37,6 @@ func (i *Resource) actionToListAuth() (string, error) {
 	return YamlStruct.string(), nil
 }
 
-func (i *Resource) cliToDelete() string {
-	// check
-	if i.Type != ResManifest {
-		panic("unsupported resource type: " + i.Type)
-	}
-	return fmt.Sprintf(`kubectl delete -f %s --ignore-not-found`, i.Url)
-}
 func (i *Resource) cliToApply() string {
 	// check
 	if i.Type != ResManifest {

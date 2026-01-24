@@ -6,17 +6,18 @@ package kubectl
 type ResType string
 
 const (
-	ResNode       ResType = "node"
-	ResPod        ResType = "pod"
-	ResNS         ResType = "ns"
-	ResCM         ResType = "cm"
-	ResCRD        ResType = "crd"
-	ResSA         ResType = "sa"
-	RestApiServer ResType = "api"
-	ResSC         ResType = "sc"
-	ResPvc        ResType = "pvc"      // related to SC
-	ResRes        ResType = "res"      // api-resources
-	ResManifest   ResType = "manifest" // manfest to apply
+	ResNode      ResType = "node"
+	ResPod       ResType = "pod"
+	ResNS        ResType = "ns"
+	ResCM        ResType = "cm"
+	ResCRD       ResType = "crd"
+	ResSA        ResType = "sa"
+	ResApiServer ResType = "api"
+	ResSC        ResType = "sc"
+	ResPvc       ResType = "pvc" // related to SC
+	ResRes       ResType = "res" // api-resources
+	ResSecret    ResType = "secret"
+	ResManifest  ResType = "manifest" // manifest file
 )
 
 func (t ResType) String() string {
@@ -24,12 +25,13 @@ func (t ResType) String() string {
 }
 
 type Resource struct {
-	Name string
-	Desc string   // for manifest only
-	Url  string   // for manifest only
-	Doc  []string // for manifest only
-	Type ResType  // node, pod, ns, cm, sa
-	Ns   string
+	Name     string
+	Type     ResType // node, pod, ns, cm, sa, secret, mnf,
+	Ns       string
+	UserName string   // for Secret only
+	Desc     string   // for manifest only
+	Url      string   // for manifest only
+	Doc      []string // for manifest only
 }
 
 // define slice
