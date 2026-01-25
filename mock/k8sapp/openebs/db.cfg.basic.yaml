@@ -1,0 +1,16 @@
+# openebs-values.yaml
+
+engines:
+  replicated:
+    mayastor:
+      enabled: false
+
+  local:
+    lvm:
+      enabled: false
+    zfs:
+      enabled: false
+
+# Optional but explicit
+ndm:
+  enabled: true

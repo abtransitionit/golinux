@@ -2,6 +2,7 @@
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 nodeRegistration:
+  name: cp # control-plane name
   ignorePreflightErrors:
     - NumCPU
 
@@ -26,6 +27,7 @@ failSwapOn: false
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: JoinConfiguration
 nodeRegistration:    
+  # name: {{ .Node.CustomName }}
   ignorePreflightErrors:
     - NumCPU
 ---

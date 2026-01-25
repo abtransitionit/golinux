@@ -9,6 +9,7 @@ import (
 
 	"github.com/abtransitionit/gocore/logx"
 	"github.com/abtransitionit/golinux/mock/k8sapp/cilium"
+	"github.com/abtransitionit/golinux/mock/k8sapp/openebs"
 )
 
 func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) error {
@@ -233,10 +234,6 @@ func (i *Resource) ActionToInstall(hostName, helmHost string, logger logx.Logger
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
 	}
-	// cfgAsbyte, err := cilium.GetValueFile(i.Param, logger)
-	// if err != nil {
-	// 	return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
-	// }
 
 	// log
 	logger.Debug("--- BEGIN:Rendered Value file  ---")
@@ -270,6 +267,8 @@ func (i Resource) GetValueFile(logger logx.Logger) ([]byte, error) {
 	switch {
 	case strings.Contains(i.Name, "cilium"):
 		return cilium.GetValueFile(i.Param, logger)
+	case strings.Contains(i.Name, "openebs"):
+		return openebs.GetValueFile(i.Param, logger)
 
 	default:
 		return nil, fmt.Errorf("no value provider for release %s", i.Name)
@@ -285,7 +284,7 @@ func (i *Resource) cliToInstall(cfg []byte) string {
 	encoded := base64.StdEncoding.EncodeToString(cfg)
 	var cmds = []string{
 		fmt.Sprintf(
-			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --timeout 10m --namespace %s %s -f -`,
+			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --create-namespace --timeout 10m --namespace %s %s -f -`,
 			encoded,
 			i.Name,
 			i.QName,
