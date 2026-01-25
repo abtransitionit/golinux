@@ -194,13 +194,8 @@ func (i *Resource) cliToCreate() string {
 	case ResNS:
 		return fmt.Sprintf(`kubectl create namespace %s`, i.Name)
 	case ResSecret:
-		return fmt.Sprintf(
-			`kubectl run htpasswd-gen -n %[1]s --quiet --restart=Never --rm -i --image=httpd:2.4-alpine -- sh -c 'apk add -q --no-cache apache2-utils && PASS=$(head -c 20 /dev/urandom | base64) && htpasswd -Bbn %[2]s $PASS' | kubectl create secret generic %[3]s -n %[1]s --from-file=auth=/dev/stdin`,
-			i.Ns, i.UserName, i.Name)
-
-		// fmt.Sprintf(`kubectl run htpasswd-gen   -n %[1]s   --quiet --restart=Never   --rm -i    --image=httpd:2.4-alpine   -- sh -c '
-		// apk add -q --no-cache apache2-utils && PASS=$(head -c 20 /dev/urandom | base64) &&  htpasswd -Bbn %[2]s $PASS'
-		// | kubectl create secret generic %[3]s -n %[1]s --from-file=auth=/dev/stdin`, i.Ns, i.UserName, i.Name)
+		return fmt.Sprintf(`kubectl run htpasswd-gen -n %[1]s --quiet --restart=Never --rm -i --image=httpd:2.4-alpine -- sh -c 'apk add -q --no-cache apache2-utils && PASS=$(head -c 20 /dev/urandom | base64) && htpasswd -Bbn %[2]s $PASS' | kubectl create secret generic %[3]s -n %[1]s --from-file=auth=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -`, i.Ns, i.UserName, i.Name)
+		// return fmt.Sprintf(`kubectl run htpasswd-gen -n %[1]s --quiet --restart=Never --rm -i --image=httpd:2.4-alpine -- sh -c 'apk add -q --no-cache apache2-utils && PASS=$(head -c 20 /dev/urandom | base64) && htpasswd -Bbn %[2]s $PASS' | kubectl create secret generic %[3]s -n %[1]s --from-file=auth=/dev/stdin`,i.Ns, i.UserName, i.Name)
 	default:
 		panic("unsupported resource type: " + i.Type)
 	}
