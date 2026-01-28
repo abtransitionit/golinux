@@ -103,6 +103,9 @@ func (i *Resource) cliToListResource() string {
 //     printf "%%-50s %%-18s %%6.2f MB\n", name, sha, size
 // }'`, i.Name)
 
+// Notes:
+//
+// - get column name from the yaml view of the resource (-o yaml)
 func cliToList(resType ResType) string {
 	switch resType {
 	case ResCM:
@@ -116,11 +119,43 @@ func cliToList(resType ResType) string {
 	case ResPod:
 		return `kubectl get pods -Ao wide | awk '{print $1,$2,$4,$6,$8,$7}'| column -t`
 	case ResRes:
-		return `kubectl api-resources | sort`
+		return `kubectl api-resources| sort `
+	case ResPv:
+
+		return `kubectl get pv -A --no-headers -o custom-columns="
+		:.spec.storageClassName,
+		:.metadata.name,
+		:.spec.capacity.storage,
+		:.spec.accessModes[0],
+		:.spec.persistentVolumeReclaimPolicy,
+		:.status.phase,
+		:.spec.claimRef.namespace,
+		:.spec.claimRef.name,
+		:.metadata.creationTimestamp" | awk 'BEGIN {print "SC\tNAME\tCAPACITY\tACCESS\tRECLAIM\tSTATUS\tCLAIM\tAGE"} {print $1,$2,$3,$4,$5,$6"/"$7,$8,$9}' | column -t
+		`
+	case ResPvc:
+		return `kubectl get pvc -A --no-headers -o custom-columns="
+		:.metadata.namespace,
+		:.metadata.name,
+		:.spec.storageClassName,
+		:.status.phase,
+		:.spec.volumeName,
+		:.status.capacity.storage,
+		:.spec.accessModes[0],
+		:.metadata.creationTimestamp" | awk 'BEGIN {print "NAMESPACE\tNAME\tSC\tSTATUS\tPV\tCAPACITY\tACCESS\tAGE"} {print $1,$2,$3,$4,$5,$6,$7,$8}' | column -t
+		`
 	case ResSA:
 		return `kubectl get sa -Ao wide`
 	case ResSC:
-		return `kubectl get sc`
+		return `kubectl get sc --no-headers -o custom-columns="
+		:.metadata.name,
+		:.provisioner,
+		:.reclaimPolicy,
+		:.volumeBindingMode,
+		:.allowVolumeExpansion,
+		:.metadata.annotations.storageclass\.kubernetes\.io/is-default-class,
+		:.metadata.creationTimestamp" | awk 'BEGIN {print "NAME\tPROVISIONER\tRECLAIM\tBINDING\tEXPAND\tDEFAULT\tAGE"} {print $1,$2,$3,$4,$5,$6,$7}' | column -t
+		`
 	case ResSecret:
 		// return `kubectl get secrets -Ao wide`
 		return `kubectl get secrets -Ao wide | awk '{print $1,$2,$3,$4}' | column -t`

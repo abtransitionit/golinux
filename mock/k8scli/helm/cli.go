@@ -282,6 +282,7 @@ func (i *Resource) cliToInstall(cfg []byte) string {
 	}
 	// 2 - build
 	encoded := base64.StdEncoding.EncodeToString(cfg)
+	i.Repo = strings.Split(i.QName, "-")[0]
 	var cmds = []string{
 		fmt.Sprintf(
 			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --create-namespace --timeout 10m --namespace %s %s -f -`,
@@ -294,6 +295,8 @@ func (i *Resource) cliToInstall(cfg []byte) string {
 	cli := strings.Join(cmds, " && ")
 	return cli
 }
+
+// --labels "repoName=%s"
 
 func (i *Resource) versionFlag() string {
 	// 1 - check

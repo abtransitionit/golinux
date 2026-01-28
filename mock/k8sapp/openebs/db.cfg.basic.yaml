@@ -1,28 +1,16 @@
-# value file for openebs
 
 # Disable unwanted engines
 engines:
   replicated:
     mayastor:
       enabled: false
+
   local:
     lvm:
       enabled: false
     zfs:
       enabled: false
 
-# Keep only the NDM and LocalPV
+# Optional but explicit
 ndm:
   enabled: true
-  
-localpv:
-  enabled: true  
-
-# Disable the monitoring/logging stack (Loki, Minio, Alloy)
-monitoring:
-  enabled: false
-
-# If the chart uses a sub-chart for helper services:
-helper:
-  enabled: false
-

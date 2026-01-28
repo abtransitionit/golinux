@@ -14,6 +14,7 @@ const (
 	ResSA        ResType = "sa"
 	ResApiServer ResType = "api"
 	ResSC        ResType = "sc"
+	ResPv        ResType = "pv"  // related to SC
 	ResPvc       ResType = "pvc" // related to SC
 	ResRes       ResType = "res" // api-resources
 	ResSecret    ResType = "secret"

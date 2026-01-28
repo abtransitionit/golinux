@@ -5,15 +5,15 @@ list:
   #   url:  https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
   #   doc:
   #     - https://github.com/rancher/local-path-provisioner
-  clpp:
+  registry-clpp:
     name: clpp
     desc: A custom LPP based on the fork of the Rancher LPP.
     url:  https://raw.githubusercontent.com/abtransitionit/rancher-lpp/clpp/deploy/local-path-storage.yaml
     doc:
       - https://github.com/abtransitionit/rancher-lpp/tree/clpp
-  creg:
-    name: creg
+  cimreg:
+    name: cimreg
     desc: The container image registry from docker.
-    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/registry.yaml
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/registry-openebs.yaml
     doc:
       - https://github.com/abtransitionit/k8s-manifest
