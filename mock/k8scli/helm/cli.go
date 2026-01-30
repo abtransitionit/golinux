@@ -275,6 +275,7 @@ func (i Resource) GetValueFile(logger logx.Logger) ([]byte, error) {
 	}
 }
 
+// description: install a release for the first time or upgrade an existing one
 func (i *Resource) cliToInstall(cfg []byte) string {
 	// 1 - check
 	if i.Type != ResRelease {
@@ -285,9 +286,10 @@ func (i *Resource) cliToInstall(cfg []byte) string {
 	i.Repo = strings.Split(i.QName, "-")[0]
 	var cmds = []string{
 		fmt.Sprintf(
-			`printf '%s' | base64 -d | helm install %s %s --atomic --wait --create-namespace --timeout 10m --namespace %s %s -f -`,
+			`printf '%s' | base64 -d | helm upgrade --install %s --labels "repoName=%s" %s --atomic --wait --create-namespace --timeout 10m --namespace %s %s -f -`,
 			encoded,
 			i.Name,
+			i.Repo,
 			i.QName,
 			i.Namespace,
 			i.versionFlag()),
