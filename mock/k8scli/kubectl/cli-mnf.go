@@ -7,7 +7,7 @@ import (
 )
 
 func (i *Resource) ListAuth(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	return i.actionToListAuth()
+	return i.StepToListAuth()
 }
 
 func (i *Resource) ListResName(hostName, helmHost string, logger logx.Logger) (string, error) {
@@ -19,11 +19,11 @@ func (i *Resource) ListResKind(hostName, kubectlHost string, logger logx.Logger)
 }
 
 func (i *Resource) Apply(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	return i.ActionTopply(hostName, kubectlHost, logger)
+	return i.StepTopply(hostName, kubectlHost, logger)
 	// return play(hostName, kubectlHost, "applied manifest "+i.Name, i.cliToApply(), logger)
 }
 
-func (i *Resource) actionToListAuth() (string, error) {
+func (i *Resource) StepToListAuth() (string, error) {
 	// 1 - check
 	if i.Type != ResManifest {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
@@ -64,7 +64,7 @@ func (i *Resource) CliToListResName() string {
 
 // kubectl apply -f %s --dry-run=client -o yaml | yq -r '.items[] | [.kind, .metadata.name, .metadata.namespace] | @tsv' | sort | awk '{print $1 "\t" $2 "\t" ($3 == "null" ? "-" : $3)}'
 
-func (i *Resource) ActionTopply(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+func (i *Resource) StepTopply(hostName, kubectlHost string, logger logx.Logger) (string, error) {
 	// 1 - check
 	if i.Type != ResManifest {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)

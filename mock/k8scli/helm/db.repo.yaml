@@ -21,6 +21,7 @@ list:
     url:  https://openebs.github.io/openebs
     doc:
       - https://openebs.github.io/openebs/
+      - https://github.com/openebs/openebs
       - https://github.com/openebs
     
   ingressNginx:

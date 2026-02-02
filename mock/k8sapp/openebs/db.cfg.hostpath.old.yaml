@@ -5,15 +5,19 @@
 engines:
   replicated:
     mayastor: { enabled: false }
-  localpv: 
-    hostpath: { enabled: true }  
+  local:
     lvm: { enabled: false }
     zfs: { enabled: false }
 
 
 # 4. NDM (Node Device Manager) is technically for discovering disks.
 # For pure Hostpath (manual directory mapping), you can often disable this too.
-openebs-ndm: {enabled: false}
+ndm:
+  enabled: false
+  operator: { enabled: false }
+
+# Local PV Hostpath engine
+localpv: { enabled: true }
 
 # Disable the monitoring/logging stack (Loki, Minio, Alloy)
 monitoring: { enabled: false }

@@ -13,7 +13,7 @@ import (
 )
 
 func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) error {
-	return i.ActionToInstall(hostName, helmHost, logger)
+	return i.StepToInstall(hostName, helmHost, logger)
 }
 
 func (i *Resource) Detail(hostName, helmHost string, logger logx.Logger) (string, error) {
@@ -57,11 +57,11 @@ func (i *Resource) Delete(hostName, helmHost string, logger logx.Logger) (string
 	return play(hostName, helmHost, "deleted "+i.Type.String(), i.CliToDelete(), logger)
 }
 func (i *Resource) Add(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return i.ActionToAdd(hostName, helmHost, logger)
+	return i.StepToAdd(hostName, helmHost, logger)
 }
 
 func (i *Resource) ListAuth(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return i.ActionToListAuth()
+	return i.StepToListAuth()
 }
 func (i *Resource) GetEnv(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return play(hostName, helmHost, "got env ", i.CliToGetEnv(), logger)
@@ -175,7 +175,7 @@ func (i *Resource) CliToAdd() string {
 		panic("unsupported resource type for this action: " + i.Type)
 	}
 }
-func (i *Resource) ActionToListAuth() (string, error) {
+func (i *Resource) StepToListAuth() (string, error) {
 	// 1 - check
 	if i.Type != ResRepo {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
@@ -188,7 +188,7 @@ func (i *Resource) ActionToListAuth() (string, error) {
 	// handle success
 	return YamlStruct.ConvertToString(), nil
 }
-func (i *Resource) ActionToAdd(hostName, helmHost string, logger logx.Logger) (string, error) {
+func (i *Resource) StepToAdd(hostName, helmHost string, logger logx.Logger) (string, error) {
 	// 1 - check
 	if i.Type != ResRepo {
 		return "", fmt.Errorf("resource type not supported for this action: %s", i.Type)
@@ -205,7 +205,7 @@ func (i *Resource) ActionToAdd(hostName, helmHost string, logger logx.Logger) (s
 	// 4 - get and play cli
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
 }
-func (i *Resource) ActionToInstall(hostName, helmHost string, logger logx.Logger) error {
+func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check
 	if i.Type != ResRelease {
 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
@@ -283,7 +283,8 @@ func (i *Resource) cliToInstall(cfg []byte) string {
 	}
 	// 2 - build
 	encoded := base64.StdEncoding.EncodeToString(cfg)
-	i.Repo = strings.Split(i.QName, "-")[0]
+	// TODO - if cahrt is local path change this - for now works only for chart in a repo
+	i.Repo = strings.Split(i.QName, "/")[0]
 	var cmds = []string{
 		fmt.Sprintf(
 			`printf '%s' | base64 -d | helm upgrade --install %s --labels "repoName=%s" %s --atomic --wait --create-namespace --timeout 10m --namespace %s %s -f -`,

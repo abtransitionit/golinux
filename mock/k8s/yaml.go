@@ -21,6 +21,9 @@ func getFullClusterConf(embeddedTplFile []byte, clusterParam ClusterParam, logge
 		"CRuntime": {
 			"SocketName": clusterParam.CrSocketName,
 		},
+		"Cplane": {
+			"Name": clusterParam.CPlaneName,
+		},
 	}
 	// load file
 	if yamlCfgRenderAsByte, err = tpl.LoadTplFile(embeddedTplFile, "", varPlaceHolder); err != nil {

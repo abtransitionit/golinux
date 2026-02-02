@@ -20,6 +20,7 @@ type ClusterParam struct {
 	PodCidr      string
 	ServiceCidr  string
 	CrSocketName string
+	CPlaneName   string
 }
 type Kubectl struct {
 	CplaneNdeName   string
