@@ -210,8 +210,8 @@ func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) 
 	if i.Type != ResRelease {
 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
-	// 2 - check chart exist
-	// 21 - get instance and operate
+	// 12 - check chart exist
+	// 121 - get instance and operate
 	chart := Resource{Type: ResChart, QName: i.QName, Version: i.Version}
 	out, err := play(hostName, helmHost, "listed "+i.Type.String(), chart.cliToCheckExistence(), logger)
 	outBool := map[string]bool{"true": true, "false": false}[strings.TrimSpace(out)]
@@ -220,7 +220,7 @@ func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) 
 	} else if outBool != true {
 		return fmt.Errorf("%s:%s:%s > chart %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
-	// 22 - check the chart version exists
+	// 122 - check the chart version exists
 	chartVersion := Resource{Type: ResChartVersion, QName: i.QName, Version: i.Version}
 	out, err = play(hostName, helmHost, "listed "+i.Type.String(), chartVersion.cliToCheckExistence(), logger)
 	outBool = map[string]bool{"true": true, "false": false}[strings.TrimSpace(out)]
@@ -229,7 +229,7 @@ func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) 
 	} else if outBool != true {
 		return fmt.Errorf("%s:%s:%s > chart version %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
-	// 3 - Get value file
+	// 2 - Get value file
 	cfgAsbyte, err := i.GetValueFile(logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
@@ -246,8 +246,8 @@ func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) 
 	}
 	logger.Debug("--- END ---")
 
-	// 4 - install
-	// 41 - get instance and operate
+	// 3 - install
+	// 31 - get instance and operate
 	release := Resource{Type: ResRelease, QName: i.QName, Version: i.Version, Name: i.Name, Namespace: i.Namespace}
 	out, err = play(hostName, helmHost, "listed "+i.Type.String(), release.cliToInstall(cfgAsbyte), logger)
 	if err != nil {
