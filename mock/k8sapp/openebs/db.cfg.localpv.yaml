@@ -1,0 +1,19 @@
+# Enable all LocalPV engines
+engines:
+  replicated:
+    mayastor: { enabled: false }
+  localpv:
+    hostpath: { enabled: false }
+    lvm: { enabled: false }
+    zfs: { enabled: false }
+
+# Disable unnecessary components
+openebs-ndm: { enabled: false }
+
+monitoring: { enabled: false }
+
+loki: { enabled: false }
+minio: { enabled: false }
+alloy: { enabled: false }
+
+helper: { enabled: false }

@@ -23,7 +23,7 @@ list:
       - https://openebs.github.io/openebs/
       - https://github.com/openebs/openebs
       - https://github.com/openebs
-    
+      - https://openebs.io   
   ingressNginx:
     name: ingressNginx
     desc: The nginx ingress controler Helm repository

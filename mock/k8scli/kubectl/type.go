@@ -13,10 +13,10 @@ const (
 	ResCRD       ResType = "crd"
 	ResSA        ResType = "sa"
 	ResApiServer ResType = "api"
-	ResSC        ResType = "sc"
 	ResPv        ResType = "pv"  // related to SC
 	ResPvc       ResType = "pvc" // related to SC
 	ResRes       ResType = "res" // api-resources
+	ResSC        ResType = "sc"
 	ResSecret    ResType = "secret"
 	ResManifest  ResType = "manifest" // manifest file
 )

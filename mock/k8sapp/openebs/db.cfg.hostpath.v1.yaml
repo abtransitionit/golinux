@@ -1,41 +1,22 @@
-# value file for openebs
+# Disable the sub-engines at the root level
+lvm-localpv: { enabled: false }
+zfs-localpv: { enabled: false }
+mayastor: { enabled: false }
+
+# Logic toggles for the engine manager
 engines:
   replicated:
-    mayastor:
-      enabled: false
-
+    mayastor: { enabled: false }
   localpv:
-    hostpath:
-      enabled: true
-    lvm:
-      enabled: false
-    zfs:
-      enabled: false
+    hostpath: { enabled: true }
+    lvm: { enabled: false }
+    zfs: { enabled: false }
 
-# --- NDM ---
-openebs-ndm:
-  enabled: false
-
-# --- Monitoring stack (ALL must be disabled explicitly) ---
-monitoring:
-  enabled: false
-
-loki:
-  enabled: false
-
-minio:
-  enabled: false
-
-alloy:
-  enabled: false
-
-# --- LocalPV engines must ALSO be disabled explicitly ---
-lvm-localpv:
-  enabled: false
-
-zfs-localpv:
-  enabled: false
-
-# --- Helpers ---
-helper:
-  enabled: false
+# Disable Node Disk Manager and monitoring
+openebs-ndm: { enabled: false }
+ndm: { enabled: false }
+monitoring: { enabled: false }
+loki: { enabled: false }
+minio: { enabled: false }
+alloy: { enabled: false }
+helper: { enabled: false }

@@ -171,6 +171,10 @@ func (i *Resource) cliToDelete() string {
 		return fmt.Sprintf(`kubectl delete -f %s --ignore-not-found`, i.Url)
 	case ResPod:
 		return fmt.Sprintf(`kubectl delete pod %s -n %s`, i.Name, i.Ns)
+	case ResPv:
+		return fmt.Sprintf(`kubectl delete pv %s`, i.Name)
+	case ResPvc:
+		return fmt.Sprintf(`kubectl delete pvc %s -n %s`, i.Name, i.Ns)
 	default:
 		panic("unsupported resource type: " + i.Type)
 	}
@@ -210,6 +214,10 @@ func (i *Resource) cliToDescribe() string {
 		return fmt.Sprintf(`kubectl describe node %s`, i.Name)
 	case ResNS:
 		return fmt.Sprintf(`kubectl describe ns %s`, i.Name)
+	case ResPvc:
+		return fmt.Sprintf(`kubectl describe pvc %s -n %s`, i.Name, i.Ns)
+	case ResPv:
+		return fmt.Sprintf(`kubectl describe pv %s`, i.Name)
 	case ResPod:
 		return fmt.Sprintf(`kubectl describe pod %s -n %s`, i.Name, i.Ns)
 	case ResRes:
@@ -254,6 +262,10 @@ func (i *Resource) cliToGetYaml() string {
 		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
 	case ResPod:
 		return fmt.Sprintf("kubectl get pod %s -n %s -o yaml", i.Name, i.Ns)
+	case ResPv:
+		return fmt.Sprintf("kubectl get pv %s -o yaml", i.Name)
+	case ResPvc:
+		return fmt.Sprintf("kubectl get pvc %s -n %s -o yaml", i.Name, i.Ns)
 	case ResNS:
 		return fmt.Sprintf("kubectl get ns %s -o yaml", i.Name)
 	case ResSA:

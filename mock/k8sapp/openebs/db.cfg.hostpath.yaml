@@ -1,41 +1,11 @@
-# value file for openebs
+# cf. https://github.com/openebs/openebs/blob/4.4.0-develop_mod_update/charts/values.yaml
 engines:
+  local:
+    lvm: { enabled: false }
+    zfs: { enabled: false }
   replicated:
-    mayastor:
-      enabled: false
+    mayastor: { enabled: false }
 
-  localpv:
-    hostpath:
-      enabled: true
-    lvm:
-      enabled: false
-    zfs:
-      enabled: false
-
-# --- NDM ---
-openebs-ndm:
-  enabled: false
-
-# --- Monitoring stack (ALL must be disabled explicitly) ---
-monitoring:
-  enabled: false
-
-loki:
-  enabled: false
-
-minio:
-  enabled: false
-
-alloy:
-  enabled: false
-
-# --- LocalPV engines must ALSO be disabled explicitly ---
-lvm-localpv:
-  enabled: false
-
-zfs-localpv:
-  enabled: false
-
-# --- Helpers ---
-helper:
-  enabled: false
+loki: { enabled: false }
+minio: { enabled: false }
+alloy: { enabled: false }
