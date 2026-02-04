@@ -112,6 +112,8 @@ func cliToList(resType ResType) string {
 		return `kubectl get cm -Ao wide`
 	case ResCRD:
 		return `kubectl get crd -Ao wide`
+	case ResDeploy:
+		return `kubectl get deploy -Ao wide | awk '{$8=substr($8,1,35) "..."; print $1,$2,$3,$6,$7,$8}' | column -t`
 	case ResNode:
 		return `kubectl get nodes -Ao wide | awk '{print $1,$8,$(NF-1),$6,$2,$4,$3}' | column -t`
 	case ResNS:
@@ -198,7 +200,8 @@ func (i *Resource) cliToGetIp() string {
 func (i *Resource) cliToGetLog() string {
 	switch i.Type {
 	case ResPod:
-		return fmt.Sprintf(`kubectl logs %s -n %s --previous`, i.Name, i.Ns)
+		return fmt.Sprintf(`kubectl logs %s -n %s`, i.Name, i.Ns)
+		// return fmt.Sprintf(`kubectl logs %s -n %s --previous`, i.Name, i.Ns)
 	default:
 		panic("unsupported resource type: " + i.Type)
 	}
@@ -207,7 +210,9 @@ func (i *Resource) cliToGetLog() string {
 func (i *Resource) cliToDescribe() string {
 	switch i.Type {
 	case ResCM:
-		return fmt.Sprintf(`kubectl describe cm %s`, i.Name)
+		return fmt.Sprintf(`kubectl describe cm %s -n %s`, i.Name, i.Ns)
+	case ResDeploy:
+		return fmt.Sprintf(`kubectl describe deploy %s -n %s`, i.Name, i.Ns)
 	case ResManifest:
 		return fmt.Sprintf(`kubectl get -f %s --ignore-not-found`, i.Url)
 	case ResNode:
@@ -257,6 +262,8 @@ func (i *Resource) cliToGetYaml() string {
 	switch i.Type {
 	case ResCM:
 		return fmt.Sprintf("kubectl get cm %s -n %s -o yaml", i.Name, i.Ns)
+	case ResDeploy:
+		return fmt.Sprintf("kubectl get deploy %s -n %s -o yaml", i.Name, i.Ns)
 	case ResNode:
 		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)
 		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)

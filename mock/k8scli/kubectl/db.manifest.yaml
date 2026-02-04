@@ -13,7 +13,43 @@ list:
       - https://github.com/abtransitionit/rancher-lpp/tree/clpp
   cimreg-ns:
     name: cimreg-ns
-    desc: The container image registry from docker.
+    desc: app > cimreg > ns
     url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/00-ns.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-cm:
+    name: cimreg-cm
+    desc: app > cimreg > cm
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/01-cm.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-prep:
+    name: cimreg-prep
+    desc: app > cimreg > folder init
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/02-prep.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-sc:
+    name: cimreg-sc
+    desc: app > cimreg > sc
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/03-sc.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-pvc:
+    name: cimreg-pvc
+    desc: app > cimreg > pvc
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/04-pvc.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-test-pod:
+    name: cimreg-test-pod
+    desc: app > cimreg > test features
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/99-test.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-dep:
+    name: cimreg-dep
+    desc: app > cimreg > registry and pod mounted storage
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/05-dep.yaml
     doc:
       - https://github.com/abtransitionit/k8s-manifest

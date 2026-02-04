@@ -6,18 +6,19 @@ package kubectl
 type ResType string
 
 const (
-	ResNode      ResType = "node"
-	ResPod       ResType = "pod"
-	ResNS        ResType = "ns"
 	ResCM        ResType = "cm"
-	ResCRD       ResType = "crd"
-	ResSA        ResType = "sa"
-	ResApiServer ResType = "api"
+	ResDeploy    ResType = "deploy"
+	ResNode      ResType = "node"
+	ResNS        ResType = "ns"
+	ResPod       ResType = "pod"
 	ResPv        ResType = "pv"  // related to SC
 	ResPvc       ResType = "pvc" // related to SC
-	ResRes       ResType = "res" // api-resources
-	ResSC        ResType = "sc"
+	ResSA        ResType = "sa"
 	ResSecret    ResType = "secret"
+	ResSC        ResType = "sc"
+	ResCRD       ResType = "crd"
+	ResApiServer ResType = "api"
+	ResRes       ResType = "res"      // api-resources
 	ResManifest  ResType = "manifest" // manifest file
 )
 
