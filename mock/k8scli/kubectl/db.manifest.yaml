@@ -11,9 +11,9 @@ list:
     url:  https://raw.githubusercontent.com/abtransitionit/rancher-lpp/clpp/deploy/local-path-storage.yaml
     doc:
       - https://github.com/abtransitionit/rancher-lpp/tree/clpp
-  cimreg:
-    name: cimreg
+  cimreg-ns:
+    name: cimreg-ns
     desc: The container image registry from docker.
-    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/registry-openebs.yaml
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/00-ns.yaml
     doc:
       - https://github.com/abtransitionit/k8s-manifest
