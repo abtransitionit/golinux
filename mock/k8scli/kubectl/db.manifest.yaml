@@ -49,7 +49,7 @@ list:
       - https://github.com/abtransitionit/k8s-manifest
   cimreg-svc:
     name: cimreg-svc
-    desc: app > cimreg > clusterIp to access registry inside the cluster
+    desc: app > cimreg > clusterIp to pod/ct svc
     url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/06-svc.yaml
     doc:
       - https://github.com/abtransitionit/k8s-manifest
