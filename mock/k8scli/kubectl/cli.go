@@ -114,6 +114,19 @@ func cliToList(resType ResType) string {
 		return `kubectl get crd -Ao wide`
 	case ResDeploy:
 		return `kubectl get deploy -Ao wide | awk '{$8=substr($8,1,35) "..."; print $1,$2,$3,$6,$7,$8}' | column -t`
+	case ResDs:
+		return `
+		echo -e "Ns\tName\tApp\tCurrent\tAge" && \
+    kubectl get ds -Ao yaml | yq -r '.items[] | [
+	  .metadata.namespace, 
+  	.metadata.name, 
+  	(.spec.template.spec.serviceAccountName // "default"), 
+		.status.currentNumberScheduled, 
+    .metadata.creationTimestamp
+		] | @tsv'
+		`
+		// return `echo -e "Ns\tName\tApp" && kubectl get ds -Ao yaml | yq -r ".items[] | [.metadata.namespace, .metadata.name, .spec.selector.matchLabels.app, .status.desiredNumberScheduled, .status.numberReady] | @tsv" `
+		// return `kubectl get ds -Ao wide | awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' | column -t`
 	case ResNode:
 		return `kubectl get nodes -Ao wide | awk '{print $1,$8,$(NF-1),$6,$2,$4,$3}' | column -t`
 	case ResNS:
@@ -167,8 +180,8 @@ func cliToList(resType ResType) string {
 }
 func (i *Resource) cliToDelete() string {
 	switch i.Type {
-	case ResSecret:
-		return fmt.Sprintf(`kubectl delete secret %s -n %s`, i.Name, i.Ns)
+	case ResDs:
+		return fmt.Sprintf(`kubectl delete ds -f %s --ignore-not-found`, i.Name)
 	case ResManifest:
 		return fmt.Sprintf(`kubectl delete -f %s --ignore-not-found`, i.Url)
 	case ResPod:
@@ -177,6 +190,8 @@ func (i *Resource) cliToDelete() string {
 		return fmt.Sprintf(`kubectl delete pv %s`, i.Name)
 	case ResPvc:
 		return fmt.Sprintf(`kubectl delete pvc %s -n %s`, i.Name, i.Ns)
+	case ResSecret:
+		return fmt.Sprintf(`kubectl delete secret %s -n %s`, i.Name, i.Ns)
 	default:
 		panic("unsupported resource type: " + i.Type)
 	}
@@ -213,6 +228,8 @@ func (i *Resource) cliToDescribe() string {
 		return fmt.Sprintf(`kubectl describe cm %s -n %s`, i.Name, i.Ns)
 	case ResDeploy:
 		return fmt.Sprintf(`kubectl describe deploy %s -n %s`, i.Name, i.Ns)
+	case ResDs:
+		return fmt.Sprintf(`kubectl describe ds %s -n %s`, i.Name, i.Ns)
 	case ResManifest:
 		return fmt.Sprintf(`kubectl get -f %s --ignore-not-found`, i.Url)
 	case ResNode:
@@ -264,6 +281,8 @@ func (i *Resource) cliToGetYaml() string {
 		return fmt.Sprintf("kubectl get cm %s -n %s -o yaml", i.Name, i.Ns)
 	case ResDeploy:
 		return fmt.Sprintf("kubectl get deploy %s -n %s -o yaml", i.Name, i.Ns)
+	case ResDs:
+		return fmt.Sprintf("kubectl get ds %s -n %s -o yaml", i.Name, i.Ns)
 	case ResNode:
 		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)
 		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)

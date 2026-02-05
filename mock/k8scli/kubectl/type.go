@@ -8,6 +8,7 @@ type ResType string
 const (
 	ResCM        ResType = "cm"
 	ResDeploy    ResType = "deploy"
+	ResDs        ResType = "ds"
 	ResNode      ResType = "node"
 	ResNS        ResType = "ns"
 	ResPod       ResType = "pod"
@@ -30,10 +31,11 @@ type Resource struct {
 	Name     string
 	Type     ResType // node, pod, ns, cm, sa, secret, mnf,
 	Ns       string
-	UserName string   // for Secret only
-	Desc     string   // for manifest only
-	Url      string   // for manifest only
-	Doc      []string // for manifest only
+	UserName string            // for Secret only
+	Desc     string            // for manifest only
+	Url      string            // for manifest only
+	Doc      []string          // for manifest only
+	Param    map[string]string // list of placeholders for manifest only
 }
 
 // define slice
