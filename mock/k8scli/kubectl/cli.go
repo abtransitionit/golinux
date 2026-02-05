@@ -176,6 +176,8 @@ func cliToList(resType ResType) string {
 	case ResSecret:
 		// return `kubectl get secrets -Ao wide`
 		return `kubectl get secrets -Ao wide | awk '{print $1,$2,$3,$4}' | column -t`
+	case ResSvc:
+		return `kubectl get svc -Ao wide | awk '{print $1,$2,$3,$4,$5,$6,$7}' | column -t`
 	default:
 		panic("unsupported resource type: " + resType)
 	}
@@ -254,6 +256,8 @@ func (i *Resource) cliToDescribe() string {
 		return fmt.Sprintf(`kubectl describe sa %s -n %s`, i.Name, i.Ns)
 	case ResSC:
 		return fmt.Sprintf(`kubectl describe sc %s`, i.Name)
+	case ResSvc:
+		return fmt.Sprintf(`kubectl describe svc %s -n %s`, i.Name, i.Ns)
 	case ResSecret:
 		return fmt.Sprintf(`kubectl describe secret %s -n %s`, i.Name, i.Ns)
 	default:

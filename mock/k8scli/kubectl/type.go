@@ -18,6 +18,7 @@ const (
 	ResSA        ResType = "sa"
 	ResSecret    ResType = "secret"
 	ResSC        ResType = "sc"
+	ResSvc       ResType = "svc"
 	ResCRD       ResType = "crd"
 	ResApiServer ResType = "api"
 	ResRes       ResType = "res"      // api-resources
