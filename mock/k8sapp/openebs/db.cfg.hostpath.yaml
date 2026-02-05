@@ -1,4 +1,4 @@
-# cf. https://github.com/openebs/openebs/blob/4.4.0-develop_mod_update/charts/values.yaml
+# Enable all LocalPV engines
 engines:
   local:
     lvm: { enabled: false }
@@ -6,6 +6,14 @@ engines:
   replicated:
     mayastor: { enabled: false }
 
+
+# needed to have correct label on nede where provisionner is provisioned
+openebs-ndm: { enabled: true }
+
+monitoring: { enabled: false }
+
 loki: { enabled: false }
 minio: { enabled: false }
 alloy: { enabled: false }
+
+helper: { enabled: false }
