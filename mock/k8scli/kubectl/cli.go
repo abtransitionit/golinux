@@ -7,7 +7,7 @@ import (
 )
 
 func (i *Resource) Delete(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	// logger.Debugf("%s:%s > CLI %s", hostName, kubectlHost, i.cliToDelete())
+	logger.Debugf("%s:%s > CLI %s", hostName, kubectlHost, i.cliToDelete())
 	return play(hostName, kubectlHost, "deleted "+i.Type.String()+" "+i.Name, i.cliToDelete(), logger)
 }
 
@@ -180,8 +180,10 @@ func cliToList(resType ResType) string {
 }
 func (i *Resource) cliToDelete() string {
 	switch i.Type {
+	case ResDeploy:
+		return fmt.Sprintf(`kubectl delete deploy %s -n %s`, i.Name, i.Ns)
 	case ResDs:
-		return fmt.Sprintf(`kubectl delete ds -f %s --ignore-not-found`, i.Name)
+		return fmt.Sprintf(`kubectl delete ds %s -n %s`, i.Name, i.Ns)
 	case ResManifest:
 		return fmt.Sprintf(`kubectl delete -f %s --ignore-not-found`, i.Url)
 	case ResPod:
@@ -192,6 +194,8 @@ func (i *Resource) cliToDelete() string {
 		return fmt.Sprintf(`kubectl delete pvc %s -n %s`, i.Name, i.Ns)
 	case ResSecret:
 		return fmt.Sprintf(`kubectl delete secret %s -n %s`, i.Name, i.Ns)
+	case ResSC:
+		return fmt.Sprintf(`kubectl delete sc %s`, i.Name)
 	default:
 		panic("unsupported resource type: " + i.Type)
 	}

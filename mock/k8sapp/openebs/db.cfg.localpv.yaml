@@ -8,7 +8,7 @@ engines:
     zfs: { enabled: false }
 
 # Disable unnecessary components
-openebs-ndm: { enabled: false }
+openebs-ndm: { enabled: true }
 
 monitoring: { enabled: false }
 

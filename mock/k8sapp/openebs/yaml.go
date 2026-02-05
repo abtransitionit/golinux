@@ -7,5 +7,5 @@ import (
 func GetValueFile(param map[string]string, logger logx.Logger) ([]byte, error) {
 
 	// handle success
-	return YamlHostPathCfg, nil
+	return YamlLocalPvCfg, nil
 }
