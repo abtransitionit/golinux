@@ -41,15 +41,21 @@ list:
     url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/04-pvc.yaml
     doc:
       - https://github.com/abtransitionit/k8s-manifest
-  cimreg-test-pod:
-    name: cimreg-test-pod
-    desc: app > cimreg > test features
-    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/99-test.yaml
-    doc:
-      - https://github.com/abtransitionit/k8s-manifest
   cimreg-dep:
     name: cimreg-dep
     desc: app > cimreg > registry and pod mounted storage
     url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/05-dep.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-svc:
+    name: cimreg-svc
+    desc: app > cimreg > clusterIp to access registry inside the cluster
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/06-svc.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  cimreg-test-pod:
+    name: cimreg-test-pod
+    desc: app > cimreg > test features
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/99-test.yaml
     doc:
       - https://github.com/abtransitionit/k8s-manifest

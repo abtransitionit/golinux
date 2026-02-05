@@ -110,6 +110,8 @@ func cliToList(resType ResType) string {
 	switch resType {
 	case ResCM:
 		return `kubectl get cm -Ao wide`
+	case ResEp:
+		return `kubectl get ep -Ao wide`
 	case ResCRD:
 		return `kubectl get crd -Ao wide`
 	case ResDeploy:

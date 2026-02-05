@@ -7,6 +7,7 @@ type ResType string
 
 const (
 	ResCM        ResType = "cm"
+	ResEp        ResType = "ep"
 	ResDeploy    ResType = "deploy"
 	ResDs        ResType = "ds"
 	ResNode      ResType = "node"
