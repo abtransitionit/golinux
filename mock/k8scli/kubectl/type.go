@@ -31,6 +31,7 @@ func (t ResType) String() string {
 
 type Resource struct {
 	Name     string
+	Kind     string  // the k8s kind (e.g., Deployment, DaemonSet, Service, etc.)
 	Type     ResType // node, pod, ns, cm, sa, secret, mnf,
 	Ns       string
 	UserName string            // for Secret only
@@ -42,6 +43,19 @@ type Resource struct {
 
 // define slice
 type SliceResource []Resource
+
+// -------------------------------------------------------
+// -------	 private methods
+// -------------------------------------------------------
+
+func (i *Resource) isClusterScoped() bool {
+	switch i.Type {
+	case ResNode, ResNS, ResPv, ResSC:
+		return true
+	default:
+		return false
+	}
+}
 
 // -------------------------------------------------------
 // -------	 struct for YAML

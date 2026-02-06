@@ -84,36 +84,13 @@ func (i *Resource) cliToListResource() string {
 	}
 }
 
-// fmt.Sprintf(`kubectl get node %s -o jsonpath='{range .status.images[*]}{.names[0]}{"\t"}{.sizeBytes}{"\n"}{end}' | awk -F'\t' '{
-//     name = $1;
-//     sha = "n/a";
-//     size = $2 / 1024 / 1024;
-
-//     if (index(name, "@sha256:") > 0) {
-//         split(name, a, "@");
-//         name = a[1];
-//         sha = substr(a[2], 1, 17);
-//     } else if (index(name, ":") > 0) {
-//         # Optional: Split by colon if you want to separate the tag
-//         split(name, a, ":");
-//         # name = a[1]; # Uncomment to strip tags from the name column
-//         sha = "tag:" a[2];
-//     }
-
-//     printf "%%-50s %%-18s %%6.2f MB\n", name, sha, size
-// }'`, i.Name)
-
 // Notes:
 //
 // - get column name from the yaml view of the resource (-o yaml)
 func cliToList(resType ResType) string {
 	switch resType {
-	case ResCM:
-		return `kubectl get cm -Ao wide`
-	case ResEp:
-		return `kubectl get ep -Ao wide`
-	case ResCRD:
-		return `kubectl get crd -Ao wide`
+	case ResCM, ResEp, ResCRD, ResSA:
+		return fmt.Sprintf("kubectl get %s -Ao wide", resType.String())
 	case ResDeploy:
 		return `kubectl get deploy -Ao wide | awk '{$8=substr($8,1,35) "..."; print $1,$2,$3,$6,$7,$8}' | column -t`
 	case ResDs:
@@ -161,8 +138,6 @@ func cliToList(resType ResType) string {
 		:.spec.accessModes[0],
 		:.metadata.creationTimestamp" | awk 'BEGIN {print "NAMESPACE\tNAME\tSC\tSTATUS\tPV\tCAPACITY\tACCESS\tAGE"} {print $1,$2,$3,$4,$5,$6,$7,$8}' | column -t
 		`
-	case ResSA:
-		return `kubectl get sa -Ao wide`
 	case ResSC:
 		return `kubectl get sc --no-headers -o custom-columns="
 		:.metadata.name,
@@ -182,28 +157,21 @@ func cliToList(resType ResType) string {
 		panic("unsupported resource type: " + resType)
 	}
 }
+
 func (i *Resource) cliToDelete() string {
-	switch i.Type {
-	case ResDeploy:
-		return fmt.Sprintf(`kubectl delete deploy %s -n %s`, i.Name, i.Ns)
-	case ResDs:
-		return fmt.Sprintf(`kubectl delete ds %s -n %s`, i.Name, i.Ns)
-	case ResManifest:
-		return fmt.Sprintf(`kubectl delete -f %s --ignore-not-found`, i.Url)
-	case ResPod:
-		return fmt.Sprintf(`kubectl delete pod %s -n %s`, i.Name, i.Ns)
-	case ResPv:
-		return fmt.Sprintf(`kubectl delete pv %s`, i.Name)
-	case ResPvc:
-		return fmt.Sprintf(`kubectl delete pvc %s -n %s`, i.Name, i.Ns)
-	case ResSecret:
-		return fmt.Sprintf(`kubectl delete secret %s -n %s`, i.Name, i.Ns)
-	case ResSC:
-		return fmt.Sprintf(`kubectl delete sc %s`, i.Name)
-	default:
-		panic("unsupported resource type: " + i.Type)
+	// 1. Handle special patterns first
+	if i.Type == ResManifest {
+		return fmt.Sprintf("kubectl delete -f %s --ignore-not-found", i.Url)
 	}
+
+	// 2. Handle standard patterns
+	if i.isClusterScoped() {
+		return fmt.Sprintf("kubectl delete %s %s", i.Type.String(), i.Name)
+	}
+
+	return fmt.Sprintf("kubectl delete %s %s -n %s", i.Type.String(), i.Name, i.Ns)
 }
+
 func (i *Resource) cliToListEvent() string {
 	switch i.Type {
 	case ResPod:
@@ -229,41 +197,34 @@ func (i *Resource) cliToGetLog() string {
 		panic("unsupported resource type: " + i.Type)
 	}
 }
-
 func (i *Resource) cliToDescribe() string {
+	theType := i.Type.String()
+	name := i.Name
+	ns := i.Ns
+
+	// 1. Handle special patterns first
 	switch i.Type {
-	case ResCM:
-		return fmt.Sprintf(`kubectl describe cm %s -n %s`, i.Name, i.Ns)
-	case ResDeploy:
-		return fmt.Sprintf(`kubectl describe deploy %s -n %s`, i.Name, i.Ns)
-	case ResDs:
-		return fmt.Sprintf(`kubectl describe ds %s -n %s`, i.Name, i.Ns)
 	case ResManifest:
-		return fmt.Sprintf(`kubectl get -f %s --ignore-not-found`, i.Url)
-	case ResNode:
-		return fmt.Sprintf(`kubectl describe node %s`, i.Name)
-	case ResNS:
-		return fmt.Sprintf(`kubectl describe ns %s`, i.Name)
-	case ResPvc:
-		return fmt.Sprintf(`kubectl describe pvc %s -n %s`, i.Name, i.Ns)
-	case ResPv:
-		return fmt.Sprintf(`kubectl describe pv %s`, i.Name)
-	case ResPod:
-		return fmt.Sprintf(`kubectl describe pod %s -n %s`, i.Name, i.Ns)
+		return fmt.Sprintf("kubectl get -f %s --ignore-not-found", i.Url)
 	case ResRes:
-		return fmt.Sprintf(`kubectl explain %s`, i.Name)
-	case ResSA:
-		return fmt.Sprintf(`kubectl describe sa %s -n %s`, i.Name, i.Ns)
-	case ResSC:
-		return fmt.Sprintf(`kubectl describe sc %s`, i.Name)
-	case ResSvc:
-		return fmt.Sprintf(`kubectl describe svc %s -n %s`, i.Name, i.Ns)
-	case ResSecret:
-		return fmt.Sprintf(`kubectl describe secret %s -n %s`, i.Name, i.Ns)
-	default:
-		panic("unsupported resource type: " + i.Type)
+		return fmt.Sprintf("kubectl explain %s", name)
 	}
+
+	// 2. Handle standard patterns
+	if i.isClusterScoped() {
+		return fmt.Sprintf("kubectl describe %s %s", theType, name)
+	}
+
+	return fmt.Sprintf("kubectl describe %s %s -n %s", theType, name, ns)
 }
+func (i *Resource) cliToGetYaml() string {
+	// Handle standard patterns
+	if i.isClusterScoped() {
+		return fmt.Sprintf("kubectl get %s %s -o yaml", i.Type.String(), i.Name)
+	}
+	return fmt.Sprintf("kubectl get %s %s -n %s -o yaml", i.Type.String(), i.Name, i.Ns)
+}
+
 func (i *Resource) cliToCreate() string {
 	switch i.Type {
 	case ResNS:
@@ -282,36 +243,5 @@ func (i *Resource) cliToGenerate() string {
 		apk add -q --no-cache apache2-utils && PASS=$(head -c 20 /dev/urandom | base64) &&  htpasswd -Bbn %s $PASS'`, i.Ns, i.UserName)
 	default:
 		panic("unsupported resource type: " + i.Type)
-	}
-}
-
-func (i *Resource) cliToGetYaml() string {
-	switch i.Type {
-	case ResCM:
-		return fmt.Sprintf("kubectl get cm %s -n %s -o yaml", i.Name, i.Ns)
-	case ResDeploy:
-		return fmt.Sprintf("kubectl get deploy %s -n %s -o yaml", i.Name, i.Ns)
-	case ResDs:
-		return fmt.Sprintf("kubectl get ds %s -n %s -o yaml", i.Name, i.Ns)
-	case ResNode:
-		return fmt.Sprintf("kubectl get node %s -o yaml", i.Name)
-		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
-	case ResPod:
-		return fmt.Sprintf("kubectl get pod %s -n %s -o yaml", i.Name, i.Ns)
-	case ResPv:
-		return fmt.Sprintf("kubectl get pv %s -o yaml", i.Name)
-	case ResPvc:
-		return fmt.Sprintf("kubectl get pvc %s -n %s -o yaml", i.Name, i.Ns)
-	case ResNS:
-		return fmt.Sprintf("kubectl get ns %s -o yaml", i.Name)
-	case ResSA:
-		return fmt.Sprintf("kubectl get sa %s -n %s -o yaml", i.Name, i.Ns)
-	case ResSC:
-		return fmt.Sprintf("kubectl get sc %s -o yaml", i.Name)
-		// return fmt.Sprintf("kubectl get node %s -o yaml | yq '.status.nodeInfo.kubeletVersion'", i.Name)
-	case ResSecret:
-		return fmt.Sprintf("kubectl get secret %s -n %s -o yaml", i.Name, i.Ns)
-	default:
-		panic("unsupported resource type: " + string(i.Type))
 	}
 }

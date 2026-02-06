@@ -50,7 +50,7 @@ list:
   cimreg-svc:
     name: cimreg-svc
     desc: app > cimreg > clusterIp to pod/ct svc
-    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/06-svc.yaml
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/06-svc.yaml?v=123 # avoid github cache
     doc:
       - https://github.com/abtransitionit/k8s-manifest
   cimreg-test-pod:
