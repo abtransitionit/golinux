@@ -106,14 +106,13 @@ func (i *Resource) CliToList() string {
 	}
 }
 
+// description: delete a release and all its resources from the cluster
 func (i *Resource) CliToDelete() string {
 	switch i.Type {
 	case ResRelease:
 		var cmds = []string{
 			fmt.Sprintf(`helm uninstall %s     -n %s`, i.Name, i.Namespace),
 			// fmt.Sprintf(`helm uninstall %s     -n %s  --keep-history=false`, i.Name, i.Namespace),
-			fmt.Sprintf(`kubectl delete secret -n %s -l owner=helm,name=%s`, i.Namespace, i.Name),
-			fmt.Sprintf(`kubectl delete all    -n %s -l owner=helm,name=%s`, i.Namespace, i.Name),
 		}
 		cli := strings.Join(cmds, " && ")
 		return cli
@@ -230,14 +229,14 @@ func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) 
 		return fmt.Errorf("%s:%s:%s > chart version %s does not exist on the helm client", hostName, helmHost, i.Name, chart.QName)
 	}
 	// 2 - Get value file
-	cfgAsbyte, err := i.GetValueFile(logger)
+	valueFileAsbyte, err := i.GetValueFile(logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > getting value file > %w", hostName, helmHost, i.Name, err)
 	}
 
 	// log
 	logger.Debug("--- BEGIN:Rendered Value file  ---")
-	scanner := bufio.NewScanner(bytes.NewReader(cfgAsbyte))
+	scanner := bufio.NewScanner(bytes.NewReader(valueFileAsbyte))
 	for scanner.Scan() {
 		logger.Debug(scanner.Text())
 	}
@@ -249,7 +248,7 @@ func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) 
 	// 3 - install
 	// 31 - get instance and operate
 	release := Resource{Type: ResRelease, QName: i.QName, Version: i.Version, Name: i.Name, Namespace: i.Namespace}
-	out, err = play(hostName, helmHost, "listed "+i.Type.String(), release.cliToInstall(cfgAsbyte), logger)
+	out, err = play(hostName, helmHost, "listed "+i.Type.String(), release.cliToInstall(valueFileAsbyte), logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > installing helm release from chart %s > %w", hostName, helmHost, i.Name, i.QName, err)
 	}
@@ -275,20 +274,24 @@ func (i Resource) GetValueFile(logger logx.Logger) ([]byte, error) {
 	}
 }
 
-// description: install a release for the first time or upgrade an existing one
-func (i *Resource) cliToInstall(cfg []byte) string {
+// Description: install a release for the first time or upgrade an existing one
+//
+// Note:
+//
+// - the resource (ie. a chart must define a value file)
+func (i *Resource) cliToInstall(valueFile []byte) string {
 	// 1 - check
 	if i.Type != ResRelease {
 		panic("resource type not supported for this cli: %s" + i.Type)
 	}
 	// 2 - build
-	encoded := base64.StdEncoding.EncodeToString(cfg)
-	// TODO - if cahrt is local path change this - for now works only for chart in a repo
+	encodedValueFile := base64.StdEncoding.EncodeToString(valueFile)
+	// TODO - if chart is local path change this - for now works only for chart in a repo
 	i.Repo = strings.Split(i.QName, "/")[0]
 	var cmds = []string{
 		fmt.Sprintf(
 			`printf '%s' | base64 -d | helm upgrade --install %s --labels "repoName=%s" %s --atomic --wait --create-namespace --timeout 10m --namespace %s %s -f -`,
-			encoded,
+			encodedValueFile,
 			i.Name,
 			i.Repo,
 			i.QName,
