@@ -83,3 +83,13 @@ list:
     url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/ui/templates/02-svc.yaml?v=123
     doc:
       - https://github.com/abtransitionit/k8s-manifest
+  ui-chart-test:
+    name: ui-dep
+    desc: app > ui-firefox > deployment
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/f81e1c9c189a1dee60f0cb86b7fa34b992be3b96/list/ui-chart/Chart.yaml
+    # url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/ui-chart/Chart.yaml?v=123
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+
+# LATEST_HASH=$(git -C ~/wkspc/git/k8s-manifest rev-parse HEAD) # get commit rev from local git to avoid github cache
+# LATEST_HASH=$(git ls-remote https://github.com/abtransitionit/k8s-manifest.git HEAD | awk '{ print $1 }') # pbs of github cache
