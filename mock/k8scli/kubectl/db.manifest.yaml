@@ -11,6 +11,12 @@ list:
     url:  https://raw.githubusercontent.com/abtransitionit/rancher-lpp/clpp/deploy/local-path-storage.yaml
     doc:
       - https://github.com/abtransitionit/rancher-lpp/tree/clpp
+  svc-metric:
+    name: svc-metric
+    desc: deploy basic metric server
+    url:  https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    doc:
+      - https://github.com/kubernetes-sigs/metrics-server
   cimreg-ns:
     name: cimreg-ns
     desc: app > cimreg > ns
@@ -57,5 +63,23 @@ list:
     name: cimreg-test-pod
     desc: app > cimreg > test features
     url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/cimreg/templates/99-test.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  ui-ns:
+    name: ui-ns
+    desc: app > ui-firefox > ns
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/ui/templates/00-ns.yaml
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  ui-dep:
+    name: ui-dep
+    desc: app > ui-firefox > deployment
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/ui/templates/01-dep.yaml?v=123
+    doc:
+      - https://github.com/abtransitionit/k8s-manifest
+  ui-svc:
+    name: ui-svc
+    desc: app > ui-firefox > svc
+    url:  https://raw.githubusercontent.com/abtransitionit/k8s-manifest/main/list/ui/templates/02-svc.yaml?v=123
     doc:
       - https://github.com/abtransitionit/k8s-manifest

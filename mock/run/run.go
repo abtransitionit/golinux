@@ -20,9 +20,9 @@ func RunCli(hostName, cli string, logger logx.Logger) (string, error) {
 }
 
 // Description: executes a CLI locally and returns its output as a string
-func RunOnLocal(cde string, logger logx.Logger) (string, error) {
+func RunOnLocal(cli string, logger logx.Logger) (string, error) {
 	// 1 - define CLI
-	cli := exec.Command("sh", "-c", cde)
+	cliOS := exec.Command("sh", "-c", cli)
 
 	// if logger != nil {
 	// 	logger.Debugf("local: command executed > %s", cli.String())
@@ -31,7 +31,7 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 	// }
 
 	// 2 - run CLI
-	output, err := cli.CombinedOutput()
+	output, err := cliOS.CombinedOutput()
 
 	// 3 - handle system error
 	if err != nil {
@@ -43,15 +43,15 @@ func RunOnLocal(cde string, logger logx.Logger) (string, error) {
 }
 
 // Description: executes a CLI remotely via SSH and returns its output as a string
-func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error) {
+func RunOnRemote(hostName string, cli string, logger logx.Logger) (string, error) {
 
 	// 1 - Base64 encode the input to handle complex quoting and special characters.
-	cliEncoded := base64.StdEncoding.EncodeToString([]byte(cde))
+	cliEncoded := base64.StdEncoding.EncodeToString([]byte(cli))
 	// 2 - define the SSH command
 	// sshCmd := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5%s "echo '%s' | base64 --decode | $SHELL -l"`, hostName, cliEncoded)
 	sshCmd := fmt.Sprintf(`ssh -o BatchMode=yes -o ConnectTimeout=5s %s "echo '%s' | base64 --decode | $SHELL -l"`, hostName, cliEncoded)
 	// 3 - define Local command that launch the SSH command
-	cli := exec.Command("sh", "-c", sshCmd)
+	cliOs := exec.Command("sh", "-c", sshCmd)
 
 	// if logger != nil {
 	// 	logger.Debugf("%s: remote command executed > %s", hostName, cli.String())
@@ -60,7 +60,7 @@ func RunOnRemote(hostName string, cde string, logger logx.Logger) (string, error
 	// }
 
 	// 2 - run CLI
-	output, err := cli.CombinedOutput()
+	output, err := cliOs.CombinedOutput()
 
 	// 3 - handle system error
 	if err != nil {

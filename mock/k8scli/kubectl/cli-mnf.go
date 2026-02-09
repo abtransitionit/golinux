@@ -33,6 +33,7 @@ func (i *Resource) StepToListAuth() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("getting the yaml > %w", err)
 	}
+
 	// handle success
 	return YamlStruct.string(), nil
 }

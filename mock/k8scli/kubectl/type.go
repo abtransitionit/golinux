@@ -39,6 +39,7 @@ type Resource struct {
 	Url      string            // for manifest only
 	Doc      []string          // for manifest only
 	Param    map[string]string // list of placeholders for manifest only
+	Port     string            // for svc only
 }
 
 // define slice

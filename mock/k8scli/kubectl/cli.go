@@ -2,20 +2,29 @@ package kubectl
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/abtransitionit/gocore/logx"
 )
 
+func (i *Resource) PortForward(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	// logger.Debugf("%s:%s > CLI > %s", hostName, kubectlHost, i.cliToPortForward())
+	return play(hostName, kubectlHost, "port forwarded "+i.Type.String()+" "+i.Name, i.cliToPortForward(), logger)
+}
 func (i *Resource) Delete(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	logger.Debugf("%s:%s > CLI %s", hostName, kubectlHost, i.cliToDelete())
+	logger.Debugf("%s:%s > CLI > %s", hostName, kubectlHost, i.cliToDelete())
 	return play(hostName, kubectlHost, "deleted "+i.Type.String()+" "+i.Name, i.cliToDelete(), logger)
 }
 
+func (i *Resource) CreateIShellTodo(hostName, kubectlHost string, logger logx.Logger) (string, error) {
+	logger.Debugf("%s:%s > CLI > %s", hostName, kubectlHost, i.cliToCreateIShellTodo())
+	return play(hostName, kubectlHost, "described "+i.Type.String(), i.cliToCreateIShellTodo(), logger)
+}
 func (i *Resource) Describe(hostName, kubectlHost string, logger logx.Logger) (string, error) {
 	return play(hostName, kubectlHost, "described "+i.Type.String(), i.cliToDescribe(), logger)
 }
 func (i *Resource) Create(hostName, kubectlHost string, logger logx.Logger) (string, error) {
-	logger.Debugf("%s:%s > CLI %s", hostName, kubectlHost, i.cliToCreate())
+	logger.Debugf("%s:%s > CLI > %s", hostName, kubectlHost, i.cliToCreate())
 	return play(hostName, kubectlHost, "created "+i.Type.String()+":"+i.Name, i.cliToCreate(), logger)
 }
 func (i *Resource) Generate(hostName, kubectlHost string, logger logx.Logger) (string, error) {
@@ -108,12 +117,20 @@ func cliToList(resType ResType) string {
 		// return `kubectl get ds -Ao wide | awk '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' | column -t`
 	case ResNode:
 		return `kubectl get nodes -Ao wide | awk '{print $1,$8,$(NF-1),$6,$2,$4,$3}' | column -t`
+		// 		return `echo -e "NAME\tIP\tKERNEL\tHOSTNAME\tREADY\tOS_IMAGE\tVERSION"; kubectl get nodes -o json | yq '.items[] | [
+		//   .metadata.name,
+		//   (.status.addresses[] | select(.type=="InternalIP") | .address),
+		//   .status.nodeInfo.kernelVersion,
+		//   (.status.addresses[] | select(.type=="Hostname") | .address),
+		//   (.status.conditions[] | select(.type=="Ready") | .status),
+		//   .status.nodeInfo.osImage,
+		//   .status.nodeInfo.kubeletVersion
+		// ] | join(" ")' | column -t`
+
 	case ResNS:
 		return `kubectl get namespaces`
 	case ResPod:
 		return `kubectl get pods -Ao wide | awk '{print $1,$2,$4,$6,$8,$7}'| column -t`
-	case ResRes:
-		return `kubectl api-resources| sort `
 	case ResPv:
 
 		return `kubectl get pv -A --no-headers -o custom-columns="
@@ -138,6 +155,8 @@ func cliToList(resType ResType) string {
 		:.spec.accessModes[0],
 		:.metadata.creationTimestamp" | awk 'BEGIN {print "NAMESPACE\tNAME\tSC\tSTATUS\tPV\tCAPACITY\tACCESS\tAGE"} {print $1,$2,$3,$4,$5,$6,$7,$8}' | column -t
 		`
+	case ResRes:
+		return `kubectl api-resources| sort `
 	case ResSC:
 		return `kubectl get sc --no-headers -o custom-columns="
 		:.metadata.name,
@@ -172,10 +191,34 @@ func (i *Resource) cliToDelete() string {
 	return fmt.Sprintf("kubectl delete %s %s -n %s", i.Type.String(), i.Name, i.Ns)
 }
 
+func (i *Resource) cliToPortForward() string {
+	localPort := "9090"
+	switch i.Type {
+	case ResSvc:
+		return fmt.Sprintf("kubectl port-forward -n %s svc/%s %s:%s > /dev/null 2>&1 &", i.Ns, i.Name, localPort, i.Port)
+	default:
+		panic("unsupported resource type: " + i.Type)
+	}
+}
+
 func (i *Resource) cliToListEvent() string {
 	switch i.Type {
 	case ResPod:
 		return fmt.Sprintf(`kubectl get events -n %s --field-selector involvedObject.name=%s`, i.Ns, i.Name)
+	default:
+		panic("unsupported resource type: " + i.Type)
+	}
+}
+func (i *Resource) cliToCreateIShellTodo() string {
+	cimName := "docker:27-cli"
+	podPrefix := "tmp-ishell"
+	podLabel := fmt.Sprint("app=", podPrefix)
+	uID := time.Now().Unix()
+	podName := fmt.Sprintf("%s-%d", podPrefix, uID)
+	// "
+	switch i.Type {
+	case ResPod:
+		return fmt.Sprintf(`kubectl run %s -n %s --image=%s -l %s --rm -it --restart=Never -- /bin/sh -l`, podName, i.Ns, cimName, podLabel)
 	default:
 		panic("unsupported resource type: " + i.Type)
 	}
