@@ -29,6 +29,9 @@ func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) error 
 //	func (i *Resource) Build(hostName, helmHost string, logger logx.Logger) (string, error) {
 //		return play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(), logger)
 //	}
+func (i *Resource) Push(hostName, helmHost string, logger logx.Logger) error {
+	return i.StepToPush(hostName, helmHost, logger)
+}
 func (i *Resource) Build(hostName, helmHost string, logger logx.Logger) error {
 	return i.StepToBuild(hostName, helmHost, logger)
 }
@@ -459,6 +462,27 @@ func (i *Resource) cliToBuild2() string {
 func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check
 	if i.Type != ResChart {
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	artifact, err := i.GetArtifact(hostName, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
+	}
+	// cli to play
+	_, err = play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(artifact), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
+	}
+	// handle success
+	// logger.Debugf("%s:%s:%s > builded Helm chart's artifact %s", hostName, helmHost, i.Name, artifact.FolderDst)
+	return nil
+
+}
+
+// todo: an artifact is pushed in a registry
+func (i *Resource) StepToPush(hostName, helmHost string, logger logx.Logger) error {
+	// 1 - check
+	if i.Type != ResArtifact {
 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
 	artifact, err := i.GetArtifact(hostName, logger)
