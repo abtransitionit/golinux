@@ -5,15 +5,32 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
+	"github.com/abtransitionit/gocore/mock/filex"
 	"github.com/abtransitionit/golinux/mock/k8sapp/cilium"
 	"github.com/abtransitionit/golinux/mock/k8sapp/openebs"
 )
 
+func (i *Resource) Logout(hostName, helmHost string, logger logx.Logger) (string, error) {
+	return play(hostName, helmHost, "logged out from "+i.Type.String(), i.cliToLogout(), logger)
+}
+func (i *Resource) Login(hostName, helmHost string, logger logx.Logger) error {
+	return i.StepToLogin(hostName, helmHost, logger)
+}
+
 func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) error {
 	return i.StepToInstall(hostName, helmHost, logger)
+}
+
+//	func (i *Resource) Build(hostName, helmHost string, logger logx.Logger) (string, error) {
+//		return play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(), logger)
+//	}
+func (i *Resource) Build(hostName, helmHost string, logger logx.Logger) error {
+	return i.StepToBuild(hostName, helmHost, logger)
 }
 
 func (i *Resource) Detail(hostName, helmHost string, logger logx.Logger) (string, error) {
@@ -31,13 +48,6 @@ func (i *Resource) GetReadme(hostName, helmHost string, logger logx.Logger) (str
 	return msg, nil
 }
 
-//	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
-//		return i.getFromYaml(hostName)
-//	}
-//
-//	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
-//		return i.getFromYaml(hostName)
-//	}
 func (i *Resource) ListResName(hostName, helmHost string, logger logx.Logger) (string, error) {
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToListResName(), logger)
 }
@@ -90,15 +100,35 @@ func (i *Resource) CliToDescribe() string {
 }
 func (i *Resource) CliToList() string {
 	switch i.Type {
+	case ResChart:
+		switch i.SType {
+		case STypeChartBuild:
+			// 1 - resolve the user yaml file
+			userHome, err := os.UserHomeDir()
+			if err != nil {
+				panic(fmt.Sprintf("pbs getting user home to get file %q", artifactCfgRelPath))
+			}
+			artifactCfgFullPath := filepath.Join(userHome, artifactCfgRelPath)
+			// 2 - build the cli
+			var cmds = []string{
+				fmt.Sprintf(`file=%s`, artifactCfgFullPath),
+				`echo name`,
+				fmt.Sprintf(`cat $file | yq e -r '.artifact."%s" | keys | .[]' -`, string(STypeChartBuild)),
+			}
+			cli := strings.Join(cmds, " && ")
+			return cli
+		case "", STypeChartStd:
+			if i.Repo == "" {
+				return `helm search repo`
+			}
+			return fmt.Sprintf(`helm search repo %s`, i.Repo)
+		default:
+			panic(fmt.Sprintf("unsupported subtype %q for resource type %q", i.SType, i.Type))
+		}
+	case ResRegistry:
+		return `helm repo list`
 	case ResRepo:
 		return `helm repo list`
-	case ResChart:
-		// list all charts of a all repo
-		if i.Repo == "" {
-			return `helm search repo`
-		}
-		// list charts of a specific repo
-		return fmt.Sprintf(`helm search repo %s`, i.Repo)
 	case ResRelease:
 		return `helm list -A`
 	default:
@@ -204,6 +234,98 @@ func (i *Resource) StepToAdd(hostName, helmHost string, logger logx.Logger) (str
 	// 4 - get and play cli
 	return play(hostName, helmHost, "listed "+i.Type.String(), i.CliToAdd(), logger)
 }
+
+// description: list authorized OCI chart
+func (i *Resource) ListOci(hostName string, logger logx.Logger) error {
+	// 1 - check
+	if i.Type != ResChart {
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	// handle success
+	return nil
+}
+
+// description: return a registry (with all it properties) from a local user credential file
+func (i *Resource) GetRegistry(hostName string, logger logx.Logger) (*Registry, error) {
+	// 1 - check
+	if i.Type != ResRegistry {
+		return nil, fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	// 2 - resolve the registry credential file path
+	userHome, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve home directory > %w", err)
+	}
+	registryCredentialFullPath := filepath.Join(userHome, registryCredentialRelPath)
+
+	// 3 - get the yaml
+	registrySliceCfg, err := filex.LoadExternalYamlIntoStruct[RegistryCfg](registryCredentialFullPath)
+	if err != nil {
+		return nil, fmt.Errorf("%s > loading registry yaml credential file: %w", hostName, err)
+	}
+
+	// 4 - get the registry
+	registry, ok := registrySliceCfg.Registry[i.Name]
+	if !ok {
+		return nil, fmt.Errorf("registry %q not found in registry credential file", i.Name)
+	}
+	// handle success
+	return &registry, nil
+}
+
+// description: return an artifact (with all it properties) from a local well known rel file path
+func (i *Resource) GetArtifact(hostName string, logger logx.Logger) (*Artifact, error) {
+	// 1 - check
+	if i.Type != ResChart {
+		return nil, fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+
+	// 2 - get the absolute file path
+	artifactCfgFullPath, err := filex.GetUserFilePath(artifactCfgRelPath)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	// 3 - get the yaml
+	artifactSliceCfg, err := filex.LoadExternalYamlIntoStruct[ArtifactCfg](artifactCfgFullPath)
+	if err != nil {
+		return nil, fmt.Errorf("%s > loading registry yaml credential file: %w", hostName, err)
+	}
+	// 4 - get a set
+	artifactSet, ok := artifactSliceCfg.Artifact[string(STypeChartBuild)]
+	if !ok {
+		return nil, fmt.Errorf("artifact group %q not found", i.SType)
+	}
+
+	// 5 - get the artifact
+	artifact, ok := artifactSet.Items[i.Name]
+	if !ok {
+		return nil, fmt.Errorf("artifact %q not found in group %q", i.Name, i.Type)
+	}
+
+	// handle success
+	return &artifact, nil
+}
+
+func (i *Resource) StepToLogin(hostName, helmHost string, logger logx.Logger) error {
+	// 1 - check
+	if i.Type != ResRegistry {
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	registry, err := i.GetRegistry(hostName, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s > getting registry credential yaml > %w", hostName, helmHost, err)
+	}
+	// operate on instance whith field
+	_, err = play(hostName, helmHost, "listed "+i.Type.String(), i.cliToLogin(registry), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
+	}
+	// handle success
+	logger.Debugf("%s:%s:%s > logged in Helm to registry", hostName, helmHost, i.Name)
+	return nil
+
+}
 func (i *Resource) StepToInstall(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check
 	if i.Type != ResRelease {
@@ -282,7 +404,7 @@ func (i Resource) GetValueFile(logger logx.Logger) ([]byte, error) {
 func (i *Resource) cliToInstall(valueFile []byte) string {
 	// 1 - check
 	if i.Type != ResRelease {
-		panic("resource type not supported for this cli: %s" + i.Type)
+		panic("resource type not supported for this action: %s" + i.Type)
 	}
 	// 2 - build
 	encodedValueFile := base64.StdEncoding.EncodeToString(valueFile)
@@ -301,13 +423,99 @@ func (i *Resource) cliToInstall(valueFile []byte) string {
 	cli := strings.Join(cmds, " && ")
 	return cli
 }
+func (i *Resource) cliToBuild(artifact *Artifact) string {
+	var cli string
+	switch i.Type {
+	case ResChart:
+		var cmds = []string{
+			fmt.Sprintf(`helm package %s --destination %s`,
+				artifact.FolderSrc,
+				artifact.FolderDst,
+			),
+		}
+		cli = strings.Join(cmds, " && ")
+
+	default:
+		panic("unsupported resource type for this action: " + i.Type)
+	}
+
+	return cli
+}
+func (i *Resource) cliToBuild2() string {
+	// 1 - check
+	if i.Type != ResArtifact {
+		panic("resource type not supported for this action: %s" + i.Type)
+	}
+
+	var cmds = []string{
+		fmt.Sprintf(`helm package %s --destination %s`,
+			filepath.Join(i.Param["folderSrcRoot"], i.Name),
+			i.Param["folderDst"],
+		),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}
+func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) error {
+	// 1 - check
+	if i.Type != ResChart {
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	artifact, err := i.GetArtifact(hostName, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
+	}
+	// cli to play
+	_, err = play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(artifact), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
+	}
+	// handle success
+	// logger.Debugf("%s:%s:%s > builded Helm chart's artifact %s", hostName, helmHost, i.Name, artifact.FolderDst)
+	return nil
+
+}
+
+func (i *Resource) cliToLogin(registry *Registry) string {
+	// 1 - check
+	if i.Type != ResRegistry {
+		panic("resource type not supported for this action: %s" + i.Type)
+	}
+	// 2 - base64 encode the token to avoid it displays in logs
+	encodedRegistryAccessToken := base64.StdEncoding.EncodeToString([]byte(registry.Param.AccessToken))
+	var cmds = []string{
+		fmt.Sprintf(`echo %s | base64 -d | helm registry login %s -u %s --password-stdin`,
+			encodedRegistryAccessToken,
+			registry.Param.DnsOrIp,
+			registry.Param.User,
+		),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}
+
+func (i *Resource) cliToLogout() string {
+	// 1 - check
+	if i.Type != ResRegistry {
+		panic("resource type not supported for this action: %s" + i.Type)
+	}
+
+	var cmds = []string{
+
+		fmt.Sprintf(`helm registry logout %s`,
+			i.Param["DnsOrIp"],
+		),
+	}
+	cli := strings.Join(cmds, " && ")
+	return cli
+}
 
 // --labels "repoName=%s"
 
 func (i *Resource) versionFlag() string {
 	// 1 - check
 	if i.Type != ResRelease {
-		panic("resource type not supported for this cli: %s" + i.Type)
+		panic("resource type not supported for this action: %s" + i.Type)
 	}
 	// 2 - build
 	if i.Version != "" {
@@ -337,3 +545,74 @@ func (i *Resource) CliToGetEnv() string {
 		panic("unsupported resource type for this action: " + i.Type)
 	}
 }
+
+// // description: build a chart artifact from a chart folder
+// func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) error {
+// 	// 1 - check
+// 	if i.Type != ResChart {
+// 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+// 	}
+// 	_, err := play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(), logger)
+// 	if err != nil {
+// 		return fmt.Errorf("%s:%s:%s > building helm artifact from chart %s > %w", hostName, helmHost, i.Name, i.Name, err)
+// 	}
+
+//		// handle success
+//		logger.Debugf("%s:%s:%s > builded chart artifact into  into %s", hostName, helmHost, i.Name, i.Param["folderDst"])
+//		return nil
+//	}
+
+//	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
+//		return i.getFromYaml(hostName)
+//	}
+//
+//	func (i *Resource) GetFromYaml(hostName, helmHost string, logger logx.Logger) (*Resource, error) {
+//		return i.getFromYaml(hostName)
+//	}
+
+// // description: get a set of artifacts (with their properties) from a local user file
+// func (i *Resource) Get(hostName string, logger logx.Logger) (Resource, error) {
+// 	// 1 - check
+// 	if i.Type != ResArtifact {
+// 		return Resource{}, fmt.Errorf("resource type not supported for this action: %s", i.Type)
+// 	}
+// 	// 2 - resolve the artifact file path
+// 	userHome, err := os.UserHomeDir()
+// 	if err != nil {
+// 		return Resource{}, fmt.Errorf("failed to resolve home directory > %w", err)
+// 	}
+// 	artifactCfgFullPath := filepath.Join(userHome, artifactCfgRelPath)
+
+// 	// 3 - get the yaml
+// 	artifactSliceConfig, err := filex.LoadExternalYamlIntoStruct[Config](artifactCfgFullPath)
+// 	if err != nil {
+// 		return Resource{}, fmt.Errorf("%s > loading artifact yaml file: %w", hostName, err)
+// 	}
+
+//		// 4 - get the instance
+//		artifact, ok := artifactSliceConfig.Registry[i.Name]
+//		if !ok {
+//			return Resource{}, fmt.Errorf("registry %q not found in registry credential file", i.Name)
+//		}
+//		// handle success
+//		return artifact, nil
+//	}
+// func (i *Resource) StepToBuild2(hostName, helmHost string, logger logx.Logger) error {
+// 	// 1 - check
+// 	if i.Type != ResArtifact {
+// 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+// 	}
+// 	artifact, err := i.Get(hostName, logger)
+// 	if err != nil {
+// 		return fmt.Errorf("%s:%s > getting registry credential yaml > %w", hostName, helmHost, err)
+// 	}
+// 	// operate on instance whith field
+// 	_, err = play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(artifact), logger)
+// 	if err != nil {
+// 		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
+// 	}
+// 	// handle success
+// 	logger.Debugf("%s:%s:%s > logged in Helm to registry", hostName, helmHost, i.Name)
+// 	return nil
+
+// }

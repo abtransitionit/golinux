@@ -21,6 +21,30 @@ import (
 //		// handle success
 //		return mapYaml, nil
 //	}
+
+// func GetRegistryCredential(*RegistryCredential, error) {
+// 	userHome, err := os.UserHomeDir()
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to resolve home directory %w", err)
+// 	}
+// 	registryCredentialFullPath := filepath.Join(userHome, registryCredentialRelPath)
+
+// 	ok, err := filex.ExistsFile(registryCredentialFullPath)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	if !ok {
+// 		return "", fmt.Errorf("credential file not found: %s", credentialPath)
+// 	}
+
+//		// 1 - get local auto cached (embedded) file into a struct
+//		mapYaml, err := filex.LoadYamlIntoStruct[MapYaml](yamlListRepo)
+//		if err != nil {
+//			return nil, fmt.Errorf("loading yaml: %w", err)
+//		}
+//		// handle success
+//		return mapYaml, nil
+//	}
 func GetYamlRepo() (*MapYaml, error) {
 	// 1 - get local auto cached (embedded) file into a struct
 	mapYaml, err := filex.LoadYamlIntoStruct[MapYaml](yamlListRepo)

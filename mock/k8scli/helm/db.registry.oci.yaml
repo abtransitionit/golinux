@@ -1,0 +1,13 @@
+registry:
+  ghcr:
+    description: "ghcr.io OCI registry" 
+    type: oci
+    param: 
+      org: "abtransitionit"
+      dnsOrIp: "ghcr.io"
+  k8s:
+    description: "ovh kubernetes OCI registry" 
+    type: oci
+    param: 
+      org: "abtransitionit"
+      dnsOrIp: "todo"

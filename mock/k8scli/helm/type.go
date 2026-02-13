@@ -4,29 +4,83 @@ package helm
 // -------	 generic k8s resource
 // -------------------------------------------------------
 type ResType string
+type ResSType string
 
 const (
 	ResRepo         ResType = "repo"
 	ResChart        ResType = "chart"
+	ResArtifact     ResType = "artifact"
 	ResChartVersion ResType = "chartVersion"
 	ResRelease      ResType = "release"
+	ResRegistry     ResType = "registry"
 	ResHelm         ResType = "helm"
+)
+
+// subtypes - chart
+const (
+	STypeChartStd   ResSType = "chart/std"
+	STypeChartOCI   ResSType = "chart/oci"
+	STypeChartBuild ResSType = "chart/helm"
+)
+
+// subtypes - artifact
+const (
+	STypeArtifactGo   ResSType = "artifact/go"
+	STypeArtifactHelm ResSType = "artifact/helm"
 )
 
 func (t ResType) String() string {
 	return string(t)
 }
 
+// the oci registry - begin
+type RegistryCfg struct {
+	Registry map[string]Registry `yaml:"registry"`
+}
+
+type Registry struct {
+	Description string
+	Type        string
+	Param       RegistryParam
+}
+
+type RegistryParam struct {
+	DnsOrIp     string
+	Org         string
+	User        string
+	AccessToken string
+}
+
+// the oci registry - end
+
+// the artifact build from chart - begin
+type ArtifactCfg struct {
+	Artifact map[string]ArtifactSet `yaml:"artifact"`
+}
+
+type ArtifactSet struct {
+	FolderRoot string              `yaml:"folderRoot"`
+	Items      map[string]Artifact `yaml:",inline"`
+}
+
+type Artifact struct {
+	FolderSrc string `yaml:"folderSrc"`
+	FolderDst string `yaml:"folderDst"`
+}
+
+// the artifact build from chart - end
+
 type Resource struct {
 	Name      string
 	Type      ResType
+	SType     ResSType
 	Url       string            // repo only
 	Repo      string            // chart only
 	QName     string            // chart only - eg. cilium/cilium;
 	Namespace string            // release only
 	Revision  string            // release only
 	Version   string            // release and chart only - version of the chart to install if any
-	Param     map[string]string // release only
+	Param     map[string]string // release, chart
 	ValueFile []byte            // release only
 }
 

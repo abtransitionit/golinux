@@ -1,6 +1,0 @@
-list:
-  abtransitionit:
-    name: abtransitionit
-    desc: The abtransitionit Helm repository for all chart of the organization
-    url:  oci://ghcr.io/abtransitionit/helm/ui-chart
-    version: 0.1.0 

@@ -24,18 +24,18 @@ func RunOnLocal(cli string, logger logx.Logger) (string, error) {
 	// 1 - define CLI
 	cliOS := exec.Command("sh", "-c", cli)
 
-	// if logger != nil {
-	// 	logger.Debugf("local: command executed > %s", cli.String())
-	// } else {
-	// 	fmt.Printf("local: command executed > %s\n", cli.String())
-	// }
+	if logger != nil {
+		logger.Debugf("local > cli > %s", cli)
+	} else {
+		fmt.Printf("local > cli > %s\n", cli)
+	}
 
 	// 2 - run CLI
 	output, err := cliOS.CombinedOutput()
 
 	// 3 - handle system error
 	if err != nil {
-		return string(output), fmt.Errorf("running cli locally: %v", err)
+		return string(output), fmt.Errorf("local > cli > : %w > %s", err, output)
 	}
 
 	// 4 - handle success
