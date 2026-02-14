@@ -444,6 +444,25 @@ func (i *Resource) cliToBuild(artifact *Artifact) string {
 
 	return cli
 }
+
+func (i *Resource) cliToPush(artifact *Artifact) string {
+	var cli string
+	switch i.Type {
+	case ResChart:
+		var cmds = []string{
+			fmt.Sprintf(`helm push ${lArtifactLocalFullPath} oci://${lRegistry}`,
+				artifact.FolderSrc,
+				artifact.FolderDst,
+			),
+		}
+		cli = strings.Join(cmds, " && ")
+
+	default:
+		panic("unsupported resource type for this action: " + i.Type)
+	}
+
+	return cli
+}
 func (i *Resource) cliToBuild2() string {
 	// 1 - check
 	if i.Type != ResArtifact {
@@ -474,7 +493,6 @@ func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) er
 		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
 	}
 	// handle success
-	// logger.Debugf("%s:%s:%s > builded Helm chart's artifact %s", hostName, helmHost, i.Name, artifact.FolderDst)
 	return nil
 
 }
@@ -482,7 +500,7 @@ func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) er
 // todo: an artifact is pushed in a registry
 func (i *Resource) StepToPush(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check
-	if i.Type != ResArtifact {
+	if i.Type != ResChart {
 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
 	artifact, err := i.GetArtifact(hostName, logger)
@@ -490,12 +508,12 @@ func (i *Resource) StepToPush(hostName, helmHost string, logger logx.Logger) err
 		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
 	}
 	// cli to play
-	_, err = play(hostName, helmHost, "builded "+i.Type.String(), i.cliToBuild(artifact), logger)
+	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPush(artifact), logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
+		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, i.Name, err)
 	}
 	// handle success
-	// logger.Debugf("%s:%s:%s > builded Helm chart's artifact %s", hostName, helmHost, i.Name, artifact.FolderDst)
+	logger.Debugf("%s:%s:%s > pushed Helm chart's artifact in %s", hostName, helmHost, i.Name, artifact.FolderDst)
 	return nil
 
 }
