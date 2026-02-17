@@ -45,10 +45,11 @@ type Registry struct {
 }
 
 type RegistryParam struct {
-	DnsOrIp     string
+	DnsOrIp     string `yaml:"dnsOrIp"`
 	Org         string
 	User        string
-	AccessToken string
+	Path        string
+	AccessToken string `yaml:"accessToken"`
 }
 
 // the oci registry - end

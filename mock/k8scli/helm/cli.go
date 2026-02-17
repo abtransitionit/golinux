@@ -15,8 +15,9 @@ import (
 	"github.com/abtransitionit/golinux/mock/k8sapp/openebs"
 )
 
-func (i *Resource) Logout(hostName, helmHost string, logger logx.Logger) (string, error) {
-	return play(hostName, helmHost, "logged out from "+i.Type.String(), i.cliToLogout(), logger)
+func (i *Resource) Logout(hostName, helmHost string, logger logx.Logger) error {
+	return i.StepToLogout(hostName, helmHost, logger)
+	// return play(hostName, helmHost, "logged out from "+i.Type.String(), i.cliToLogout(), logger)
 }
 func (i *Resource) Login(hostName, helmHost string, logger logx.Logger) error {
 	return i.StepToLogin(hostName, helmHost, logger)
@@ -31,6 +32,10 @@ func (i *Resource) Install(hostName, helmHost string, logger logx.Logger) error 
 //	}
 func (i *Resource) Push(hostName, helmHost string, logger logx.Logger) error {
 	return i.StepToPush(hostName, helmHost, logger)
+}
+
+func (i *Resource) Pull(hostName, helmHost string, logger logx.Logger) error {
+	return i.StepToPull(hostName, helmHost, logger)
 }
 func (i *Resource) Build(hostName, helmHost string, logger logx.Logger) error {
 	return i.StepToBuild(hostName, helmHost, logger)
@@ -129,7 +134,21 @@ func (i *Resource) CliToList() string {
 			panic(fmt.Sprintf("unsupported subtype %q for resource type %q", i.SType, i.Type))
 		}
 	case ResRegistry:
-		return `helm repo list`
+		// 1 - resolve the user yaml file
+		userHome, err := os.UserHomeDir()
+		if err != nil {
+			panic(fmt.Sprintf("pbs getting user home to get file %q", artifactCfgRelPath))
+		}
+		registryCfgFullPath := filepath.Join(userHome, registryCfgRelPath)
+		// 2 - build the cli
+		var cmds = []string{
+			fmt.Sprintf(`file=%s`, registryCfgFullPath),
+			`echo name`,
+			`cat $file | yq e -r '.registry | keys | .[]' -`,
+		}
+		cli := strings.Join(cmds, " && ")
+		return cli
+
 	case ResRepo:
 		return `helm repo list`
 	case ResRelease:
@@ -249,7 +268,7 @@ func (i *Resource) ListOci(hostName string, logger logx.Logger) error {
 }
 
 // description: return a registry (with all it properties) from a local user credential file
-func (i *Resource) GetRegistry(hostName string, logger logx.Logger) (*Registry, error) {
+func (i *Resource) getRegistry(hostName string, logger logx.Logger) (*Registry, error) {
 	// 1 - check
 	if i.Type != ResRegistry {
 		return nil, fmt.Errorf("resource type not supported for this action: %s", i.Type)
@@ -259,10 +278,10 @@ func (i *Resource) GetRegistry(hostName string, logger logx.Logger) (*Registry, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve home directory > %w", err)
 	}
-	registryCredentialFullPath := filepath.Join(userHome, registryCredentialRelPath)
+	registryCfgFullPath := filepath.Join(userHome, registryCfgRelPath)
 
 	// 3 - get the yaml
-	registrySliceCfg, err := filex.LoadExternalYamlIntoStruct[RegistryCfg](registryCredentialFullPath)
+	registrySliceCfg, err := filex.LoadExternalYamlIntoStruct[RegistryCfg](registryCfgFullPath)
 	if err != nil {
 		return nil, fmt.Errorf("%s > loading registry yaml credential file: %w", hostName, err)
 	}
@@ -315,7 +334,7 @@ func (i *Resource) StepToLogin(hostName, helmHost string, logger logx.Logger) er
 	if i.Type != ResRegistry {
 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
-	registry, err := i.GetRegistry(hostName, logger)
+	registry, err := i.getRegistry(hostName, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting registry credential yaml > %w", hostName, helmHost, err)
 	}
@@ -325,7 +344,26 @@ func (i *Resource) StepToLogin(hostName, helmHost string, logger logx.Logger) er
 		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
 	}
 	// handle success
-	logger.Debugf("%s:%s:%s > logged in Helm to registry", hostName, helmHost, i.Name)
+	logger.Debugf("%s:%s:%s > logged in to Helm registry", hostName, helmHost, i.Name)
+	return nil
+
+}
+func (i *Resource) StepToLogout(hostName, helmHost string, logger logx.Logger) error {
+	// 1 - check
+	if i.Type != ResRegistry {
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	registry, err := i.getRegistry(hostName, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s > getting registry credential yaml > %w", hostName, helmHost, err)
+	}
+	// operate on instance whith field
+	_, err = play(hostName, helmHost, "listed "+i.Type.String(), i.cliToLogout(registry), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > login to registry %s with provided token > %w", hostName, helmHost, i.Name, i.Name, err)
+	}
+	// handle success
+	logger.Debugf("%s:%s:%s > logged out from Helm registry", hostName, helmHost, i.Name)
 	return nil
 
 }
@@ -445,15 +483,34 @@ func (i *Resource) cliToBuild(artifact *Artifact) string {
 	return cli
 }
 
-func (i *Resource) cliToPush(artifact *Artifact) string {
+// func (i *Resource) cliToPush(artifact *Artifact, registry *Registry) string {
+func (i *Resource) cliToPush(artifact *Artifact, registryUrl string) string {
 	var cli string
 	switch i.Type {
 	case ResChart:
 		var cmds = []string{
-			fmt.Sprintf(`helm push ${lArtifactLocalFullPath} oci://${lRegistry}`,
-				artifact.FolderSrc,
-				artifact.FolderDst,
-			),
+			fmt.Sprintf(`chartName=$(grep '^name:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
+			fmt.Sprintf(`chartVersion=$(grep '^version:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
+			`artifactFullPath=${chartName}-${chartVersion}.tgz`,
+			fmt.Sprintf(`helm push %s/$artifactFullPath %s`, artifact.FolderDst, registryUrl),
+		}
+		cli = strings.Join(cmds, " && ")
+
+	default:
+		panic("unsupported resource type for this action: " + i.Type)
+	}
+
+	return cli
+}
+func (i *Resource) cliToPull(artifact *Artifact, registryUrl string) string {
+	var cli string
+	switch i.Type {
+	case ResChart:
+		var cmds = []string{
+			fmt.Sprintf(`chartName=$(grep '^name:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
+			fmt.Sprintf(`chartVersion=$(grep '^version:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
+			`artifactFullPath=${chartName}-${chartVersion}.tgz`,
+			fmt.Sprintf(`helm pull %s/${chartName} --version ${chartVersion} --destination .`, registryUrl),
 		}
 		cli = strings.Join(cmds, " && ")
 
@@ -497,7 +554,6 @@ func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) er
 
 }
 
-// todo: an artifact is pushed in a registry
 func (i *Resource) StepToPush(hostName, helmHost string, logger logx.Logger) error {
 	// 1 - check
 	if i.Type != ResChart {
@@ -507,10 +563,45 @@ func (i *Resource) StepToPush(hostName, helmHost string, logger logx.Logger) err
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
 	}
-	// cli to play
-	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPush(artifact), logger)
+	// 2 - get instance and operate
+	registry := Resource{Type: ResRegistry, Name: i.Param["registry"]}
+	registryTmp, err := registry.getRegistry(hostName, logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, i.Name, err)
+		return fmt.Errorf("%s:%s > getting registry > %w", hostName, helmHost, err)
+	}
+	registryUrl := fmt.Sprintf("oci://%s/%s/%s", registryTmp.Param.DnsOrIp, registryTmp.Param.Org, registryTmp.Param.Path)
+	fmt.Printf("YOYOYO - regitry = %v", registry)
+	// cli to play
+	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPush(artifact, registryUrl), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, err)
+	}
+	// handle success
+	logger.Debugf("%s:%s:%s > pushed Helm chart's artifact in %s", hostName, helmHost, i.Name, artifact.FolderDst)
+	return nil
+
+}
+func (i *Resource) StepToPull(hostName, helmHost string, logger logx.Logger) error {
+	// 1 - check
+	if i.Type != ResChart {
+		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
+	}
+	artifact, err := i.GetArtifact(hostName, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
+	}
+	// 2 - get instance and operate
+	registry := Resource{Type: ResRegistry, Name: i.Param["registry"]}
+	registryTmp, err := registry.getRegistry(hostName, logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s > getting registry > %w", hostName, helmHost, err)
+	}
+	registryUrl := fmt.Sprintf("oci://%s/%s/%s", registryTmp.Param.DnsOrIp, registryTmp.Param.Org, registryTmp.Param.Path)
+	fmt.Printf("YOYOYO - regitry = %v", registry)
+	// cli to play
+	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPull(artifact, registryUrl), logger)
+	if err != nil {
+		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, err)
 	}
 	// handle success
 	logger.Debugf("%s:%s:%s > pushed Helm chart's artifact in %s", hostName, helmHost, i.Name, artifact.FolderDst)
@@ -524,6 +615,7 @@ func (i *Resource) cliToLogin(registry *Registry) string {
 		panic("resource type not supported for this action: %s" + i.Type)
 	}
 	// 2 - base64 encode the token to avoid it displays in logs
+	fmt.Printf("YOYOYOY %s", registry.Param.AccessToken)
 	encodedRegistryAccessToken := base64.StdEncoding.EncodeToString([]byte(registry.Param.AccessToken))
 	var cmds = []string{
 		fmt.Sprintf(`echo %s | base64 -d | helm registry login %s -u %s --password-stdin`,
@@ -536,7 +628,7 @@ func (i *Resource) cliToLogin(registry *Registry) string {
 	return cli
 }
 
-func (i *Resource) cliToLogout() string {
+func (i *Resource) cliToLogout(registry *Registry) string {
 	// 1 - check
 	if i.Type != ResRegistry {
 		panic("resource type not supported for this action: %s" + i.Type)
@@ -545,7 +637,7 @@ func (i *Resource) cliToLogout() string {
 	var cmds = []string{
 
 		fmt.Sprintf(`helm registry logout %s`,
-			i.Param["DnsOrIp"],
+			registry.Param.DnsOrIp,
 		),
 	}
 	cli := strings.Join(cmds, " && ")
