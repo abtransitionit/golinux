@@ -69,6 +69,12 @@ type Artifact struct {
 	FolderDst string `yaml:"folderDst"`
 }
 
+type ArtifactChartYaml struct {
+	Name         string
+	AppVersion   string `yaml:"appVersion"`
+	ChartVersion string `yaml:"version"`
+}
+
 // the artifact build from chart - end
 
 type Resource struct {

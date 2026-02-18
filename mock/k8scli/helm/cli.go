@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -112,11 +111,10 @@ func (i *Resource) CliToList() string {
 		switch i.SType {
 		case STypeChartBuild:
 			// 1 - resolve the user yaml file
-			userHome, err := os.UserHomeDir()
+			artifactCfgFullPath, err := filex.GetUserFilePath(artifactCfgRelPath)
 			if err != nil {
 				panic(fmt.Sprintf("pbs getting user home to get file %q", artifactCfgRelPath))
 			}
-			artifactCfgFullPath := filepath.Join(userHome, artifactCfgRelPath)
 			// 2 - build the cli
 			var cmds = []string{
 				fmt.Sprintf(`file=%s`, artifactCfgFullPath),
@@ -135,11 +133,10 @@ func (i *Resource) CliToList() string {
 		}
 	case ResRegistry:
 		// 1 - resolve the user yaml file
-		userHome, err := os.UserHomeDir()
+		registryCfgFullPath, err := filex.GetUserFilePath(registryCfgRelPath)
 		if err != nil {
 			panic(fmt.Sprintf("pbs getting user home to get file %q", artifactCfgRelPath))
 		}
-		registryCfgFullPath := filepath.Join(userHome, registryCfgRelPath)
 		// 2 - build the cli
 		var cmds = []string{
 			fmt.Sprintf(`file=%s`, registryCfgFullPath),
@@ -274,11 +271,10 @@ func (i *Resource) getRegistry(hostName string, logger logx.Logger) (*Registry, 
 		return nil, fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
 	// 2 - resolve the registry credential file path
-	userHome, err := os.UserHomeDir()
+	registryCfgFullPath, err := filex.GetUserFilePath(registryCfgRelPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve home directory > %w", err)
 	}
-	registryCfgFullPath := filepath.Join(userHome, registryCfgRelPath)
 
 	// 3 - get the yaml
 	registrySliceCfg, err := filex.LoadExternalYamlIntoStruct[RegistryCfg](registryCfgFullPath)
@@ -484,16 +480,12 @@ func (i *Resource) cliToBuild(artifact *Artifact) string {
 }
 
 // func (i *Resource) cliToPush(artifact *Artifact, registry *Registry) string {
-func (i *Resource) cliToPush(artifact *Artifact, registryUrl string) string {
+func (i *Resource) cliToPush() string {
 	var cli string
 	switch i.Type {
 	case ResChart:
 		var cmds = []string{
-			fmt.Sprintf(`chartName=$(grep '^name:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
-			fmt.Sprintf(`chartVersion=$(grep '^version:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
-			`artifactFullPath=${chartName}-${chartVersion}.tgz`,
-			fmt.Sprintf(`helm push %s/$artifactFullPath %s`, artifact.FolderDst, registryUrl),
-		}
+			fmt.Sprintf(`helm push  %s %s`, i.Param["artifactFullPath"], i.Param["registryUrl"])}
 		cli = strings.Join(cmds, " && ")
 
 	default:
@@ -502,15 +494,12 @@ func (i *Resource) cliToPush(artifact *Artifact, registryUrl string) string {
 
 	return cli
 }
-func (i *Resource) cliToPull(artifact *Artifact, registryUrl string) string {
+func (i *Resource) cliToPull() string {
 	var cli string
 	switch i.Type {
 	case ResChart:
 		var cmds = []string{
-			fmt.Sprintf(`chartName=$(grep '^name:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
-			fmt.Sprintf(`chartVersion=$(grep '^version:' %s/Chart.yaml | cut -d ' ' -f2)`, artifact.FolderSrc),
-			`artifactFullPath=${chartName}-${chartVersion}.tgz`,
-			fmt.Sprintf(`helm pull %s/${chartName} --version ${chartVersion} --destination .`, registryUrl),
+			fmt.Sprintf(`helm pull %s --version %s --destination %s`, i.Param["chartOciPath"], i.Param["chartVersion"], i.Param["chartDst"]),
 		}
 		cli = strings.Join(cmds, " && ")
 
@@ -518,21 +507,6 @@ func (i *Resource) cliToPull(artifact *Artifact, registryUrl string) string {
 		panic("unsupported resource type for this action: " + i.Type)
 	}
 
-	return cli
-}
-func (i *Resource) cliToBuild2() string {
-	// 1 - check
-	if i.Type != ResArtifact {
-		panic("resource type not supported for this action: %s" + i.Type)
-	}
-
-	var cmds = []string{
-		fmt.Sprintf(`helm package %s --destination %s`,
-			filepath.Join(i.Param["folderSrcRoot"], i.Name),
-			i.Param["folderDst"],
-		),
-	}
-	cli := strings.Join(cmds, " && ")
 	return cli
 }
 func (i *Resource) StepToBuild(hostName, helmHost string, logger logx.Logger) error {
@@ -559,20 +533,33 @@ func (i *Resource) StepToPush(hostName, helmHost string, logger logx.Logger) err
 	if i.Type != ResChart {
 		return fmt.Errorf("resource type not supported for this action: %s", i.Type)
 	}
+	// 1 - get the artifact
 	artifact, err := i.GetArtifact(hostName, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
 	}
-	// 2 - get instance and operate
+	// 2  - get property from instance
+	// 21 - get instance and operate
 	registry := Resource{Type: ResRegistry, Name: i.Param["registry"]}
 	registryTmp, err := registry.getRegistry(hostName, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting registry > %w", hostName, helmHost, err)
 	}
+	// 22 - get property
 	registryUrl := fmt.Sprintf("oci://%s/%s/%s", registryTmp.Param.DnsOrIp, registryTmp.Param.Org, registryTmp.Param.Path)
-	fmt.Printf("YOYOYO - regitry = %v", registry)
+	i.Param["registryUrl"] = registryUrl
+
+	// 23 - get file Chart.yaml
+	chartYamlPath := filepath.Join(artifact.FolderSrc, "Chart.yaml")
+	chartYaml, err := filex.LoadExternalYamlIntoStruct[ArtifactChartYaml](chartYamlPath)
+	if err != nil {
+		return fmt.Errorf("loading yaml: %w", err)
+	}
+	// 3 - define instance property
+	i.Param["artifactFullPath"] = fmt.Sprintf("%s/%s-%s.tgz", artifact.FolderDst, chartYaml.Name, chartYaml.ChartVersion)
+
 	// cli to play
-	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPush(artifact, registryUrl), logger)
+	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPush(), logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, err)
 	}
@@ -590,16 +577,31 @@ func (i *Resource) StepToPull(hostName, helmHost string, logger logx.Logger) err
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting artifact yaml > %w", hostName, helmHost, err)
 	}
-	// 2 - get instance and operate
+	// 2  - get property from instance
+	// 21 - get instance and operate
 	registry := Resource{Type: ResRegistry, Name: i.Param["registry"]}
 	registryTmp, err := registry.getRegistry(hostName, logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s > getting registry > %w", hostName, helmHost, err)
 	}
+	// 22 - get property
 	registryUrl := fmt.Sprintf("oci://%s/%s/%s", registryTmp.Param.DnsOrIp, registryTmp.Param.Org, registryTmp.Param.Path)
-	fmt.Printf("YOYOYO - regitry = %v", registry)
+
+	// 23 - get file Chart.yaml
+	chartYamlPath := filepath.Join(artifact.FolderSrc, "Chart.yaml")
+	chartYaml, err := filex.LoadExternalYamlIntoStruct[ArtifactChartYaml](chartYamlPath)
+	if err != nil {
+		return fmt.Errorf("loading yaml: %w", err)
+	}
+
+	// 3 - define instance property
+	i.Param["registryUrl"] = registryUrl
+	i.Param["chartOciPath"] = fmt.Sprintf("%s/%s", registryUrl, chartYaml.Name)
+	i.Param["chartVersion"] = chartYaml.ChartVersion
+	i.Param["chartDst"] = artifact.FolderDst
+
 	// cli to play
-	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPull(artifact, registryUrl), logger)
+	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPull(), logger)
 	if err != nil {
 		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, err)
 	}
@@ -749,4 +751,20 @@ func (i *Resource) CliToGetEnv() string {
 // 	logger.Debugf("%s:%s:%s > logged in Helm to registry", hostName, helmHost, i.Name)
 // 	return nil
 
+// }
+
+// func (i *Resource) cliToBuild2() string {
+// 	// 1 - check
+// 	if i.Type != ResArtifact {
+// 		panic("resource type not supported for this action: %s" + i.Type)
+// 	}
+
+// 	var cmds = []string{
+// 		fmt.Sprintf(`helm package %s --destination %s`,
+// 			filepath.Join(i.Param["folderSrcRoot"], i.Name),
+// 			i.Param["folderDst"],
+// 		),
+// 	}
+// 	cli := strings.Join(cmds, " && ")
+// 	return cli
 // }

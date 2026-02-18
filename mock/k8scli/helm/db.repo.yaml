@@ -17,7 +17,7 @@ list:
       - https://docs.cilium.io/en/stable/ https://cilium.io/
   openebs:
     name: openebs
-    desc: OpenEBS. A compliant CSI driver that allows node persistent local storage
+    desc: OpenEBS. A compliant CSI driver that allows node (persistent) local storage
     url:  https://openebs.github.io/openebs
     doc:
       - https://openebs.github.io/openebs/
