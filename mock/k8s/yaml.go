@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/abtransitionit/gocore/logx"
-	"github.com/abtransitionit/gocore/mock/tpl"
+	"github.com/abtransitionit/gocore/mock/filex"
 )
 
 func getFullClusterConf(embeddedTplFile []byte, clusterParam ClusterParam, logger logx.Logger) ([]byte, error) {
@@ -26,7 +26,7 @@ func getFullClusterConf(embeddedTplFile []byte, clusterParam ClusterParam, logge
 		},
 	}
 	// load file
-	if yamlCfgRenderAsByte, err = tpl.LoadTplFile(embeddedTplFile, "", varPlaceHolder); err != nil {
+	if yamlCfgRenderAsByte, err = filex.LoadTplFile(embeddedTplFile, "", varPlaceHolder); err != nil {
 		return nil, fmt.Errorf("loading config template file: %v", err)
 	}
 	// // log

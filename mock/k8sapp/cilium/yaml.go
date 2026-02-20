@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/abtransitionit/gocore/logx"
-	"github.com/abtransitionit/gocore/mock/tpl"
+	"github.com/abtransitionit/gocore/mock/filex"
 	"github.com/abtransitionit/golinux/mock/k8scli/kubectl"
 )
 
@@ -19,7 +19,7 @@ func GetValueFile(param map[string]string, logger logx.Logger) ([]byte, error) {
 	}
 
 	// load parameter file
-	yamlCfgRenderAsByte, err := tpl.LoadTplFile(YamlBasicCfg, "", varPlaceHolder)
+	yamlCfgRenderAsByte, err := filex.LoadTplFile(YamlBasicCfg, "", varPlaceHolder)
 	if err != nil {
 		return nil, fmt.Errorf("loading config template file: %v", err)
 	}

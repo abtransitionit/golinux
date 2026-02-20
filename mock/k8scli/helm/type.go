@@ -60,8 +60,7 @@ type ArtifactCfg struct {
 }
 
 type ArtifactSet struct {
-	FolderRoot string              `yaml:"folderRoot"`
-	Items      map[string]Artifact `yaml:",inline"`
+	Items map[string]Artifact `yaml:",inline"`
 }
 
 type Artifact struct {

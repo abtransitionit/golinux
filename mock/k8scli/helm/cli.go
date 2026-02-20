@@ -117,9 +117,9 @@ func (i *Resource) CliToList() string {
 			}
 			// 2 - build the cli
 			var cmds = []string{
-				fmt.Sprintf(`file=%s`, artifactCfgFullPath),
-				`echo name`,
-				fmt.Sprintf(`cat $file | yq e -r '.artifact."%s" | keys | .[]' -`, string(STypeChartBuild)),
+				`echo "name\tSrc\tDst"`,
+				fmt.Sprintf(`cat %s | yq e -r '.artifact."%s" | to_entries | map([.key, .value.folderSrc, .value.folderDst]) | .[] | @tsv'`, artifactCfgFullPath, string(STypeChartBuild)),
+				// fmt.Sprintf(`cat %s | yq e -r '.artifact."%s" | to_entries | map([.key]) | .[] | @tsv'`, artifactCfgFullPath, string(STypeChartBuild)),
 			}
 			cli := strings.Join(cmds, " && ")
 			return cli
@@ -139,9 +139,9 @@ func (i *Resource) CliToList() string {
 		}
 		// 2 - build the cli
 		var cmds = []string{
-			fmt.Sprintf(`file=%s`, registryCfgFullPath),
-			`echo name`,
-			`cat $file | yq e -r '.registry | keys | .[]' -`,
+			`echo "name\tDns"`,
+			fmt.Sprintf(`cat %s | yq e -r '.registry | to_entries | map([.key, .value.param.dnsOrIp]) | .[] | @tsv'`, registryCfgFullPath),
+			// fmt.Sprintf(`cat %s | yq e -r '.registry | keys | .[]'`, registryCfgFullPath),
 		}
 		cli := strings.Join(cmds, " && ")
 		return cli
@@ -601,12 +601,12 @@ func (i *Resource) StepToPull(hostName, helmHost string, logger logx.Logger) err
 	i.Param["chartDst"] = artifact.FolderDst
 
 	// cli to play
-	_, err = play(hostName, helmHost, "pushed "+i.Type.String(), i.cliToPull(), logger)
+	_, err = play(hostName, helmHost, "pulled "+i.Type.String(), i.cliToPull(), logger)
 	if err != nil {
-		return fmt.Errorf("%s:%s:%s > pushing artifact to registry > %w", hostName, helmHost, i.Name, err)
+		return fmt.Errorf("%s:%s:%s > pulling artifact to registry > %w", hostName, helmHost, i.Name, err)
 	}
 	// handle success
-	logger.Debugf("%s:%s:%s > pushed Helm chart's artifact in %s", hostName, helmHost, i.Name, artifact.FolderDst)
+	logger.Debugf("%s:%s:%s > pulled Helm chart's artifact in %s", hostName, helmHost, i.Name, artifact.FolderDst)
 	return nil
 
 }
